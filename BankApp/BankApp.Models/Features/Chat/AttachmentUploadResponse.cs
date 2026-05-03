@@ -1,12 +1,5 @@
-﻿// <copyright file="AttachmentUploadResponse.cs" company="Dev Core">
-// Copyright (c) Dev Core. All rights reserved.
-// </copyright>
+﻿namespace BankApp.Models.Features.Chat;
 
-namespace BankApp.Models.Features.Chat;
-
-/// <summary>
-/// Represents metadata returned after uploading a chat attachment.
-/// </summary>
 public class AttachmentUploadResponse
 {
     /// <summary>

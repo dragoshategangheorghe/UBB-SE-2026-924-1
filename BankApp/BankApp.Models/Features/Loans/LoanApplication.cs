@@ -1,12 +1,4 @@
-﻿// <copyright file="LoanApplication.cs" company="Dev Core">
-// Copyright (c) Dev Core. All rights reserved.
-// </copyright>
-
-/// <summary>
-/// Represents a user's request for a new loan product.
-/// </summary>
-
-using BankApp.Models.Enums;
+﻿using BankApp.Models.Enums;
 
 namespace BankApp.Models.Features.Loans
 {

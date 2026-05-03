@@ -1,8 +1,4 @@
-﻿// <copyright file="ChatAttachment.cs" company="Dev Core">
-// Copyright (c) Dev Core. All rights reserved.
-// </copyright>
-
-namespace BankApp.Models.Features.Chat;
+﻿namespace BankApp.Models.Features.Chat;
 
 /// <summary>
 /// Represents an attachment linked to a chat message.
