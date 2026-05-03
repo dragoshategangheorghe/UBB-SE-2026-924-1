@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="BankApp.Client.Views.StatisticsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="RootPage"
+    RequestedTheme="Light"
+    Background="#F4F6FA">
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="28" Spacing="18">
+                <InfoBar
+                    IsOpen="{Binding IsStatusOpen, Mode=TwoWay}"
+                    Severity="{Binding StatusSeverity}"
+                    Message="{Binding StatusMessage}" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Statistics &amp; Analytics" FontSize="26" FontWeight="Bold" Foreground="#1A1A2E" />
+                        <TextBlock Text="Track spending habits, cashflow balance, and top recipients from your transaction history." Foreground="#5B6170" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" />
+                </Grid>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" CornerRadius="18" Padding="18">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Income" FontWeight="SemiBold" Foreground="#4E5566" />
+                            <TextBlock x:Name="IncomeValueText" FontSize="28" FontWeight="Bold" Foreground="#0F766E" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="White" CornerRadius="18" Padding="18">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Expenses" FontWeight="SemiBold" Foreground="#4E5566" />
+                            <TextBlock x:Name="ExpensesValueText" FontSize="28" FontWeight="Bold" Foreground="#B91C1C" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="White" CornerRadius="18" Padding="18">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Net" FontWeight="SemiBold" Foreground="#4E5566" />
+                            <TextBlock x:Name="NetValueText" FontSize="28" FontWeight="Bold" Foreground="#1D4ED8" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" CornerRadius="18" Padding="18" Margin="0,0,18,0">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Spending by Category" FontSize="18" FontWeight="SemiBold" />
+                            <TextBlock x:Name="TotalSpendingText" Foreground="#4E5566" />
+                            <ItemsControl ItemsSource="{Binding SpendingByCategory}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Spacing="6" Margin="0,0,0,12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding CategoryName}" FontWeight="SemiBold" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Amount}" />
+                                            </Grid>
+                                            <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxCategoryAmount, ElementName=RootPage}" Value="{Binding Amount}" Height="8" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="White" CornerRadius="18" Padding="18">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Top Recipients / Merchants" FontSize="18" FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding TopRecipients}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Spacing="6" Margin="0,0,0,12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Text="{Binding TotalAmount}" />
+                                            </Grid>
+                                            <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxTopRecipientAmount, ElementName=RootPage}" Value="{Binding TotalAmount}" Height="8" />
+                                            <TextBlock Foreground="#4E5566">
+                                                <Run Text="Transactions: " />
+                                                <Run Text="{Binding TransactionCount}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Border Background="White" CornerRadius="18" Padding="18">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Balance Trends" FontSize="18" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding BalanceTrends}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="6" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Date}" FontWeight="SemiBold" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Balance}" />
+                                        </Grid>
+                                        <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxBalanceAmount, ElementName=RootPage}" Value="{Binding Balance}" Height="8" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Background="#80F4F6FA" Visibility="{Binding LoadingVisibility}">
+            <ProgressRing Width="56" Height="56" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+    </Grid>
+</Page>

@@ -1,0 +1,14 @@
+sorry for whoever has to implement the views
+
+but you have to configure the views with xamls and stuff
+which is way above my pay grade
+
+you'll have to incorporate the view models
+and implement the BaseView<T>
+their skeletons are done
+don't worry
+it's gonna be fine
+
+sorry for you
+and good luck
+- monke

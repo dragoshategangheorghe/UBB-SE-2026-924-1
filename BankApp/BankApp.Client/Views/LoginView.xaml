@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="BankApp.Client.Views.LoginView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Panel - Branding -->
+        <Grid Grid.Column="0" Background="#1A1A2E" Padding="40">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                <Border Width="70" Height="70" CornerRadius="15" Background="#16213E" 
+                        HorizontalAlignment="Center" Margin="0,0,0,20">
+                    <FontIcon Glyph="&#xE8AB;" FontSize="32" Foreground="#4ECDC4"/>
+                </Border>
+
+                <TextBlock Text="BankApp" FontSize="32" FontWeight="Bold" 
+                           Foreground="White" HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Your finances, simplified." FontSize="14" 
+                           Foreground="#888" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+
+                <TextBlock Text="© 2026 BankingApp" FontSize="11" 
+                           Foreground="#555" HorizontalAlignment="Center" 
+                           VerticalAlignment="Bottom" Margin="0,60,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Right Panel - Login Form -->
+        <Grid Grid.Column="1" Padding="60">
+            <StackPanel VerticalAlignment="Center" MaxWidth="360" 
+                        HorizontalAlignment="Center">
+
+                <TextBlock Text="Welcome back" FontSize="28" FontWeight="SemiBold" 
+                           Margin="0,0,0,30"/>
+
+                <!-- Google OAuth Button -->
+                <Button x:Name="GoogleLoginButton" Click="GoogleLoginButton_Click"
+                        HorizontalAlignment="Stretch" Height="42"
+                        Background="#F5F5F5" BorderBrush="#DDD" CornerRadius="6">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="G" FontWeight="Bold" FontSize="16" 
+                                   Foreground="#4285F4"/>
+                        <TextBlock Text="Continue with Google" Foreground="#333"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Divider -->
+                <Grid Margin="0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" BorderBrush="#DDD" BorderThickness="0,0,0,1" 
+                            VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="or" Foreground="#999" 
+                               Margin="12,0" FontSize="13"/>
+                    <Border Grid.Column="2" BorderBrush="#DDD" BorderThickness="0,0,0,1" 
+                            VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Email -->
+                <TextBox x:Name="EmailBox" PlaceholderText="you@company.com" 
+                         Header="Email" Margin="0,0,0,14" CornerRadius="6"/>
+
+                <!-- Password -->
+                <PasswordBox x:Name="PasswordBox" PlaceholderText="••••••" 
+                             Header="Password" Margin="0,0,0,10" CornerRadius="6"/>
+
+                <!-- Remember Me + Forgot Password -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox x:Name="RememberMeCheckBox" Content="Remember me" 
+                              Grid.Column="0" FontSize="13"/>
+                    <HyperlinkButton x:Name="ForgotPasswordButton" 
+                                     Content="Forgot Password?" Grid.Column="1"
+                                     Click="ForgotPasswordButton_Click" FontSize="13"/>
+                </Grid>
+
+                <!-- Sign In Button -->
+                <Button x:Name="SignInButton" Content="SIGN IN" 
+                        Click="SignInButton_Click"
+                        HorizontalAlignment="Stretch" Height="42"
+                        Background="#4ECDC4" Foreground="White" FontWeight="SemiBold"
+                        CornerRadius="6"/>
+
+                <!-- Loading Indicator -->
+                <ProgressRing x:Name="LoadingRing" IsActive="False" 
+                              Margin="0,16,0,0" Width="30" Height="30"
+                              HorizontalAlignment="Center" Visibility="Collapsed"/>
+
+                <!-- Error Message -->
+                <InfoBar x:Name="ErrorInfoBar" IsOpen="False" Severity="Error"
+                         Margin="0,16,0,0" IsClosable="True"/>
+
+                <!-- Register Link -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" 
+                            Margin="0,20,0,0">
+                    <TextBlock Text="Don't have an account?" Foreground="#888" 
+                               FontSize="13" VerticalAlignment="Center"/>
+                    <HyperlinkButton x:Name="CreateAccountButton" Content="Create one" 
+                                     Click="CreateAccountButton_Click" FontSize="13"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

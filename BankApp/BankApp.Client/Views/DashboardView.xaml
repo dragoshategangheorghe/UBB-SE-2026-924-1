@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="BankApp.Client.Views.DashboardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:entities="using:BankApp.Models.Entities"
+    Background="#F4F6FA">
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="36,32" Spacing="28">
+
+                <!-- Page Title -->
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Welcome back," FontSize="20" Foreground="Black"/>
+                    <TextBlock x:Name="UserNameText" Text="" FontSize="28"
+                               FontWeight="Bold" Foreground="#1A1A2E"/>
+                </StackPanel>
+
+                <!-- ─── CARD SECTION ─── -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Card Details" FontSize="16" FontWeight="SemiBold"
+                               Foreground="#555"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Arrow -->
+                        <Button x:Name="PrevCardButton" Grid.Column="0"
+                                Click="PrevCardButton_Click"
+                                Width="40" Height="40" CornerRadius="20"
+                                Background="#E8EAED" BorderThickness="0"
+                                VerticalAlignment="Center" Margin="0,0,12,0">
+                            <FontIcon Glyph="&#xE76B;" FontSize="14" Foreground="#333"/>
+                        </Button>
+
+                        <!-- Card Visual -->
+                        <Border Grid.Column="1" CornerRadius="16" Height="200" MaxWidth="380"
+                                PointerPressed="CardVisual_PointerPressed">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF6B35" Offset="0"/>
+                                    <GradientStop Color="#F7931E" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid Padding="28,24">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Bank + Brand Row -->
+                                <Grid Grid.Row="0">
+                                    <TextBlock x:Name="CardBankName"
+                                               FontSize="20" FontWeight="Bold"
+                                               Foreground="White"/>
+                                    <TextBlock x:Name="CardBrandName"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="White" Opacity="0.9"
+                                               HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Contactless Icon -->
+                                <FontIcon Grid.Row="1" Glyph="&#xEC05;" FontSize="28"
+                                          Foreground="White" Opacity="0.6"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Bottom" Margin="0,0,0,8"/>
+
+                                <!-- Card Number -->
+                                <TextBlock x:Name="CardNumberText" Grid.Row="2"
+                                           Text="**** **** **** ****"
+                                           FontSize="16" FontWeight="SemiBold"
+                                           Foreground="White" Margin="0,0,0,12"/>
+
+                                <!-- Cardholder + Expiry -->
+                                <Grid Grid.Row="3">
+                                    <StackPanel>
+                                        <TextBlock Text="CARD HOLDER" FontSize="9"
+                                                   Foreground="White" Opacity="0.7"/>
+                                        <TextBlock x:Name="CardHolderText" Text=""
+                                                   FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="White"/>
+                                    </StackPanel>
+                                    <StackPanel HorizontalAlignment="Right">
+                                        <TextBlock Text="VALID THRU" FontSize="9"
+                                                   Foreground="White" Opacity="0.7"/>
+                                        <TextBlock x:Name="CardExpiryText" Text=""
+                                                   FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="White"/>
+                                    </StackPanel>
+                                </Grid>
+
+                            </Grid>
+                        </Border>
+
+                        <!-- Right Arrow -->
+                        <Button x:Name="NextCardButton" Grid.Column="2"
+                                Click="NextCardButton_Click"
+                                Width="40" Height="40" CornerRadius="20"
+                                Background="#E8EAED" BorderThickness="0"
+                                VerticalAlignment="Center" Margin="12,0,0,0">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="#333"/>
+                        </Button>
+                    </Grid>
+
+                    <!-- Card Index Dots -->
+                    <StackPanel x:Name="CardDots" Orientation="Horizontal"
+                                HorizontalAlignment="Center" Spacing="6"/>
+                </StackPanel>
+
+                <!-- ─── QUICK ACTIONS ─── -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Quick Actions" FontSize="16" FontWeight="SemiBold"
+                               Foreground="#555"/>
+                    <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+
+                        <!-- Transfer -->
+                        <Button x:Name="TransferButton" Click="TransferButton_Click"
+                                Width="90" Height="80" CornerRadius="12"
+                                Background="White" BorderThickness="0">
+                            <Button.Shadow>
+                                <ThemeShadow/>
+                            </Button.Shadow>
+                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE8AB;" FontSize="24" Foreground="Black"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="Transfer" FontSize="11"
+                                           Foreground="#333" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Pay Bill -->
+                        <Button x:Name="PayBillButton" Click="PayBillButton_Click"
+                                Width="90" Height="80" CornerRadius="12"
+                                Background="White" BorderThickness="0">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE8C7;" FontSize="24"
+                                          Foreground="Black" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Pay Bill" FontSize="11"
+                                           Foreground="#333" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Exchange Currency -->
+                        <Button x:Name="ExchangeButton" Click="ExchangeButton_Click"
+                                Width="90" Height="80" CornerRadius="12"
+                                Background="White" BorderThickness="0">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE8B1;" FontSize="24"
+                                          Foreground="Black" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Exchange" FontSize="11"
+                                           Foreground="#333" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Transaction History -->
+                        <Button x:Name="TxHistoryButton" Click="TxHistoryButton_Click"
+                                Width="90" Height="80" CornerRadius="12"
+                                Background="White" BorderThickness="0">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE81C;" FontSize="24"
+                                          Foreground="Black" HorizontalAlignment="Center"/>
+                                <TextBlock Text="History" FontSize="11"
+                                           Foreground="#333" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ─── RECENT TRANSACTIONS ─── -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Recent Transactions" FontSize="16" FontWeight="SemiBold"
+                               Foreground="#555"/>
+
+                    <Border CornerRadius="12" Background="White" Padding="0">
+                        <StackPanel>
+
+                            <!-- Header -->
+                            <Grid Padding="20,14" Background="#F8F9FA">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Merchant"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="#888"/>
+                                <TextBlock Grid.Column="1" Text="Type"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="#888"/>
+                                <TextBlock Grid.Column="2" Text="Amount"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="#888"/>
+                                <TextBlock Grid.Column="3" Text="Currency"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="#888"/>
+                            </Grid>
+
+                            <!-- Transaction Rows -->
+                            <ItemsControl x:Name="TransactionsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="entities:Transaction">
+                                        <Grid Padding="20,14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{x:Bind MerchantName}"
+                                                       FontSize="13" Foreground="#1A1A2E"
+                                                       FontWeight="Medium"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{x:Bind Type}"
+                                                       FontSize="13" Foreground="#555"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{x:Bind Amount}"
+                                                       FontSize="13" Foreground="#1A1A2E"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{x:Bind Currency}"
+                                                       FontSize="13" Foreground="#4ECDC4"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay"
+              Background="#80F4F6FA"
+              Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <ProgressRing IsActive="True" Width="48" Height="48" Foreground="#4ECDC4"/>
+                <TextBlock Text="Loading..." FontSize="14" Foreground="#555"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
