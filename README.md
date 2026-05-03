@@ -1,5 +1,5 @@
 # UBB-SE-2026-924-1
-##Setup guide
+## Setup guide
 
 This file explains what teammates need to install, configure, and run after cloning the repository.
 
