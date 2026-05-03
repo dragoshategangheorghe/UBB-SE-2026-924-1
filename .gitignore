@@ -1,0 +1,11 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+.appdata/
+.dotnet/
+.nuget/
+build_diag*.txt
+BankApp/BankApp.Server/appsettings.json
+BankApp/TestResults
