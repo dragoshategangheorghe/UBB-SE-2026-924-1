@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KarmaBanking.App.Models;
 using BankApp.Models;
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Savings;

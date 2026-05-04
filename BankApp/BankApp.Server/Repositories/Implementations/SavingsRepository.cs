@@ -29,6 +29,10 @@ namespace BankApp.Server.Repositories.Implementations
 
         private readonly AppDbContext dbContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SavingsRepository"/> class.
+        /// </summary>
+        /// <param name="dbContext"></param>
         public SavingsRepository(AppDbContext dbContext)
         {
             this.dbContext = dbContext;
@@ -55,14 +59,10 @@ namespace BankApp.Server.Repositories.Implementations
 
             var accountsList = new List<SavingsAccount>();
 
-            using var databaseConnection = DatabaseConfig.GetDatabaseConnection();
-            await databaseConnection.OpenAsync();
+            using var databaseConnection = this.dbContext.GetConnection();
 
-            using var sqlCommand = new SqlCommand(selectAccountsQuery, databaseConnection);
-            sqlCommand.Parameters.AddWithValue("@UserId", userIdentificationNumber);
-
-            using var reader = await sqlCommand.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            using var reader = (SqlDataReader)this.dbContext.ExecuteQuery(selectAccountsQuery, new object[] { userIdentificationNumber });
+            while (reader.Read())
             {
                 accountsList.Add(MapReaderToAccount(reader));
             }
@@ -89,8 +89,7 @@ namespace BankApp.Server.Repositories.Implementations
                      'Active', @CreatedAt, @AccountName,
                      @FundingAccountId, @TargetAmount, @TargetDate)";
 
-            using var databaseConnection = DatabaseConfig.GetDatabaseConnection();
-            await databaseConnection.OpenAsync();
+            using var databaseConnection = dbContext.GetConnection();
 
             using var sqlCommand = new SqlCommand(insertAccountQuery, databaseConnection);
             sqlCommand.Parameters.AddWithValue("@UserId", dataTransferObject.UserIdentificationNumber);
@@ -106,6 +105,21 @@ namespace BankApp.Server.Repositories.Implementations
                 dataTransferObject.FundingAccountId == NoFundingAccountId ? DBNull.Value : dataTransferObject.FundingAccountId);
             sqlCommand.Parameters.AddWithValue("@TargetAmount", (object?)dataTransferObject.TargetAmount ?? DBNull.Value);
             sqlCommand.Parameters.AddWithValue("@TargetDate", (object?)dataTransferObject.TargetDate ?? DBNull.Value);
+
+            //dbContext.ExecuteQuery(insertAccountQuery, new object[]
+            //{
+            //    dataTransferObject.UserIdentificationNumber,
+            //    dataTransferObject.SavingsType,
+            //    dataTransferObject.InitialDeposit,
+            //    ZeroAmount,
+            //    annualPercentageYield,
+            //    (object?)dataTransferObject.MaturityDate ?? DBNull.Value,
+            //    DateTime.Now,
+            //    (object?)dataTransferObject.AccountName ?? DBNull.Value,
+            //    dataTransferObject.FundingAccountId == NoFundingAccountId ? DBNull.Value : dataTransferObject.FundingAccountId,
+            //    (object?)dataTransferObject.TargetAmount ?? DBNull.Value,
+            //    (object?)dataTransferObject.TargetDate ?? DBNull.Value,
+            //});
 
             var newSavingsAccountIdentificationNumber = (int)(await sqlCommand.ExecuteScalarAsync())!;
 
@@ -135,9 +149,8 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The resulting deposit response.</returns>
         public async Task<DepositResponseDto> DepositAsync(int accountIdentificationNumber, decimal amount, string source)
         {
-            using var databaseConnection = DatabaseConfig.GetDatabaseConnection();
-            await databaseConnection.OpenAsync();
-            using var sqlTransaction = databaseConnection.BeginTransaction();
+            using var databaseConnection = dbContext.GetConnection();
+            using var sqlTransaction = dbContext.BeginTransaction();
 
             try
             {
@@ -146,13 +159,7 @@ namespace BankApp.Server.Repositories.Implementations
                     SET balance = balance + @Amount
                     WHERE id = @AccountId";
 
-                using var sqlUpdateAccountBalanceCommand = new SqlCommand(
-                    updateAccountBalanceQuery,
-                    databaseConnection,
-                    sqlTransaction);
-                sqlUpdateAccountBalanceCommand.Parameters.AddWithValue("@Amount", amount);
-                sqlUpdateAccountBalanceCommand.Parameters.AddWithValue("@AccountId", accountIdentificationNumber);
-                await sqlUpdateAccountBalanceCommand.ExecuteNonQueryAsync();
+                dbContext.ExecuteNonQuery(updateAccountBalanceQuery, new object[] { amount, accountIdentificationNumber });
 
                 decimal newAccountBalance;
 

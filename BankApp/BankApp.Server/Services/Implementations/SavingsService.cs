@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KarmaBanking.App.Models;
-using KarmaBanking.App.Models.DTOs;
-using KarmaBanking.App.Repositories.Interfaces;
-using KarmaBanking.App.Services.Interfaces;
+using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Features.Investments;
+using BankApp.Models.Features.Savings;
+using BankApp.Server.Repositories.Interfaces;
+using BankApp.Server.Services.Interfaces;
 
 namespace BankApp.Server.Services.Implementations
 {
