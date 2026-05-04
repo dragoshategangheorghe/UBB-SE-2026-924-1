@@ -1,12 +1,13 @@
+using BankApp.Models.DTOs.Loans;
+using BankApp.Models.Enums;
+using BankApp.Models.Features.Loans;
+using BankApp.Server.DataAccess;
+using BankApp.Server.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using BankApp.Models.DTOs.Loans;
-using BankApp.Models.Enums;
-using BankApp.Models.Features.Loans;
-using BankApp.Server.Repositories.Interfaces;
-using Microsoft.Data.SqlClient;
 
 namespace BankApp.Server.Repositories.Implementations
 {
@@ -20,6 +21,17 @@ namespace BankApp.Server.Repositories.Implementations
         private const int ExtendedNVarCharLength = 255;
         private const int EmptyCount = 0;
         private const int FirstIndex = 0;
+
+        private readonly AppDbContext dbContext;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoanRepository"/> class.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        public LoanRepository(AppDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
 
         /// <summary>
         /// Retrieves all loans from storage.
