@@ -12,7 +12,7 @@ namespace BankApp.Client.Views
     using System.Linq;
     using System.Threading.Tasks;
 
-    public sealed partial class SavingsView : Page
+    public sealed partial class SavingsView : UserControl
     {
         private const int FirstItemIndex = 0;
         private const int NoSelectionIndex = -1;
@@ -26,11 +26,11 @@ namespace BankApp.Client.Views
             this.viewModel = savingsViewModel;
             this.DataContext = this.viewModel;
             this.MainNavigationView.SelectedItem = this.MyAccountsTab;
+            this.Loaded += SavingsView_Loaded;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs args)
+        private async void SavingsView_Loaded(object sender, RoutedEventArgs e)
         {
-            base.OnNavigatedTo(args);
             await this.viewModel.LoadAccountsAsync();
 
             if (this.viewModel.HasError)

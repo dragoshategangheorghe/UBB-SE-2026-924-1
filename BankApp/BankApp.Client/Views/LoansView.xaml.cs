@@ -5,12 +5,13 @@ namespace BankApp.Client.Views
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;
+    using Microsoft.UI.Xaml.Media;
     using BankApp.Client.ViewModels;
     using BankApp.Client.Views.Dialogs;
     using BankApp.Models.Enums;
     using BankApp.Client.View.Dialogs;
 
-    public sealed partial class LoansView : Page
+    public sealed partial class LoansView : UserControl
     {
         private readonly LoansViewModel viewModel;
 
@@ -19,11 +20,11 @@ namespace BankApp.Client.Views
             this.InitializeComponent();
             this.viewModel = viewModel;
             this.DataContext = this.viewModel;
+            this.Loaded += SavingsView_Loaded;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        private async void SavingsView_Loaded(object sender, RoutedEventArgs e)
         {
-            base.OnNavigatedTo(e);
             await this.viewModel.LoadLoansAsync();
         }
 
@@ -71,13 +72,40 @@ namespace BankApp.Client.Views
                 {
                     this.viewModel.SelectedLoan = loan;
                     await this.viewModel.LoadAmortizationAsync();
-                    this.Frame.Navigate(typeof(AmortizationScheduleView), loan.Loan);
+
+                    Frame? mainFrame = GetParentFrame();
+
+                    if (mainFrame != null)
+                    {
+                        mainFrame.Navigate(typeof(AmortizationScheduleView), loan.Loan);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Nu s-a putut gasi un Frame pentru navigare.");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }
+        }
+
+        private Frame? GetParentFrame()
+        {
+            DependencyObject current = this;
+
+            while (current != null)
+            {
+                if (current is Frame frame)
+                {
+                    return frame;
+                }
+
+                current = VisualTreeHelper.GetParent(current);
+            }
+
+            return null;
         }
 
         private void OnFilterAll(object sender, RoutedEventArgs e)
