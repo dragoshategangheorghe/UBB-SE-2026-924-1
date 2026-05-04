@@ -20,12 +20,10 @@ namespace BankApp.Client.Views
 
         private readonly SavingsViewModel viewModel;
 
-        public SavingsView()
+        public SavingsView(SavingsViewModel savingsViewModel)
         {
             this.InitializeComponent();
-            var repository = new SavingsRepository();
-            var service = new SavingsService(repository);
-            this.viewModel = new SavingsViewModel(service);
+            this.viewModel = savingsViewModel;
             this.DataContext = this.viewModel;
             this.MainNavigationView.SelectedItem = this.MyAccountsTab;
         }

@@ -152,6 +152,8 @@ namespace BankApp.Client.ViewModels
         private User currentUser;
         [ObservableProperty]
         private string errorMessage;
+        [ObservableProperty]
+        internal bool hasError;
 
         // ── Constructor ──────────────────────────────────────────────────────
         public SavingsViewModel(ISavingsService savingsService)
