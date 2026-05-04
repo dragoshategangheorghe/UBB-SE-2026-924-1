@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# SX1309: Field names should begin with underscore
+dotnet_diagnostic.SX1309.severity = warning
