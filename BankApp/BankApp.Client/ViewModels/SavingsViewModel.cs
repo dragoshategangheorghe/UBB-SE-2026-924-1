@@ -8,10 +8,14 @@ namespace BankApp.Client.ViewModels
     using System.Threading;
     using System.Threading.Tasks;
     using BankApp.Client.Utilities;
+    using BankApp.Models.DTOs.Savings;
+    using BankApp.Models.Entities;
     using BankApp.Models.Features.Investments;
     using BankApp.Models.Features.Savings;
     using BankApp.Server.Services.Implementations;
     using BankApp.Server.Services.Interfaces;
+    using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.Input;
 
     public partial class SavingsViewModel : BaseViewModel
     {
@@ -142,6 +146,12 @@ namespace BankApp.Client.ViewModels
         private string withdrawResultMessage = string.Empty;
         [ObservableProperty]
         private bool withdrawSuccess;
+        [ObservableProperty]
+        private bool isLoading;
+        [ObservableProperty]
+        private User currentUser;
+        [ObservableProperty]
+        private string errorMessage;
 
         // ── Constructor ──────────────────────────────────────────────────────
         public SavingsViewModel(ISavingsService savingsService)
