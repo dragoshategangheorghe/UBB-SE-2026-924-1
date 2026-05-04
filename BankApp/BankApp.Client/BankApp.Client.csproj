@@ -18,6 +18,11 @@
     <None Remove="views\NavView.xaml" />
     <None Remove="Views\RegisterView.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Remove="Views\Dialogs\LoanApplicationDialog.xaml" />
+    <Page Remove="Views\LoansView.xaml" />
+    <Page Remove="Views\SavingsView.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -52,6 +57,18 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
+    <ProjectReference Include="..\BankApp.Server\BankApp.Server.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Views\Dialogs\LoanApplicationDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Views\LoansView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Views\SavingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Update="views\NavView.xaml">
