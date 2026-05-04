@@ -11,9 +11,16 @@ using BankApp.Server.Services.Infrastructure.Interfaces;
 using BankApp.Server.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --- INVESTMENTS & TRADING REGISTRATION ---
+builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
+builder.Services.AddScoped<IInvestmentService, InvestmentService>();
+builder.Services.AddSingleton<IMarketDataService, MarketDataService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<TeamCOptions>(builder.Configuration.GetSection(TeamCOptions.SectionName));
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -47,6 +54,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddScoped<AppDbContext>(_ => new AppDbContext(connectionString!));
 
+// --- DATA ACCESS OBJECTS ---
 builder.Services.AddScoped<IUserDAO, UserDAO>();
 builder.Services.AddScoped<ISessionDAO, SessionDAO>();
 builder.Services.AddScoped<IOAuthLinkDAO, OAuthLinkDAO>();
@@ -58,18 +66,21 @@ builder.Services.AddScoped<ITransactionDAO, TransactionDAO>();
 builder.Services.AddScoped<INotificationDAO, NotificationDAO>();
 builder.Services.AddScoped<IUserCardPreferenceDAO, UserCardPreferenceDAO>();
 
+// --- INFRASTRUCTURE SERVICES ---
 builder.Services.AddScoped<IHashService, HashService>();
 string? jwtSecret = builder.Configuration["Jwt:Secret"];
 builder.Services.AddScoped<IJWTService>(_ => new JWTService(jwtSecret!));
 builder.Services.AddScoped<IOTPService, OTPService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// --- REPOSITORIES ---
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<ITransactionHistoryRepository, TransactionHistoryRepository>();
 
+// --- BUSINESS SERVICES ---
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();

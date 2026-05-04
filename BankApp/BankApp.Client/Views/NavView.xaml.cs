@@ -1,22 +1,21 @@
-﻿using BankApp.Client.Utilities;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using System;
-using System.Collections.Generic;
-
-namespace BankApp.Client.Views
+﻿namespace BankApp.Client.Views
 {
+    using System;
+    using System.Collections.Generic;
+    using BankApp.Client.Utilities;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Input;
+
     public sealed partial class NavView : Page
     {
-        private Button _activeNavButton;
-
         private readonly List<Button> _navButtons;
+        private Button _activeNavButton;
 
         public NavView()
         {
             this.InitializeComponent();
-            _navButtons = new List<Button>
+            this._navButtons = new List<Button>
             {
                 NavDashboard, NavTransfers, NavBillPayments, NavCards,
                 NavTransferHistory, NavCurrencyExchange, NavSavings,
@@ -26,14 +25,6 @@ namespace BankApp.Client.Views
             App.NavigationService.NavigateToContent<DashboardView>();
         }
 
-        private void SetActiveNav(Button selected)
-        {
-            foreach (Button btn in _navButtons)
-                btn.Style = (Style)Resources["NavItemStyle"];
-            selected.Style = (Style)Resources["NavItemActiveStyle"];
-            _activeNavButton = selected;
-        }
-        
         public void UpdateNotificationBadge(int count)
         {
             if (count <= 0)
@@ -41,58 +32,76 @@ namespace BankApp.Client.Views
                 NotificationBadge.Visibility = Visibility.Collapsed;
                 return;
             }
+
             NotificationBadgeText.Text = count > 99 ? "99+" : count.ToString();
             NotificationBadge.Visibility = Visibility.Visible;
         }
 
+        private void SetActiveNav(Button selected)
+        {
+            foreach (Button btn in this._navButtons)
+            {
+                btn.Style = (Style)Resources["NavItemStyle"];
+            }
+
+            selected.Style = (Style)Resources["NavItemActiveStyle"];
+            this._activeNavButton = selected;
+        }
+
         private void NavDashboard_Click(object sender, RoutedEventArgs e)
         {
-            SetActiveNav(NavDashboard);
+            this.SetActiveNav(NavDashboard);
             App.NavigationService.NavigateToContent<DashboardView>();
         }
 
         private void NavProfile_Click(object sender, RoutedEventArgs e)
         {
-            SetActiveNav(NavProfile);
+            this.SetActiveNav(NavProfile);
             App.NavigationService.NavigateToContent<ProfileView>();
         }
 
-        // All other nav items show a coming soon alert
-        private async void NavTransfers_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Transfers");
-
-        private async void NavBillPayments_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Bill Payments");
-
         private void NavCards_Click(object sender, RoutedEventArgs e)
         {
-            SetActiveNav(NavCards);
+            this.SetActiveNav(NavCards);
             App.NavigationService.NavigateToContent<CardManagementView>();
         }
 
         private void NavTransferHistory_Click(object sender, RoutedEventArgs e)
         {
-            SetActiveNav(NavTransferHistory);
+            this.SetActiveNav(NavTransferHistory);
             App.NavigationService.NavigateToContent<TransactionHistoryView>();
         }
 
-        private async void NavCurrencyExchange_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Currency Exchange");
+        private void NavInvestments_Click(object sender, RoutedEventArgs e)
+        {
+            // Update the UI style to show this tab is active
+            this.SetActiveNav(NavInvestments);
 
-        private async void NavSavings_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Savings & Loans");
-
-        private async void NavInvestments_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Investments & Trading");
+            // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
+            App.NavigationService.NavigateToContent<InvestmentsView>();
+        }
 
         private void NavStatistics_Click(object sender, RoutedEventArgs e)
         {
-            SetActiveNav(NavStatistics);
+            this.SetActiveNav(NavStatistics);
             App.NavigationService.NavigateToContent<StatisticsView>();
         }
 
+        // All other nav items show a coming soon alert
+        private async void NavTransfers_Click(object sender, RoutedEventArgs e) =>
+            await this.ShowComingSoonAsync("Transfers");
+
+        private async void NavBillPayments_Click(object sender, RoutedEventArgs e) =>
+            await this.ShowComingSoonAsync("Bill Payments");
+
+        private async void NavCurrencyExchange_Click(object sender, RoutedEventArgs e) =>
+            await this.ShowComingSoonAsync("Currency Exchange");
+
+        private async void NavSavings_Click(object sender, RoutedEventArgs e) =>
+            await this.ShowComingSoonAsync("Savings & Loans");
+
         private async void NavSupport_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Support");
+            await this.ShowComingSoonAsync("Support");
 
         private async System.Threading.Tasks.Task ShowComingSoonAsync(string feature)
         {
@@ -111,9 +120,8 @@ namespace BankApp.Client.Views
             // TODO: show notifications panel
         }
 
-        private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            //await App.ApiService.PostAsync("/api/auth/logout", null);
             App.ApiService.ClearToken();
             App.NavigationService.NavigateTo<LoginView>();
         }
