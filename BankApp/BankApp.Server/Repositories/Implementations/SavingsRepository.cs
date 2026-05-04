@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KarmaBanking.App.Data;
-using KarmaBanking.App.Models;
-using KarmaBanking.App.Models.DTOs;
-using KarmaBanking.App.Models.Enums;
-using KarmaBanking.App.Repositories.Interfaces;
+using BankApp.Server.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
+using BankApp.Models.DTOs;
+using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Features.Savings;
+using BankApp.Models.Features.Investments;
+using BankApp.Models.Enums;
+using BankApp.Server.DataAccess;
 
 namespace BankApp.Server.Repositories.Implementations
 {
@@ -24,6 +26,13 @@ namespace BankApp.Server.Repositories.Implementations
         private const int SecondaryFundingSourceId = 2;
         private const string PrimaryFundingSourceName = "Checking Account One";
         private const string SecondaryFundingSourceName = "Checking Account Two";
+
+        private readonly AppDbContext dbContext;
+
+        public SavingsRepository(AppDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
 
         /// <summary>
         /// Gets savings accounts for a user with optional inclusion of closed accounts.
