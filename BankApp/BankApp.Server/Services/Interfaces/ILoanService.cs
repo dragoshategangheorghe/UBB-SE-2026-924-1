@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BankApp.Models.DTOs.Loans;
+using BankApp.Models.Enums;
+using BankApp.Models.Features.Loans;
 
 namespace BankApp.Server.Services.Interfaces
 {

@@ -8,6 +8,38 @@ namespace BankApp.Server.Repositories.Interfaces
 {
     public interface ILoanRepository
     {
+        /// <summary>Gets all loans.</summary>
+        /// <returns>The complete loan list.</returns>
+        Task<List<Loan>> GetAllLoansAsync();
+
+        /// <summary>Gets a loan by identifier.</summary>
+        /// <param name="id">The loan identifier.</param>
+        /// <returns>The matching loan, if found.</returns>
+        Task<Loan> GetLoanByIdAsync(int id);
+
+        /// <summary>Gets loans for a user.</summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>The user's loans.</returns>
+        Task<List<Loan>> GetLoansByUserAsync(int userId);
+
+        /// <summary>Gets loans by status.</summary>
+        /// <param name="loanStatus">The status filter.</param>
+        /// <returns>The matching loans.</returns>
+        Task<List<Loan>> GetLoansByStatusAsync(LoanStatus loanStatus);
+
+        /// <summary>Gets loans by type.</summary>
+        /// <param name="loanType">The type filter.</param>
+        /// <returns>The matching loans.</returns>
+        Task<List<Loan>> GetLoansByTypeAsync(LoanType loanType);
+
+        /// <summary>Saves an amortization schedule for a loan.</summary>
+        /// <param name="rows">The amortization rows to persist.</param>
+        /// <returns>A task that completes when saving finishes.</returns>
+        Task SaveAmortizationAsync(List<AmortizationRow> rows);
+
+        /// <summary>Gets the amortization schedule for a loan.</summary>
+        /// <param name="loanId">The loan identifier.</param>
+        /// <returns>The amortization rows for the loan.</returns>
         Task<List<AmortizationRow>> GetAmortizationAsync(int loanId);
 
         /// <summary>Creates a loan application.</summary>

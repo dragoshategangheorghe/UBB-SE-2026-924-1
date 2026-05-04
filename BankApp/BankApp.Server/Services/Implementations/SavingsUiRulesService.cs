@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using KarmaBanking.App.Models;
-using KarmaBanking.App.Models.Enums;
+using BankApp.Models.Enums;
+using BankApp.Models.Features.Savings;
 
 namespace BankApp.Server.Services.Implementations
 {
