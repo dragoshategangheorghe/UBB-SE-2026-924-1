@@ -12,8 +12,12 @@ namespace BankApp.Client.ViewModels
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using BankApp.Client.Utilities;
+    using BankApp.Models.DTOs.Loans;
+    using BankApp.Models.Entities;
     using BankApp.Models.Enums;
     using BankApp.Models.Features.Loans;
+    using BankApp.Server.DataAccess;
     using BankApp.Server.Repositories.Implementations;
     using BankApp.Server.Services.Implementations;
     using BankApp.Server.Services.Interfaces;
@@ -104,10 +108,12 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         private LoanType? typeFilter;
 
-        public LoansViewModel()
+        [ObservableProperty]
+        private User currentUser;
+
+        public LoansViewModel(ILoanService loanService)
         {
-            var loanRepository = new LoanRepository();
-            this.loanService = new LoanService(loanRepository);
+            this.loanService = loanService;
             this.pdfExporter = new PdfExporter();
             this.loanDialogStateService = new LoanDialogStateService();
             this.loanApplicationPresentationService = new LoanApplicationPresentationService();
