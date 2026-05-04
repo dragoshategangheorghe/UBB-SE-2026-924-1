@@ -692,7 +692,6 @@ namespace BankApp.Client.ViewModels
 
         public override void Dispose()
         {
-            // write the code for this method
             this.transactions.Clear();
 
             this.SavingsAccounts.Clear();

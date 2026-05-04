@@ -79,8 +79,11 @@ namespace BankApp.Client.Views
         private async void NavCurrencyExchange_Click(object sender, RoutedEventArgs e) =>
             await ShowComingSoonAsync("Currency Exchange");
 
-        private async void NavSavings_Click(object sender, RoutedEventArgs e) =>
-            await ShowComingSoonAsync("Savings & Loans");
+        private void NavSavings_Click(object sender, RoutedEventArgs e)
+        {
+            SetActiveNav(NavSavings);
+            App.NavigationService.NavigateToContent<LoansAndSavingsView>();
+        }
 
         private async void NavInvestments_Click(object sender, RoutedEventArgs e) =>
             await ShowComingSoonAsync("Investments & Trading");

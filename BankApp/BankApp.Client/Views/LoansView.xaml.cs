@@ -8,15 +8,16 @@ namespace BankApp.Client.Views
     using BankApp.Client.ViewModels;
     using BankApp.Client.Views.Dialogs;
     using BankApp.Models.Enums;
+    using BankApp.Client.View.Dialogs;
 
     public sealed partial class LoansView : Page
     {
         private readonly LoansViewModel viewModel;
 
-        public LoansView()
+        public LoansView(LoansViewModel viewModel)
         {
             this.InitializeComponent();
-            this.viewModel = new LoansViewModel();
+            this.viewModel = viewModel;
             this.DataContext = this.viewModel;
         }
 

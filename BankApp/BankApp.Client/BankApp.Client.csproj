@@ -13,15 +13,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\AmortizationScheduleView.xaml" />
     <None Remove="views\DashboardView.xaml" />
+    <None Remove="Views\Dialogs\LoanApplicationDialog.xaml" />
+    <None Remove="Views\Dialogs\PayInstallmentDialog.xaml" />
+    <None Remove="Views\LoansAndSavingsView.xaml" />
+    <None Remove="Views\LoansView.xaml" />
     <None Remove="Views\LoginView.xaml" />
     <None Remove="views\NavView.xaml" />
     <None Remove="Views\RegisterView.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Remove="Views\Dialogs\LoanApplicationDialog.xaml" />
-    <Page Remove="Views\LoansView.xaml" />
-    <Page Remove="Views\SavingsView.xaml" />
+    <None Remove="Views\SavingsView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,15 +62,28 @@
     <ProjectReference Include="..\BankApp.Server\BankApp.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Views\Dialogs\LoanApplicationDialog.xaml">
+    <Page Update="Views\AmortizationScheduleView.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Views\LoansView.xaml">
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Dialogs\PayInstallmentDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Views\SavingsView.xaml">
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Dialogs\LoanApplicationDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </None>
+    </Page>
+    <Page Update="Views\LoansAndSavingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\LoansView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\SavingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="views\NavView.xaml">
