@@ -13,19 +13,20 @@ namespace BankApp.Client.Views
 
     public sealed partial class LoansView : UserControl
     {
-        private readonly LoansViewModel viewModel;
+        public LoansViewModel? viewModel => this.DataContext as LoansViewModel;
 
-        public LoansView(LoansViewModel viewModel)
+        public LoansView()
         {
             this.InitializeComponent();
-            this.viewModel = viewModel;
-            this.DataContext = this.viewModel;
-            this.Loaded += SavingsView_Loaded;
+            this.Loaded += LoansView_Loaded;
         }
 
-        private async void SavingsView_Loaded(object sender, RoutedEventArgs e)
+        private async void LoansView_Loaded(object sender, RoutedEventArgs e)
         {
-            await this.viewModel.LoadLoansAsync();
+            if (viewModel != null)
+            {
+                await this.viewModel.LoadLoansAsync();
+            }
         }
 
         private async void OnApplyClick(object sender, RoutedEventArgs e)

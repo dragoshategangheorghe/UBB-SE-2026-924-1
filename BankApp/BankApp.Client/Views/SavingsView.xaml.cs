@@ -1,16 +1,14 @@
 namespace BankApp.Client.Views
 {
-    using BankApp.Client.ViewModels;
-    using BankApp.Models.Features.Investments;
-    using BankApp.Models.Features.Savings;
-    using BankApp.Server.Repositories.Implementations;
-    using BankApp.Server.Services.Implementations;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using BankApp.Client.ViewModels;
+    using BankApp.Models.Features.Investments;
+    using BankApp.Models.Features.Savings;
 
     public sealed partial class SavingsView : UserControl
     {
@@ -18,24 +16,28 @@ namespace BankApp.Client.Views
         private const int NoSelectionIndex = -1;
         private const int SuccessMessageDelayMilliseconds = 1500;
 
-        private readonly SavingsViewModel viewModel;
+        public SavingsViewModel? viewModel => this.DataContext as SavingsViewModel;
 
-        public SavingsView(SavingsViewModel savingsViewModel)
+        public SavingsView()
         {
             this.InitializeComponent();
-            this.viewModel = savingsViewModel;
-            this.DataContext = this.viewModel;
             this.MainNavigationView.SelectedItem = this.MyAccountsTab;
             this.Loaded += SavingsView_Loaded;
         }
 
         private async void SavingsView_Loaded(object sender, RoutedEventArgs e)
         {
-            await this.viewModel.LoadAccountsAsync();
-
-            if (this.viewModel.HasError)
+            // Ne asigurăm că ViewModel-ul a fost injectat cu succes din XAML
+            if (this.viewModel != null)
             {
-                await this.ShowDialogAsync("Load Error", this.viewModel.ErrorMessage);
+                // Apelăm proprietatea cu V mare
+                await this.viewModel.LoadAccountsAsync();
+
+                if (this.viewModel.HasError)
+                {
+                    // Presupun că ShowDialogAsync e o metodă definită mai jos în clasa ta
+                    await this.ShowDialogAsync("Load Error", this.viewModel.ErrorMessage);
+                }
             }
         }
 
