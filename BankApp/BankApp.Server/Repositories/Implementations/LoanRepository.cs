@@ -39,17 +39,11 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The complete list of loans.</returns>
         public async Task<List<Loan>> GetAllLoansAsync()
         {
-            List<Loan> loans = [];
-
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = "SELECT * FROM Loan";
 
-            using var command = new SqlCommand(query, connection);
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await dbContext.ExecuteQueryAsync(query, []);
 
+            List<Loan> loans = [];
             while (await reader.ReadAsync())
             {
                 loans.Add(this.ReaderToLoan(reader));
@@ -65,18 +59,9 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The matching loan, or <see langword="null"/> when not found.</returns>
         public async Task<Loan> GetLoanByIdAsync(int id)
         {
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = "SELECT * FROM Loan WHERE id = @id";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-
-            command.Parameters.Add("@id", SqlDbType.Int).Value = id;
-
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await dbContext.ExecuteQueryAsync(query, new object[] { id });
 
             if (await reader.ReadAsync())
             {
@@ -93,20 +78,11 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The loans owned by the user.</returns>
         public async Task<List<Loan>> GetLoansByUserAsync(int userId)
         {
-            List<Loan> loans = [];
-
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = "SELECT * FROM Loan WHERE userId = @userId";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-            command.Parameters.Add("@userId", SqlDbType.Int).Value = userId;
+            using var reader = await dbContext.ExecuteQueryAsync(query, new object[] { userId });
 
-            using var reader = await command.ExecuteReaderAsync();
-
+            List<Loan> loans = [];
             while (await reader.ReadAsync())
             {
                 loans.Add(this.ReaderToLoan(reader));
@@ -122,20 +98,11 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The loans matching the requested type.</returns>
         public async Task<List<Loan>> GetLoansByTypeAsync(LoanType loanType)
         {
-            List<Loan> loans = [];
-
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = "SELECT * FROM Loan WHERE loanType = @loanType";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-            command.Parameters.Add("@loanType", SqlDbType.NVarChar, StandardNVarCharLength).Value = loanType.ToString();
+            using var reader = await dbContext.ExecuteQueryAsync(query, new object[] { loanType.ToString() });
 
-            using var reader = await command.ExecuteReaderAsync();
-
+            List<Loan> loans = [];
             while (await reader.ReadAsync())
             {
                 loans.Add(this.ReaderToLoan(reader));
@@ -151,21 +118,11 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The loans matching the requested status.</returns>
         public async Task<List<Loan>> GetLoansByStatusAsync(LoanStatus loanStatus)
         {
-            List<Loan> loans = [];
-
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = "SELECT * FROM Loan WHERE loanStatus = @loanStatus";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
+            using var reader = await dbContext.ExecuteQueryAsync(query, new object[] { loanStatus.ToString() });
 
-            command.Parameters.Add("@loanStatus", SqlDbType.NVarChar, StandardNVarCharLength).Value = loanStatus.ToString();
-
-            using var reader = await command.ExecuteReaderAsync();
-
+            List<Loan> loans = [];
             while (await reader.ReadAsync())
             {
                 loans.Add(this.ReaderToLoan(reader));
@@ -186,54 +143,32 @@ namespace BankApp.Server.Repositories.Implementations
                 return;
             }
 
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-            await connection.OpenAsync();
-
-            using var transaction = connection.BeginTransaction();
+            await dbContext.BeginTransactionAsync();
 
             try
             {
                 var loanId = rows[FirstIndex].LoanId;
 
                 var deleteQuery = "DELETE FROM AmortizationRow WHERE loanId = @LoanId";
-                using (var deleteCommand = new SqlCommand(deleteQuery, connection, transaction))
-                {
-                    deleteCommand.Parameters.Add("@LoanId", SqlDbType.Int).Value = loanId;
-                    await deleteCommand.ExecuteNonQueryAsync();
-                }
+
+                await dbContext.ExecuteNonQueryAsync(deleteQuery, new object[] { loanId });
 
                 var insertQuery = @"INSERT INTO AmortizationRow 
                         (loanId, installmentNumber, dueDate, principalPortion, interestPortion, remainingBalance) 
                         VALUES 
                         (@LoanId, @InstallmentNumber, @DueDate, @PrincipalPortion, @InterestPortion, @RemainingBalance)";
 
-                using (var insertCommand = new SqlCommand(insertQuery, connection, transaction))
+                foreach (var row in rows)
                 {
-                    insertCommand.Parameters.Add("@LoanId", SqlDbType.Int);
-                    insertCommand.Parameters.Add("@InstallmentNumber", SqlDbType.Int);
-                    insertCommand.Parameters.Add("@DueDate", SqlDbType.DateTime);
-                    insertCommand.Parameters.Add("@PrincipalPortion", SqlDbType.Decimal);
-                    insertCommand.Parameters.Add("@InterestPortion", SqlDbType.Decimal);
-                    insertCommand.Parameters.Add("@RemainingBalance", SqlDbType.Decimal);
-
-                    foreach (var row in rows)
-                    {
-                        insertCommand.Parameters["@LoanId"].Value = row.LoanId;
-                        insertCommand.Parameters["@InstallmentNumber"].Value = row.InstallmentNumber;
-                        insertCommand.Parameters["@DueDate"].Value = row.DueDate;
-                        insertCommand.Parameters["@PrincipalPortion"].Value = row.PrincipalPortion;
-                        insertCommand.Parameters["@InterestPortion"].Value = row.InterestPortion;
-                        insertCommand.Parameters["@RemainingBalance"].Value = row.RemainingBalance;
-
-                        await insertCommand.ExecuteNonQueryAsync();
-                    }
+                    await dbContext.ExecuteNonQueryAsync(insertQuery,
+                        new object[] { row.LoanId, row.InstallmentNumber, row.DueDate, row.PrincipalPortion, row.InterestPortion, row.RemainingBalance, });
                 }
 
-                await transaction.CommitAsync();
+                await dbContext.CommitTransactionAsync();
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await dbContext.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -245,41 +180,29 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The amortization schedule rows.</returns>
         public async Task<List<AmortizationRow>> GetAmortizationAsync(int loanId)
         {
-            List<AmortizationRow> rows = [];
-
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = @"SELECT id, loanId, installmentNumber, dueDate, 
                              principalPortion, interestPortion, remainingBalance 
                              FROM AmortizationRow 
                              WHERE loanId = @LoanId 
                              ORDER BY installmentNumber ASC";
 
-            using (var command = new SqlCommand(query, connection))
+
+            var reader = await dbContext.ExecuteQueryAsync(query, new object[] { loanId });
+            List<AmortizationRow> rows = [];
+
+            while (await reader.ReadAsync())
             {
-                command.CommandTimeout = CommandTimeoutSeconds;
-                command.Parameters.AddWithValue("@LoanId", loanId);
-
-                using (var reader = await command.ExecuteReaderAsync())
+                var row = new AmortizationRow
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        var row = new AmortizationRow
-                        {
-                            Id = (int)reader["id"],
-                            LoanId = (int)reader["loanId"],
-                            InstallmentNumber = (int)reader["installmentNumber"],
-                            DueDate = (DateTime)reader["dueDate"],
-                            PrincipalPortion = (decimal)reader["principalPortion"],
-                            InterestPortion = (decimal)reader["interestPortion"],
-                            RemainingBalance = (decimal)reader["remainingBalance"],
-                        };
-
-                        rows.Add(row);
-                    }
-                }
+                    Id = (int)reader["id"],
+                    LoanId = (int)reader["loanId"],
+                    InstallmentNumber = (int)reader["installmentNumber"],
+                    DueDate = (DateTime)reader["dueDate"],
+                    PrincipalPortion = (decimal)reader["principalPortion"],
+                    InterestPortion = (decimal)reader["interestPortion"],
+                    RemainingBalance = (decimal)reader["remainingBalance"],
+                };
+                rows.Add(row);
             }
 
             return rows;
@@ -292,28 +215,23 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The created loan application identifier.</returns>
         public async Task<int> CreateLoanApplicationAsync(LoanApplicationRequest application)
         {
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
 
             var query = @"INSERT INTO LoanApplication
-            (loanType, desiredAmount, preferredTermMonths, purpose, applicationStatus, rejectionReason, userId)
-            OUTPUT INSERTED.id
-            VALUES
-            (@loanType, @amount, @term, @purpose, @status, @reason, @userId)";
+                (loanType, desiredAmount, preferredTermMonths, purpose, applicationStatus, rejectionReason, userId)
+                OUTPUT INSERTED.id
+                VALUES
+                (@loanType, @amount, @term, @purpose, @status, @reason, @userId)";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-
-            command.Parameters.AddWithValue("@loanType", application.LoanType.ToString());
-            command.Parameters.AddWithValue("@amount", application.DesiredAmount);
-            command.Parameters.AddWithValue("@term", application.PreferredTermMonths);
-            command.Parameters.AddWithValue("@purpose", application.Purpose);
-            command.Parameters.AddWithValue("@status", LoanApplicationStatus.Pending.ToString());
-            command.Parameters.AddWithValue("@reason", DBNull.Value);
-            command.Parameters.AddWithValue("@userId", application.UserId);
-
-            var newIdentificationNumber = (int)(await command.ExecuteScalarAsync())!;
+            var newIdentificationNumber = (int)(await dbContext.ExecuteScalarAsync(query, new object[]
+            {
+                application.LoanType.ToString(),
+                application.DesiredAmount,
+                application.PreferredTermMonths,
+                application.Purpose,
+                LoanApplicationStatus.Pending.ToString(),
+                DBNull.Value,
+                application.UserId,
+            }))!;
             return newIdentificationNumber;
         }
 
@@ -329,24 +247,12 @@ namespace BankApp.Server.Repositories.Implementations
             LoanApplicationStatus loanApplicationStatus,
             string? reason)
         {
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = @"UPDATE LoanApplication
                              SET rejectionReason = @rejectionReason,
                                  applicationStatus = @loanApplicationStatus
                              WHERE id = @id";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-            command.Parameters.Add("@id", SqlDbType.Int).Value = id;
-            command.Parameters.Add("@loanApplicationStatus", SqlDbType.NVarChar, StandardNVarCharLength).Value =
-                loanApplicationStatus.ToString();
-            command.Parameters.Add("@rejectionReason", SqlDbType.NVarChar, ExtendedNVarCharLength).Value =
-                reason != null ? reason : DBNull.Value;
-
-            await command.ExecuteNonQueryAsync();
+            await dbContext.ExecuteNonQueryAsync(query, new object[] { reason != null ? reason : DBNull.Value, loanApplicationStatus.ToString(), id });
         }
 
         /// <summary>
@@ -356,31 +262,15 @@ namespace BankApp.Server.Repositories.Implementations
         /// <returns>The created loan identifier.</returns>
         public async Task<int> CreateLoanAsync(Loan loan)
         {
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = @"INSERT INTO Loan
-            (userId, loanType, principal, outstandingBalance, interestRate, monthlyInstallment, remainingMonths, loanStatus, termInMonths ,startDate)
-            OUTPUT INSERTED.id
-            VALUES
-            (@userId, @loanType, @principal, @outstandingBalance, @interestRate, @monthlyInstallment, @remainingMonths, @loanStatus, @termInMonths , @startDate)";
+                (userId, loanType, principal, outstandingBalance, interestRate, monthlyInstallment, remainingMonths, loanStatus, termInMonths ,startDate)
+                OUTPUT INSERTED.id
+                VALUES
+                (@userId, @loanType, @principal, @outstandingBalance, @interestRate, @monthlyInstallment, @remainingMonths, @loanStatus, @termInMonths , @startDate)";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-
-            command.Parameters.Add("@userId", SqlDbType.Int).Value = loan.UserId;
-            command.Parameters.AddWithValue("@loanType", loan.LoanType.ToString());
-            command.Parameters.AddWithValue("@principal", loan.Principal);
-            command.Parameters.AddWithValue("@outstandingBalance", loan.OutstandingBalance);
-            command.Parameters.AddWithValue("@interestRate", loan.InterestRate);
-            command.Parameters.AddWithValue("@monthlyInstallment", loan.MonthlyInstallment);
-            command.Parameters.AddWithValue("@remainingMonths", loan.RemainingMonths);
-            command.Parameters.AddWithValue("@loanStatus", loan.LoanStatus.ToString());
-            command.Parameters.AddWithValue("@termInMonths", loan.TermInMonths);
-            command.Parameters.AddWithValue("@startDate", loan.StartDate);
-
-            var newId = (int)(await command.ExecuteScalarAsync())!;
+            var newId = (int)(await dbContext.ExecuteScalarAsync(query,
+                new object[] { loan.UserId, loan.LoanType.ToString(), loan.Principal, loan.OutstandingBalance, loan.InterestRate,
+                    loan.MonthlyInstallment, loan.RemainingMonths, loan.LoanStatus.ToString(), loan.TermInMonths, loan.StartDate, }))!;
             return newId;
         }
 
@@ -398,25 +288,13 @@ namespace BankApp.Server.Repositories.Implementations
             int newRemainingMonths,
             LoanStatus newStatus)
         {
-            using var connection = DatabaseConfig.GetDatabaseConnection();
-
-            await connection.OpenAsync();
-
             var query = @"UPDATE Loan
                              SET outstandingBalance = @outstandingBalance,
                                  remainingMonths = @remainingMonths,
                                  loanStatus = @loanStatus
                              WHERE id = @id";
 
-            using var command = new SqlCommand(query, connection);
-            command.CommandTimeout = CommandTimeoutSeconds;
-
-            command.Parameters.Add("@outstandingBalance", SqlDbType.Decimal).Value = newBalance;
-            command.Parameters.Add("@remainingMonths", SqlDbType.Int).Value = newRemainingMonths;
-            command.Parameters.Add("@loanStatus", SqlDbType.NVarChar, StandardNVarCharLength).Value = newStatus.ToString();
-            command.Parameters.Add("@id", SqlDbType.Int).Value = id;
-
-            await command.ExecuteNonQueryAsync();
+            await dbContext.ExecuteNonQueryAsync(query, new object[] { newBalance, newRemainingMonths, newStatus.ToString(), id });
         }
 
         private Loan ReaderToLoan(SqlDataReader reader)
