@@ -15,26 +15,26 @@ namespace BankApp.Server.Tests
     [TestFixture]
     public class DashboardServiceTests
     {
-        private IDashboardRepository mockDashboardRepository;
-        private IUserRepository mockUserRepository;
-        private DashboardService dashboardService;
+        private IDashboardRepository _mockDashboardRepository;
+        private IUserRepository _mockUserRepository;
+        private DashboardService _dashboardService;
 
         [SetUp]
         public void SetUp()
         {
-            mockDashboardRepository = Substitute.For<IDashboardRepository>();
-            mockUserRepository = Substitute.For<IUserRepository>();
+            _mockDashboardRepository = Substitute.For<IDashboardRepository>();
+            _mockUserRepository = Substitute.For<IUserRepository>();
 
-            dashboardService = new DashboardService(mockDashboardRepository, mockUserRepository);
+            _dashboardService = new DashboardService(_mockDashboardRepository, _mockUserRepository);
         }
 
         [Test]
         public void GetDashboardData_NoUserWithID_ReturnsNull()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User)null!);
+            _mockUserRepository.FindById(userId).Returns((User)null!);
 
-            DashboardResponse response = dashboardService.GetDashboardData(userId);
+            DashboardResponse response = _dashboardService.GetDashboardData(userId);
 
             Assert.That(response, Is.Null);
         }
@@ -46,12 +46,12 @@ namespace BankApp.Server.Tests
             int testNotificationCount = 3;
             User testUser = new User { Id = testUserId };
 
-            mockUserRepository.FindById(testUserId).Returns(testUser);
-            mockDashboardRepository.GetCardsByUser(testUserId).Returns(new List<Card>());
-            mockDashboardRepository.GetRecentTransactions(testUserId).Returns(new List<Transaction>());
-            mockDashboardRepository.GetUnreadNotificationCount(testUserId).Returns(testNotificationCount);
+            _mockUserRepository.FindById(testUserId).Returns(testUser);
+            _mockDashboardRepository.GetCardsByUser(testUserId).Returns(new List<Card>());
+            _mockDashboardRepository.GetRecentTransactions(testUserId).Returns(new List<Transaction>());
+            _mockDashboardRepository.GetUnreadNotificationCount(testUserId).Returns(testNotificationCount);
 
-            DashboardResponse testResponse = dashboardService.GetDashboardData(testUserId);
+            DashboardResponse testResponse = _dashboardService.GetDashboardData(testUserId);
             DashboardResponse responseToCompareTo = new DashboardResponse
             {
                 CurrentUser = testUser,

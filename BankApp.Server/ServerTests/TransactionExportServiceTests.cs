@@ -11,7 +11,7 @@ namespace BankApp.Server.Tests;
 [TestFixture]
 public class TransactionExportServiceTests
 {
-    private TransactionExportService exportService;
+    private TransactionExportService _exportService;
 
     private static List<TransactionHistoryItemDto> CreateTransactions()
     {
@@ -56,7 +56,7 @@ public class TransactionExportServiceTests
     [SetUp]
     public void SetUp()
     {
-        exportService = new TransactionExportService();
+        _exportService = new TransactionExportService();
     }
 
     [Test]

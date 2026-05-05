@@ -20,29 +20,29 @@ namespace BankApp.Server.Tests;
 [TestFixture]
 public class TransactionHistoryServiceTests
 {
-    private ITransactionHistoryRepository mockTransactionHistoryRepository;
+    private ITransactionHistoryRepository _mockTransactionHistoryRepository;
 
-    private ITransactionExportService mockTransactionExportService;
-    private TransactionHistoryService transactionHistoryService;
+    private ITransactionExportService _mockTransactionExportService;
+    private TransactionHistoryService _transactionHistoryService;
 
     [SetUp]
     public void SetUp()
     {
-        mockTransactionHistoryRepository = Substitute.For<ITransactionHistoryRepository>();
-        mockTransactionExportService = Substitute.For<ITransactionExportService>();
+        _mockTransactionHistoryRepository = Substitute.For<ITransactionHistoryRepository>();
+        _mockTransactionExportService = Substitute.For<ITransactionExportService>();
 
-        transactionHistoryService = new TransactionHistoryService(
-            mockTransactionHistoryRepository, mockTransactionExportService);
+        _transactionHistoryService = new TransactionHistoryService(
+            _mockTransactionHistoryRepository, _mockTransactionExportService);
     }
 
     [Test]
     public void GetHistory_UserExists_ReturnsUserHistory()
     {
         User user = CardServiceTests.CreateUser(false);
-        mockTransactionHistoryRepository.GetTransactionsByUserId(user.Id).Returns([]);
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(user.Id).Returns([]);
 
         TransactionHistoryResponse transactionHistoryResponse =
-            transactionHistoryService.GetHistory(user.Id, new TransactionHistoryRequest());
+            _transactionHistoryService.GetHistory(user.Id, new TransactionHistoryRequest());
 
         Assert.That(transactionHistoryResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -56,9 +56,9 @@ public class TransactionHistoryServiceTests
     public void GetTransaction_TransactionDoesNotExist_ReturnsFailure()
     {
         User user = CardServiceTests.CreateUser(false);
-        mockTransactionHistoryRepository.GetTransactionById(user.Id, 1).Returns((TransactionHistoryItemDto)null!);
+        _mockTransactionHistoryRepository.GetTransactionById(user.Id, 1).Returns((TransactionHistoryItemDto)null!);
 
-        TransactionDetailsResponse transactionDetailsResponse = transactionHistoryService.GetTransaction(user.Id, 1);
+        TransactionDetailsResponse transactionDetailsResponse = _transactionHistoryService.GetTransaction(user.Id, 1);
 
         Assert.That(transactionDetailsResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -74,10 +74,10 @@ public class TransactionHistoryServiceTests
         User user = CardServiceTests.CreateUser(false);
         TransactionHistoryItemDto transaction = new TransactionHistoryItemDto();
         transaction.Id = 1;
-        mockTransactionHistoryRepository.GetTransactionById(user.Id, transaction.Id).Returns(transaction);
+        _mockTransactionHistoryRepository.GetTransactionById(user.Id, transaction.Id).Returns(transaction);
 
         TransactionDetailsResponse transactionDetailsResponse =
-            transactionHistoryService.GetTransaction(user.Id, transaction.Id);
+            _transactionHistoryService.GetTransaction(user.Id, transaction.Id);
 
         Assert.That(transactionDetailsResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -94,11 +94,11 @@ public class TransactionHistoryServiceTests
         User user = CardServiceTests.CreateUser(false);
         TransactionHistoryItemDto transaction = new TransactionHistoryItemDto();
         transaction.Id = 1;
-        mockTransactionHistoryRepository.GetTransactionById(user.Id, transaction.Id)
+        _mockTransactionHistoryRepository.GetTransactionById(user.Id, transaction.Id)
             .Returns((TransactionHistoryItemDto)null!);
 
         TransactionExportResult transactionExportResult =
-            transactionHistoryService.ExportReceipt(user.Id, transaction.Id);
+            _transactionHistoryService.ExportReceipt(user.Id, transaction.Id);
 
         Assert.That(transactionExportResult, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -115,12 +115,12 @@ public class TransactionHistoryServiceTests
         User user = CardServiceTests.CreateUser(false);
         TransactionHistoryItemDto transaction = new TransactionHistoryItemDto();
         transaction.Id = 1;
-        mockTransactionHistoryRepository.GetTransactionById(user.Id, transaction.Id).Returns(transaction);
-        mockTransactionExportService.ExportReceipt(transaction)
+        _mockTransactionHistoryRepository.GetTransactionById(user.Id, transaction.Id).Returns(transaction);
+        _mockTransactionExportService.ExportReceipt(transaction)
             .Returns(new TransactionExportResult { FileName = "Exists.txt" });
 
         TransactionExportResult transactionExportResult =
-            transactionHistoryService.ExportReceipt(user.Id, transaction.Id);
+            _transactionHistoryService.ExportReceipt(user.Id, transaction.Id);
 
         Assert.That(transactionExportResult, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -133,9 +133,9 @@ public class TransactionHistoryServiceTests
     public void GetHistory_FiltersAndSortsTransactions_ByCompletedAscendingAndAmount()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
 
-        TransactionHistoryResponse transactionHistoryResponse = transactionHistoryService.GetHistory(userId, new TransactionHistoryRequest
+        TransactionHistoryResponse transactionHistoryResponse = _transactionHistoryService.GetHistory(userId, new TransactionHistoryRequest
         {
             SearchTerm = "market",
             Status = "Completed",
@@ -158,9 +158,9 @@ public class TransactionHistoryServiceTests
     public void GetHistory_FiltersAndSortsTransactions_ByCompletedDescendingAndAmount()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
 
-        TransactionHistoryResponse transactionHistoryResponse = transactionHistoryService.GetHistory(userId, new TransactionHistoryRequest
+        TransactionHistoryResponse transactionHistoryResponse = _transactionHistoryService.GetHistory(userId, new TransactionHistoryRequest
         {
             SearchTerm = "market",
             Status = "Completed",
@@ -182,9 +182,9 @@ public class TransactionHistoryServiceTests
     public void GetHistory_FiltersAndSortsTransactions_ByCompletedAndAmount()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
 
-        TransactionHistoryResponse transactionHistoryResponse = transactionHistoryService.GetHistory(userId, new TransactionHistoryRequest
+        TransactionHistoryResponse transactionHistoryResponse = _transactionHistoryService.GetHistory(userId, new TransactionHistoryRequest
         {
             SearchTerm = "market",
             Status = "Completed",
@@ -206,20 +206,20 @@ public class TransactionHistoryServiceTests
     public void GetFilterMetadata_TransactionsByUserExists_ReturnsCardFilterOptions()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
-        mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
         {
             new () { Id = 2, AccountName = "Savings", IBAN = "RO49AAAA1B31007593840000" },
             new () { Id = 1, AccountName = "Everyday", IBAN = "RO49AAAA1B31007593840001" }
         });
-        mockTransactionHistoryRepository.GetCardsByUserId(10)
+        _mockTransactionHistoryRepository.GetCardsByUserId(10)
             .Returns(new List<Card>
             {
                 new () { Id = 8, CardBrand = "Visa", CardType = "Debit", CardNumber = "4111111111111111" },
                 new () { Id = 7, CardBrand = "Mastercard", CardType = "Debit", CardNumber = "5555444433331111" }
             });
 
-        TransactionFilterMetadataResponse transactionFilterMetadataResponse = transactionHistoryService.GetFilterMetadata(userId);
+        TransactionFilterMetadataResponse transactionFilterMetadataResponse = _transactionHistoryService.GetFilterMetadata(userId);
 
         Assert.That(transactionFilterMetadataResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -233,20 +233,20 @@ public class TransactionHistoryServiceTests
     public void GetFilterMetadata_TransactionsByUserExists_ReturnsAvailableStatuses()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
-        mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
         {
             new () { Id = 2, AccountName = "Savings", IBAN = "RO49AAAA1B31007593840000" },
             new () { Id = 1, AccountName = "Everyday", IBAN = "RO49AAAA1B31007593840001" }
         });
-        mockTransactionHistoryRepository.GetCardsByUserId(10)
+        _mockTransactionHistoryRepository.GetCardsByUserId(10)
             .Returns(new List<Card>
             {
                 new () { Id = 8, CardBrand = "Visa", CardType = "Debit", CardNumber = "4111111111111111" },
                 new () { Id = 7, CardBrand = "Mastercard", CardType = "Debit", CardNumber = "5555444433331111" }
             });
 
-        TransactionFilterMetadataResponse transactionFilterMetadataResponse = transactionHistoryService.GetFilterMetadata(userId);
+        TransactionFilterMetadataResponse transactionFilterMetadataResponse = _transactionHistoryService.GetFilterMetadata(userId);
 
         Assert.That(transactionFilterMetadataResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -259,20 +259,20 @@ public class TransactionHistoryServiceTests
     public void GetFilterMetadata_TransactionsByUserExists_ReturnsAvailableDirections()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
-        mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
         {
             new () { Id = 2, AccountName = "Savings", IBAN = "RO49AAAA1B31007593840000" },
             new () { Id = 1, AccountName = "Everyday", IBAN = "RO49AAAA1B31007593840001" }
         });
-        mockTransactionHistoryRepository.GetCardsByUserId(10)
+        _mockTransactionHistoryRepository.GetCardsByUserId(10)
             .Returns(new List<Card>
             {
                 new () { Id = 8, CardBrand = "Visa", CardType = "Debit", CardNumber = "4111111111111111" },
                 new () { Id = 7, CardBrand = "Mastercard", CardType = "Debit", CardNumber = "5555444433331111" }
             });
 
-        TransactionFilterMetadataResponse transactionFilterMetadataResponse = transactionHistoryService.GetFilterMetadata(userId);
+        TransactionFilterMetadataResponse transactionFilterMetadataResponse = _transactionHistoryService.GetFilterMetadata(userId);
 
         Assert.That(transactionFilterMetadataResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -285,20 +285,20 @@ public class TransactionHistoryServiceTests
     public void GetFilterMetadata_TransactionsByUserExists_ReturnsAccountTypes()
     {
         int userId = 10;
-        mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
-        mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
+        _mockTransactionHistoryRepository.GetTransactionsByUserId(userId).Returns(CreateTransactions());
+        _mockTransactionHistoryRepository.GetAccountsByUserId(userId).Returns(new List<Account>
         {
             new () { Id = 2, AccountName = "Savings", IBAN = "RO49AAAA1B31007593840000" },
             new () { Id = 1, AccountName = "Everyday", IBAN = "RO49AAAA1B31007593840001" }
         });
-        mockTransactionHistoryRepository.GetCardsByUserId(10)
+        _mockTransactionHistoryRepository.GetCardsByUserId(10)
             .Returns(new List<Card>
             {
                 new () { Id = 8, CardBrand = "Visa", CardType = "Debit", CardNumber = "4111111111111111" },
                 new () { Id = 7, CardBrand = "Mastercard", CardType = "Debit", CardNumber = "5555444433331111" }
             });
 
-        TransactionFilterMetadataResponse transactionFilterMetadataResponse = transactionHistoryService.GetFilterMetadata(userId);
+        TransactionFilterMetadataResponse transactionFilterMetadataResponse = _transactionHistoryService.GetFilterMetadata(userId);
 
         Assert.That(transactionFilterMetadataResponse, Is.Not.Null);
         using (Assert.EnterMultipleScope())

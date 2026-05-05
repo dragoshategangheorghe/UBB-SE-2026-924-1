@@ -13,24 +13,24 @@ namespace BankApp.Server.Tests
 
     public class ProfileServiceTests
     {
-        private IUserRepository mockUserRepository;
-        private IHashService mockHashService;
+        private IUserRepository _mockUserRepository;
+        private IHashService _mockHashService;
 
-        private ProfileService profileService;
+        private ProfileService _profileService;
 
         [SetUp]
         public void Setup()
         {
-            mockUserRepository = Substitute.For<IUserRepository>();
-            mockHashService = Substitute.For<IHashService>();
+            _mockUserRepository = Substitute.For<IUserRepository>();
+            _mockHashService = Substitute.For<IHashService>();
 
-            profileService = new ProfileService(mockUserRepository, mockHashService);
+            _profileService = new ProfileService(_mockUserRepository, _mockHashService);
         }
 
         [Test]
         public void GetUserById_UserIdNull_ReturnsNull()
         {
-            User? user = profileService.GetUserById(0);
+            User? user = _profileService.GetUserById(0);
             Assert.That(user, Is.Null);
         }
 
@@ -38,8 +38,8 @@ namespace BankApp.Server.Tests
         public void GetUserById_MockUser_ReturnsUser()
         {
             User mockUser = new User { Id = 1, FullName = "John Doe" };
-            mockUserRepository.FindById(1).Returns(mockUser);
-            User? user = profileService.GetUserById(1);
+            _mockUserRepository.FindById(1).Returns(mockUser);
+            User? user = _profileService.GetUserById(1);
             Assert.That(user, Is.Not.Null);
             using (Assert.EnterMultipleScope())
             {
@@ -50,20 +50,20 @@ namespace BankApp.Server.Tests
         [Test]
         public void LinkOAuth_ReturnsException()
         {
-            Assert.Throws<NotImplementedException>(() => profileService.LinkOAuth(1, "Google"));
+            Assert.Throws<NotImplementedException>(() => _profileService.LinkOAuth(1, "Google"));
         }
 
         [Test]
         public void UnlinkOAuth_ReturnsException()
         {
-            Assert.Throws<NotImplementedException>(() => profileService.UnlinkOAuth(1, "Google"));
+            Assert.Throws<NotImplementedException>(() => _profileService.UnlinkOAuth(1, "Google"));
         }
 
         [Test]
         public void UpdatePersonalInfo_UserIdNull_ReturnsFailure()
         {
             UpdateProfileResponse updateProfileResponse =
-                profileService.UpdatePersonalInfo(new UpdateProfileRequest());
+                _profileService.UpdatePersonalInfo(new UpdateProfileRequest());
 
             UpdateProfileResponse expectedResponse = new UpdateProfileResponse
             {
@@ -77,9 +77,9 @@ namespace BankApp.Server.Tests
         [Test]
         public void UpdatePersonalInfo_UserNotFound_ReturnsFailure()
         {
-            mockUserRepository.FindById(Arg.Any<int>()).Returns((User?)null);
+            _mockUserRepository.FindById(Arg.Any<int>()).Returns((User?)null);
             UpdateProfileResponse updateProfileResponse =
-                profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1 });
+                _profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1 });
 
             UpdateProfileResponse expectedResponse = new UpdateProfileResponse
             {
@@ -94,9 +94,9 @@ namespace BankApp.Server.Tests
         public void UpdatePersonalInfo_InvalidPhoneNumber_ReturnsFailure()
         {
             User user = new User { Id = 1, PhoneNumber = "1234567890" };
-            mockUserRepository.FindById(1).Returns(user);
+            _mockUserRepository.FindById(1).Returns(user);
             UpdateProfileResponse updateProfileResponse =
-                profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "invalid-phone" });
+                _profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "invalid-phone" });
 
             UpdateProfileResponse expectedResponse = new UpdateProfileResponse
             {
@@ -111,11 +111,11 @@ namespace BankApp.Server.Tests
         public void UpdatePersonalInfo_UserRepositoryError_ReturnsFailure()
         {
             User user = new User { Id = 1, PhoneNumber = "1234567890", Address = "Old Address" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockUserRepository.UpdateUser(user).Returns(false);
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockUserRepository.UpdateUser(user).Returns(false);
 
             UpdateProfileResponse updateProfileResponse =
-                profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "0987654321", Address = "New Address" });
+                _profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "0987654321", Address = "New Address" });
 
             UpdateProfileResponse expectedResponse = new UpdateProfileResponse
             {
@@ -130,10 +130,10 @@ namespace BankApp.Server.Tests
         public void UpdatePersonalInfo_UserRepositoryUpdatesChanges_ReturnsSuccess()
         {
             User user = new User { Id = 1, PhoneNumber = "1234567890", Address = "Old Address" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockUserRepository.UpdateUser(user).Returns(true);
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockUserRepository.UpdateUser(user).Returns(true);
             UpdateProfileResponse updateProfileResponse =
-                profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "0987654321", Address = "New Address" });
+                _profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "0987654321", Address = "New Address" });
 
             User updatedUser = new User { Id = 1, PhoneNumber = "0987654321", Address = "New Address" };
 
@@ -144,10 +144,10 @@ namespace BankApp.Server.Tests
         public void UpdatePersonalInfo_ValidRequest_ReturnsSuccess()
         {
             User user = new User { Id = 1, PhoneNumber = "1234567890", Address = "Old Address" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockUserRepository.UpdateUser(user).Returns(true);
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockUserRepository.UpdateUser(user).Returns(true);
             UpdateProfileResponse updateProfileResponse =
-                profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "0987654321", Address = "New Address" });
+                _profileService.UpdatePersonalInfo(new UpdateProfileRequest { UserId = 1, PhoneNumber = "0987654321", Address = "New Address" });
 
             UpdateProfileResponse expectedResponse = new UpdateProfileResponse
             {
@@ -163,7 +163,7 @@ namespace BankApp.Server.Tests
         public void ChangePassword_UserIdNull_ReturnsFailure()
         {
             ChangePasswordResponse changePasswordResponse =
-                profileService.ChangePassword(new ChangePasswordRequest());
+                _profileService.ChangePassword(new ChangePasswordRequest());
 
             ChangePasswordResponse expectedResponse = new ChangePasswordResponse
             {
@@ -179,10 +179,10 @@ namespace BankApp.Server.Tests
         public void ChangePassword_IncorrectCurrentPassword_ReturnsFailure()
         {
             User user = new User { Id = 1, PasswordHash = "hashed-password" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockHashService.Verify("wrong-password", "hashed-password").Returns(false);
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockHashService.Verify("wrong-password", "hashed-password").Returns(false);
             ChangePasswordResponse changePasswordResponse =
-                profileService.ChangePassword(new ChangePasswordRequest { UserId = 1, CurrentPassword = "wrong-password", NewPassword = "NewStrongP@ssw0rd" });
+                _profileService.ChangePassword(new ChangePasswordRequest { UserId = 1, CurrentPassword = "wrong-password", NewPassword = "NewStrongP@ssw0rd" });
 
             ChangePasswordResponse expectedResponse = new ChangePasswordResponse
             {
@@ -197,11 +197,11 @@ namespace BankApp.Server.Tests
         public void ChangePassword_CorrectCurrentPassword_ReturnsSuccess()
         {
             User user = new User { Id = 1, PasswordHash = "hashed-password" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockHashService.Verify("correct-password", "hashed-password").Returns(true);
-            mockHashService.GetHash("NewStrongP@ssw0rd").Returns("new-hashed-password");
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockHashService.Verify("correct-password", "hashed-password").Returns(true);
+            _mockHashService.GetHash("NewStrongP@ssw0rd").Returns("new-hashed-password");
             ChangePasswordResponse changePasswordResponse =
-                profileService.ChangePassword(new ChangePasswordRequest { UserId = 1, CurrentPassword = "correct-password", NewPassword = "NewStrongP@ssw0rd" });
+                _profileService.ChangePassword(new ChangePasswordRequest { UserId = 1, CurrentPassword = "correct-password", NewPassword = "NewStrongP@ssw0rd" });
             ChangePasswordResponse expectedResponse = new ChangePasswordResponse
             {
                 Success = true,
@@ -215,11 +215,11 @@ namespace BankApp.Server.Tests
         public void ChangePassword_CheckIfPasswordChanged_ReturnsSuccess()
         {
             User user = new User { Id = 1, PasswordHash = "hashed-password" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockHashService.Verify("correct-password", "hashed-password").Returns(true);
-            mockHashService.GetHash("NewStrongP@ssw0rd").Returns("new-hashed-password");
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockHashService.Verify("correct-password", "hashed-password").Returns(true);
+            _mockHashService.GetHash("NewStrongP@ssw0rd").Returns("new-hashed-password");
             ChangePasswordResponse changePasswordResponse =
-                profileService.ChangePassword(new ChangePasswordRequest { UserId = 1, CurrentPassword = "correct-password", NewPassword = "NewStrongP@ssw0rd" });
+                _profileService.ChangePassword(new ChangePasswordRequest { UserId = 1, CurrentPassword = "correct-password", NewPassword = "NewStrongP@ssw0rd" });
 
             Assert.That(user.PasswordHash, Is.EqualTo("new-hashed-password"));
         }
@@ -229,8 +229,8 @@ namespace BankApp.Server.Tests
         public void Enable2FA_UserIdNull_ReturnsFailure()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User?)null);
-            bool twoFactorResponse = profileService.Enable2FA(1, new TwoFactorMethod());
+            _mockUserRepository.FindById(userId).Returns((User?)null);
+            bool twoFactorResponse = _profileService.Enable2FA(1, new TwoFactorMethod());
 
             Assert.That(twoFactorResponse, Is.False);
         }
@@ -240,10 +240,10 @@ namespace BankApp.Server.Tests
         public void Enable2FA_ValidRequest_ReturnsSuccess()
         {
             User user = CardServiceTests.CreateUser(true);
-            mockUserRepository.FindById(user.Id).Returns(user);
-            mockUserRepository.UpdateUser(user).Returns(true);
+            _mockUserRepository.FindById(user.Id).Returns(user);
+            _mockUserRepository.UpdateUser(user).Returns(true);
             TwoFactorMethod method = TwoFactorMethod.Email;
-            bool twoFactorResponse = profileService.Enable2FA(user.Id, method);
+            bool twoFactorResponse = _profileService.Enable2FA(user.Id, method);
 
             Assert.That(twoFactorResponse, Is.True);
         }
@@ -252,10 +252,10 @@ namespace BankApp.Server.Tests
         public void Enable2FA_CheckIfEnabled_ReturnsSuccess()
         {
             User userWith2FA = new User { Id = 1 };
-            mockUserRepository.FindById(userWith2FA.Id).Returns(userWith2FA);
-            mockUserRepository.UpdateUser(userWith2FA).Returns(true);
+            _mockUserRepository.FindById(userWith2FA.Id).Returns(userWith2FA);
+            _mockUserRepository.UpdateUser(userWith2FA).Returns(true);
             TwoFactorMethod method = TwoFactorMethod.Email;
-            bool twoFactorResponse = profileService.Enable2FA(userWith2FA.Id, method);
+            bool twoFactorResponse = _profileService.Enable2FA(userWith2FA.Id, method);
 
             User updatedUser = new User { Id = userWith2FA.Id, Is2FAEnabled = true, Preferred2FAMethod = method.ToString() };
 
@@ -266,8 +266,8 @@ namespace BankApp.Server.Tests
         public void Disable2FA_UserIdNull_ReturnsFailure()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User?)null);
-            bool twoFactorResponse = profileService.Disable2FA(1);
+            _mockUserRepository.FindById(userId).Returns((User?)null);
+            bool twoFactorResponse = _profileService.Disable2FA(1);
 
             Assert.That(twoFactorResponse, Is.False);
         }
@@ -276,9 +276,9 @@ namespace BankApp.Server.Tests
         public void Disable2FA_ValidRequest_ReturnsSuccess()
         {
             User userWithout2FA = CardServiceTests.CreateUser(true);
-            mockUserRepository.FindById(userWithout2FA.Id).Returns(userWithout2FA);
-            mockUserRepository.UpdateUser(userWithout2FA).Returns(true);
-            bool twoFactorResponse = profileService.Disable2FA(userWithout2FA.Id);
+            _mockUserRepository.FindById(userWithout2FA.Id).Returns(userWithout2FA);
+            _mockUserRepository.UpdateUser(userWithout2FA).Returns(true);
+            bool twoFactorResponse = _profileService.Disable2FA(userWithout2FA.Id);
 
             Assert.That(twoFactorResponse, Is.True);
         }
@@ -287,9 +287,9 @@ namespace BankApp.Server.Tests
         public void Disable2FA_CheckIfDisabled_ReturnsSuccess()
         {
             User userWithout2FA = new User { Id = 1 };
-            mockUserRepository.FindById(userWithout2FA.Id).Returns(userWithout2FA);
-            mockUserRepository.UpdateUser(userWithout2FA).Returns(true);
-            bool twoFactorResponse = profileService.Disable2FA(userWithout2FA.Id);
+            _mockUserRepository.FindById(userWithout2FA.Id).Returns(userWithout2FA);
+            _mockUserRepository.UpdateUser(userWithout2FA).Returns(true);
+            bool twoFactorResponse = _profileService.Disable2FA(userWithout2FA.Id);
 
             User updatedUser = new User { Id = userWithout2FA.Id, Is2FAEnabled = false };
 
@@ -300,8 +300,8 @@ namespace BankApp.Server.Tests
         public void GetOAuthLinks_UserIdNull_ReturnsEmptyList()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User?)null);
-            List<OAuthLink> links = profileService.GetOAuthLinks(1);
+            _mockUserRepository.FindById(userId).Returns((User?)null);
+            List<OAuthLink> links = _profileService.GetOAuthLinks(1);
 
             Assert.That(links, Is.Empty);
         }
@@ -315,9 +315,9 @@ namespace BankApp.Server.Tests
                 new OAuthLink { Id = 1, Provider = "Google", ProviderUserId = "google-123" },
                 new OAuthLink { Id = 2, Provider = "Facebook", ProviderUserId = "fb-456" }
             };
-            mockUserRepository.FindById(user.Id).Returns(user);
-            mockUserRepository.GetLinkedProviders(user.Id).Returns(mockLinks);
-            List<OAuthLink> links = profileService.GetOAuthLinks(user.Id);
+            _mockUserRepository.FindById(user.Id).Returns(user);
+            _mockUserRepository.GetLinkedProviders(user.Id).Returns(mockLinks);
+            List<OAuthLink> links = _profileService.GetOAuthLinks(user.Id);
 
             Assert.That(links.Count, Is.EqualTo(2));
         }
@@ -330,9 +330,9 @@ namespace BankApp.Server.Tests
             {
                 new OAuthLink { Id = 1, Provider = "Google", ProviderUserId = "google-123" },
             };
-            mockUserRepository.FindById(user.Id).Returns(user);
-            mockUserRepository.GetLinkedProviders(user.Id).Returns(mockLinks);
-            List<OAuthLink> links = profileService.GetOAuthLinks(user.Id);
+            _mockUserRepository.FindById(user.Id).Returns(user);
+            _mockUserRepository.GetLinkedProviders(user.Id).Returns(mockLinks);
+            List<OAuthLink> links = _profileService.GetOAuthLinks(user.Id);
             OAuthLink link = links[0];
             OAuthLink expectedLink = new OAuthLink { Id = 1, Provider = "Google", ProviderUserId = "google-123" };
 
@@ -343,8 +343,8 @@ namespace BankApp.Server.Tests
         public void GetNotificationPreferences_UserIdNull_ReturnsEmptyList()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User?)null);
-            List<NotificationPreference> prefs = profileService.GetNotificationPreferences(1);
+            _mockUserRepository.FindById(userId).Returns((User?)null);
+            List<NotificationPreference> prefs = _profileService.GetNotificationPreferences(1);
 
             Assert.That(prefs, Is.Empty);
         }
@@ -358,9 +358,9 @@ namespace BankApp.Server.Tests
                 new NotificationPreference { Id = 1, EmailEnabled = true },
                 new NotificationPreference { Id = 2, SmsEnabled = false }
             };
-            mockUserRepository.FindById(user.Id).Returns(user);
-            mockUserRepository.GetNotificationPreferences(user.Id).Returns(mockPrefs);
-            List<NotificationPreference> prefs = profileService.GetNotificationPreferences(user.Id);
+            _mockUserRepository.FindById(user.Id).Returns(user);
+            _mockUserRepository.GetNotificationPreferences(user.Id).Returns(mockPrefs);
+            List<NotificationPreference> prefs = _profileService.GetNotificationPreferences(user.Id);
 
             Assert.That(prefs.Count, Is.EqualTo(2));
         }
@@ -373,9 +373,9 @@ namespace BankApp.Server.Tests
             {
                 new NotificationPreference { Id = 1, EmailEnabled = true },
             };
-            mockUserRepository.FindById(user.Id).Returns(user);
-            mockUserRepository.GetNotificationPreferences(user.Id).Returns(mockPrefs);
-            List<NotificationPreference> prefs = profileService.GetNotificationPreferences(user.Id);
+            _mockUserRepository.FindById(user.Id).Returns(user);
+            _mockUserRepository.GetNotificationPreferences(user.Id).Returns(mockPrefs);
+            List<NotificationPreference> prefs = _profileService.GetNotificationPreferences(user.Id);
             NotificationPreference preference = prefs[0];
             NotificationPreference expectedPref = new NotificationPreference { Id = 1, EmailEnabled = true };
 
@@ -386,8 +386,8 @@ namespace BankApp.Server.Tests
         public void UpdateNotificationPreferences_UserIdNull_ReturnsFailure()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User?)null);
-            bool result = profileService.UpdateNotificationPreferences(1, new List<NotificationPreference>());
+            _mockUserRepository.FindById(userId).Returns((User?)null);
+            bool result = _profileService.UpdateNotificationPreferences(1, new List<NotificationPreference>());
 
             Assert.That(result, Is.False);
         }
@@ -401,9 +401,9 @@ namespace BankApp.Server.Tests
                 new NotificationPreference { Id = 1, EmailEnabled = false },
                 new NotificationPreference { Id = 2, SmsEnabled = true }
             };
-            mockUserRepository.FindById(user.Id).Returns(user);
-            mockUserRepository.UpdateNotificationPreferences(user.Id, newPrefs).Returns(true);
-            bool result = profileService.UpdateNotificationPreferences(user.Id, newPrefs);
+            _mockUserRepository.FindById(user.Id).Returns(user);
+            _mockUserRepository.UpdateNotificationPreferences(user.Id, newPrefs).Returns(true);
+            bool result = _profileService.UpdateNotificationPreferences(user.Id, newPrefs);
 
             Assert.That(result, Is.True);
         }
@@ -412,8 +412,8 @@ namespace BankApp.Server.Tests
         public void VerifyPassword_UserIdNull_ReturnsFalse()
         {
             int userId = 1;
-            mockUserRepository.FindById(userId).Returns((User?)null);
-            bool result = profileService.VerifyPassword(1, "any-password");
+            _mockUserRepository.FindById(userId).Returns((User?)null);
+            bool result = _profileService.VerifyPassword(1, "any-password");
 
             Assert.That(result, Is.False);
         }
@@ -422,9 +422,9 @@ namespace BankApp.Server.Tests
         public void VerifyPassword_UserFound_ReturnsHashVerificationResult()
         {
             User user = new User { Id = 1, PasswordHash = "hashed-password" };
-            mockUserRepository.FindById(1).Returns(user);
-            mockHashService.Verify("input-password", "hashed-password").Returns(true);
-            bool result = profileService.VerifyPassword(1, "input-password");
+            _mockUserRepository.FindById(1).Returns(user);
+            _mockHashService.Verify("input-password", "hashed-password").Returns(true);
+            bool result = _profileService.VerifyPassword(1, "input-password");
 
             Assert.That(result, Is.True);
         }
