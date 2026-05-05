@@ -19,6 +19,7 @@
     <None Remove="Views\AmortizationScheduleView.xaml" />
     <None Remove="views\DashboardView.xaml" />
     <None Remove="Views\InvestmentsView.xaml" />
+    <None Remove="Views\InvestmentsView.xaml" />
     <None Remove="Views\Dialogs\LoanApplicationDialog.xaml" />
     <None Remove="Views\Dialogs\PayInstallmentDialog.xaml" />
     <None Remove="Views\LoansAndSavingsView.xaml" />
@@ -86,6 +87,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\SavingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\ChatRoutingView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\InvestmentsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

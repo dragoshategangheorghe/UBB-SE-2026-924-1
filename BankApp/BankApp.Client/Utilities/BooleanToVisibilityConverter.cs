@@ -1,4 +1,4 @@
-﻿namespace BankApp.Client.Utilities;
+namespace BankApp.Client.Utilities;
 
 using System;
 using Microsoft.UI.Xaml;
