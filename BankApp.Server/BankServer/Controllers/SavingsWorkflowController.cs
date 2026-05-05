@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BankApp.Server.Controllers
 {
     [ApiController]
+    [Route("api/savings-workflow")]
     public class SavingsWorkflowController : ControllerBase
     {
         private readonly SavingsWorkflowService _workflowService = new();
@@ -36,9 +37,9 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("validate-withdraw")]
-        public ActionResult ValidateWithdrawRequest([FromBody] ValidateWithdrawRequestDto request)
+        public ActionResult ValidateWithdrawRequest([FromQuery] decimal amount, [FromBody] FundingSourceOption? destination)
         {
-            var result = _workflowService.ValidateWithdrawRequest(request.Amount, request.Destination);
+            var result = _workflowService.ValidateWithdrawRequest(amount, destination);
             return Ok(new
             {
                 IsValid = result.IsValid,

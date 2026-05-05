@@ -20,10 +20,16 @@ namespace BankApp.Client.Services.Interfaces
 
         Task<string> BuildWithdrawResultMessage(WithdrawResponseDto response);
 
-        Task<ActionResult> ValidateCloseConfirmation(bool userConfirmed, int destinationId);
+        Task<ValidationResponse> ValidateCloseConfirmation(bool userConfirmed, int destinationId);
 
         Task<bool> CanMoveToNextPage(int currentPage, int totalPages);
 
         Task<bool> CanMoveToPreviousPage(int currentPage);
+    }
+
+    public class ValidationResponse
+    {
+        public bool IsValid {  get; set; }
+        public string ErrorMessage { get; set; }
     }
 }

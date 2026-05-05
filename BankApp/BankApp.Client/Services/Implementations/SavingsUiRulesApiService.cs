@@ -1,6 +1,7 @@
 ﻿using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
 using BankApp.Models.Enums;
+using BankApp.Models.Features.Savings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,34 +19,34 @@ namespace BankApp.Client.Services.Implementations
             _apiService = apiService;
         }
 
-        public string GetDepositPreview(DepositPreviewRequest request)
+        public async Task<string> GetDepositPreview(string depositAmountText, SavingsAccount selectedAccount)
         {
-            
+            return await _apiService.PostAsync<SavingsAccount, string>($"api/savings-ui-rules/deposit-preview?depositAmountText={depositAmountText}", selectedAccount);
         }
 
-        public int GetTotalPages(int totalCount, int pageSize)
+        public async Task<int> GetTotalPages(int totalCount, int pageSize)
         {
-            throw new NotImplementedException();
+            return await _apiService.GetAsync<int>($"api/savings-ui-rules/total-pages?totalCount={totalCount}&pageSize={pageSize}");
         }
 
-        public decimal GetWithdrawNetAmount(decimal requestedAmount, decimal penalty)
+        public async Task<decimal> GetWithdrawNetAmount(decimal requestedAmount, decimal penalty)
         {
-            throw new NotImplementedException();
+            return await _apiService.GetAsync<decimal>($"api/savings-ui-rules/withdraw-net-amount?requestedAmount={requestedAmount}&penalty={penalty}");
         }
 
-        public DepositFrequency ParseDepositFrequency(string frequencyText)
+        public async Task<DepositFrequency> ParseDepositFrequency(string frequencyText)
         {
-            throw new NotImplementedException();
+            return await _apiService.GetAsync<DepositFrequency>($"api/savings-ui-rules/parse-deposit-frequency?frequencyText={frequencyText}");
         }
 
-        public decimal ParsePositiveAmount(string text)
+        public async Task<decimal> ParsePositiveAmount(string text)
         {
-            throw new NotImplementedException();
+            return await _apiService.GetAsync<decimal>($"api/savings-ui-rules/parse-positive-amount?text={text}");
         }
 
-        public Dictionary<string, string> ValidateCreateAccount(ValidateCreateAccountRequest request)
+        public async Task<Dictionary<string, string>> ValidateCreateAccount(ValidateCreateAccountRequest request)
         {
-            throw new NotImplementedException();
+            return await _apiService.PostAsync<ValidateCreateAccountRequest, Dictionary<string, string>>($"api/savings-ui-rules/validate-create-account", request);
         }
     }
 }
