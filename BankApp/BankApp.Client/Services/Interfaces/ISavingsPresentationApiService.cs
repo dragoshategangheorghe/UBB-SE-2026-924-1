@@ -10,12 +10,12 @@ namespace BankApp.Client.Services.Interfaces
 {
     public interface ISavingsPresentationApiService
     {
-        string GetTotalSavedAmount(IEnumerable<SavingsAccount> accounts);
+        Task<string> GetTotalSavedAmount(IEnumerable<SavingsAccount> accounts);
 
-        string GetNumberOfAccountsText(int accountCount);
+        Task<string> GetNumberOfAccountsText(int accountCount);
 
-        string GetBestInterestRate(IEnumerable<SavingsAccount> accounts);
+        Task<string> GetBestInterestRate(IEnumerable<SavingsAccount> accounts);
 
-        bool CheckClosePenaltyRisk(SavingsAccount selectedAccount);
+        Task<bool> CheckClosePenaltyRisk(SavingsAccount selectedAccount);
     }
 }

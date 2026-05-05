@@ -49,7 +49,7 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpPost("{accountId:int}/deposit")]
+        [HttpGet("{accountId:int}/deposit")]
         public async Task<ActionResult<DepositResponseDto>> DepositAsync([FromRoute] int accountId, [FromQuery] decimal amount, [FromQuery] string source, [FromQuery] int userId)
         {
             try
@@ -67,7 +67,7 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpPost("{accountId}/withdraw")]
+        [HttpGet("{accountId}/withdraw")]
         public async Task<ActionResult<WithdrawResponseDto>> WithdrawAsync(int accountId, [FromQuery] decimal amount, [FromQuery] string destinationLabel, [FromQuery] int userId)
         {
             try
@@ -81,7 +81,7 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpPost("{accountId}/close")]
+        [HttpGet("{accountId}/close")]
         public async Task<ActionResult<ClosureResultDto>> CloseAccountAsync([FromRoute] int accountId, [FromQuery] int destinationAccountId, [FromQuery] int userId)
         {
             try
@@ -148,7 +148,7 @@ namespace BankApp.Server.Controllers
             return Ok(destinations);
         }
 
-        [HttpGet("penalty/compute")]
+        [HttpGet("withdrawal/compute-penalty")]
         public ActionResult<decimal> ComputeWithdrawalPenalty([FromQuery] decimal amount)
         {
             var penalty = _savingsService.ComputeWithdrawalPenalty(amount);

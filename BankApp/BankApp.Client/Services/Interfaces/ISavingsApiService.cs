@@ -12,31 +12,31 @@ namespace BankApp.Client.Services.Interfaces
 {
     public interface ISavingsApiService
     {
-        SavingsAccount CreateAccountAsync(CreateSavingsAccountDto account);
+        Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto account);
 
-        List<SavingsAccount> GetAccountsAsync(int userId, bool includesClosed = false);
+        Task<List<SavingsAccount>> GetAccountsAsync(int userId, bool includesClosed = false);
 
-        DepositResponseDto DepositAsync(int accountId, decimal amount, string source, int userId);
+        Task<DepositResponseDto> DepositAsync(int accountId, decimal amount, string source, int userId);
 
-        WithdrawResponseDto WithdrawAsync(int accountId, decimal amount, string destinationLabel, int userId);
+        Task<WithdrawResponseDto> WithdrawAsync(int accountId, decimal amount, string destinationLabel, int userId);
 
-        ClosureResultDto CloseAccountAsync(int accountId, int destinationAccountId, int userId);
+        Task<ClosureResultDto> CloseAccountAsync(int accountId, int destinationAccountId, int userId);
 
-        AutoDeposit GetAutoDepositAsync(int accountId);
+        Task<AutoDeposit> GetAutoDepositAsync(int accountId);
 
-        void SaveAutoDepositAsync(AutoDeposit autoDeposit);
+        Task SaveAutoDepositAsync(AutoDeposit autoDeposit);
 
-        List<FundingSourceOption> GetFundingSourcesAsync(int userId);
+        Task<List<FundingSourceOption>> GetFundingSourcesAsync(int userId);
 
-        GetTransactionsResponse GetTransactionsAsync(int accountId, string filter = "", int page = 1, int pageSize = 20);
+        Task<GetTransactionsResponse> GetTransactionsAsync(int accountId, string filter = "", int page = 1, int pageSize = 20);
 
-        List<SavingsAccount> GetValidTransferDestinationsAsync(int currentAccountId);
+        Task<List<SavingsAccount>> GetValidTransferDestinationsAsync(int currentAccountId);
 
-        decimal ComputeWithdrawalPenalty(decimal amount);
+        Task<decimal> ComputeWithdrawalPenalty(decimal amount);
 
-        bool HasRiskEarlyWithdrawal(SavingsAccount savingsAccount);
+        Task<bool> HasRiskEarlyWithdrawal(SavingsAccount savingsAccount);
 
-        decimal GetPenaltyDecimalFor(string penaltyCase);
+        Task<decimal> GetPenaltyDecimalFor(string penaltyCase);
     }
 
     public class GetTransactionsResponse

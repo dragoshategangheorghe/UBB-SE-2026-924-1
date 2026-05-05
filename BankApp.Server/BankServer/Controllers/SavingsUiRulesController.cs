@@ -1,5 +1,6 @@
 ﻿using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
+using BankApp.Models.Features.Savings;
 using BankApp.Server.Services.Implementations;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,9 +24,9 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("deposit-preview")]
-        public ActionResult<string> GetDepositPreview([FromBody] DepositPreviewRequest request)
+        public ActionResult<string> GetDepositPreview([FromQuery] string depositAmountText, [FromBody] SavingsAccount selectedAccount)
         {
-            var previewText = _uiRulesService.BuildDepositPreview(request.DepositAmountText, request.SelectedAccount);
+            var previewText = _uiRulesService.BuildDepositPreview(depositAmountText, selectedAccount);
             return Ok(previewText);
         }
 
