@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- INVESTMENTS & TRADING REGISTRATION ---
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
-builder.Services.AddScoped<IInvestmentService, InvestmentService>();
+//builder.Services.AddScoped<IInvestmentService, InvestmentService>();
 builder.Services.AddSingleton<IMarketDataService, MarketDataService>();
 
 builder.Services.AddControllers();
@@ -68,6 +68,8 @@ builder.Services.AddScoped<ICardDAO, CardDAO>();
 builder.Services.AddScoped<ITransactionDAO, TransactionDAO>();
 builder.Services.AddScoped<INotificationDAO, NotificationDAO>();
 builder.Services.AddScoped<IUserCardPreferenceDAO, UserCardPreferenceDAO>();
+builder.Services.AddScoped<IChatDAO, ChatDAO>();
+builder.Services.AddScoped<IChatMessageDAO, ChatMessageDAO>();
 
 // --- INFRASTRUCTURE SERVICES ---
 builder.Services.AddScoped<IHashService, HashService>();
@@ -82,6 +84,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<ITransactionHistoryRepository, TransactionHistoryRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<ChatMessageRepository>();
 
 // --- BUSINESS SERVICES ---
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -91,6 +95,7 @@ builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();
 builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IApiService, ApiService>();
 
 var app = builder.Build();
 

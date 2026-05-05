@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using BankApp.Models.Entities;
+    using BankApp.Models.Features.Investments;
 
     public interface IInvestmentService
     {

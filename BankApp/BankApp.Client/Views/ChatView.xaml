@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="BankApp.Client.Views.ChatView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chat="using:BankApp.Models.Features.Chat"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="HeaderText"
+                   Text="Chat"
+                   FontSize="26"
+                   FontWeight="SemiBold"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+            <Button Content="Attach Image/PDF"
+                    Click="AttachButton_Click"/>
+            <TextBlock x:Name="AttachmentText"
+                       VerticalAlignment="Center"
+                       Opacity="0.75"/>
+            <Button Content="Escalate to Agent"
+                    Click="EscalateButton_Click"/>
+            <Button Content="End Session"
+                    Click="EndSessionButton_Click"/>
+            <Button Content="Email Transcript"
+                    Click="EmailTranscriptButton_Click"/>
+        </StackPanel>
+
+        <ListView x:Name="MessagesList" Grid.Row="2">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="chat:ChatMessage">
+                    <Border Margin="0,6" Padding="10" CornerRadius="6" Background="#2D7DFF">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="{x:Bind SenderType}" FontWeight="SemiBold" Foreground="White"/>
+                            <TextBlock Text="{x:Bind Content}" TextWrapping="WrapWholeWords" Foreground="White"/>
+                            <TextBlock Text="{x:Bind DisplaySentAt}" FontSize="11" Foreground="#EAF2FF"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8">
+            <ComboBox x:Name="PresetQuestionsComboBox"
+                      Width="520"
+                      PlaceholderText="Select a question">
+                <x:String>How do I reset my password?</x:String>
+                <x:String>Why was my card declined?</x:String>
+                <x:String>How long does a transfer take?</x:String>
+                <x:String>How do I upload documents for support?</x:String>
+                <x:String>I found a technical problem in the app.</x:String>
+            </ComboBox>
+            <Button Content="Ask"
+                    Click="AskPresetQuestionButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Page>

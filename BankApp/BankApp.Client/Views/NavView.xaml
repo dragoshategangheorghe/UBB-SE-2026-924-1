@@ -262,10 +262,25 @@
             </Border>
         </Grid>
 
-        <!-- ═══════════════════════════════════════════════════════
-             CONTENT FRAME — views load here
-             ═══════════════════════════════════════════════════════ -->
-        <Frame x:Name="ContentFrame" Grid.Column="1"/>
+        <Grid Grid.Column="1">
+            <!-- ═══════════════════════════════════════════════════════
+                 CONTENT FRAME — views load here
+                 ═══════════════════════════════════════════════════════ -->
+            <Frame x:Name="ContentFrame"/>
+
+            <Button x:Name="FloatingChatButton"
+                    Width="56"
+                    Height="56"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,18,18"
+                    CornerRadius="28"
+                    Background="#4ECDC4"
+                    Foreground="#102A43"
+                    FontSize="22"
+                    Content="&#xE8BD;"
+                    Click="FloatingChatButton_Click"/>
+        </Grid>
 
     </Grid>
 </Page>

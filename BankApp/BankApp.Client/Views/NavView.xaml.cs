@@ -100,8 +100,11 @@
         private async void NavSavings_Click(object sender, RoutedEventArgs e) =>
             await this.ShowComingSoonAsync("Savings & Loans");
 
-        private async void NavSupport_Click(object sender, RoutedEventArgs e) =>
-            await this.ShowComingSoonAsync("Support");
+        private void NavSupport_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetActiveNav(NavSupport);
+            App.NavigationService.NavigateToContent<ChatRoutingView>();
+        }
 
         private async System.Threading.Tasks.Task ShowComingSoonAsync(string feature)
         {
@@ -124,6 +127,12 @@
         {
             App.ApiService.ClearToken();
             App.NavigationService.NavigateTo<LoginView>();
+        }
+
+        private void FloatingChatButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetActiveNav(NavSupport);
+            App.NavigationService.NavigateToContent<ChatRoutingView>();
         }
     }
 }

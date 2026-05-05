@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using BankApp.Models.Entities;
+    using BankApp.Models.Features.Investments;
     using BankApp.Server.DataAccess; // Reference to team's DbContext
     using BankApp.Server.Repositories.Interfaces;
 
@@ -112,15 +112,15 @@
                 {
                     logs.Add(new InvestmentTransaction
                     {
-                        IdentificationNumber = reader.GetInt32(0),
-                        InvestmentHoldingIdentificationNumber = reader.GetInt32(1),
-                        Ticker = reader.GetString(2),
-                        ActionType = reader.GetString(3),
-                        Quantity = reader.GetDecimal(4),
-                        PricePerUnit = reader.GetDecimal(5),
-                        Fees = reader.GetDecimal(6),
-                        OrderType = reader.GetString(7),
-                        ExecutedAt = reader.GetDateTime(8)
+                        //IdentificationNumber = reader.GetInt32(0),
+                        //InvestmentHoldingIdentificationNumber = reader.GetInt32(1),
+                        //Ticker = reader.GetString(2),
+                        //ActionType = reader.GetString(3),
+                        //Quantity = reader.GetDecimal(4),
+                        //PricePerUnit = reader.GetDecimal(5),
+                        //Fees = reader.GetDecimal(6),
+                        //OrderType = reader.GetString(7),
+                        //ExecutedAt = reader.GetDateTime(8)
                     });
                 }
             }
