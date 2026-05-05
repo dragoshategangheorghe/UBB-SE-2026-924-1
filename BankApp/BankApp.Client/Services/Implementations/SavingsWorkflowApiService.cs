@@ -51,9 +51,9 @@ namespace BankApp.Client.Services.Implementations
             return await _apiService.GetAsync<ValidationResponse>($"api/savings-workflow/validate-close?userConfirmed={userConfirmed}&destinationId={destinationId}");
         }
 
-        public Task<ActionResult> ValidateWithdrawRequest(ValidateWithdrawRequestDto request)
+        public async Task<ValidationResponse> ValidateWithdrawRequest(decimal amount, FundingSourceOption? destination)
         {
-            throw new NotImplementedException();
+            return await _apiService.PostAsync<FundingSourceOption?, ValidationResponse>($"api/savings-workflow?amount={amount}", destination);
         }
     }
 }

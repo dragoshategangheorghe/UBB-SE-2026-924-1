@@ -16,7 +16,7 @@ namespace BankApp.Client.Services.Interfaces
 
         Task<int> GetDefaultCloseDestinationId(IEnumerable<SavingsAccount> destinationAccounts);
 
-        Task<ActionResult> ValidateWithdrawRequest(ValidateWithdrawRequestDto request);
+        Task<ValidationResponse> ValidateWithdrawRequest(decimal amount, FundingSourceOption? destination);
 
         Task<string> BuildWithdrawResultMessage(WithdrawResponseDto response);
 
