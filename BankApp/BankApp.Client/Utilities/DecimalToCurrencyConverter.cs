@@ -1,7 +1,8 @@
-namespace BankApp.Client.Utilities;
+﻿namespace BankApp.Client.Utilities;
 
 using System;
 using Microsoft.UI.Xaml.Data;
+using System.Globalization;
 
 /// <summary>
 /// Converts a decimal value to a localized currency formatted string.

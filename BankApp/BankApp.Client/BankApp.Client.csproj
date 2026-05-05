@@ -10,11 +10,15 @@
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Views\AmortizationScheduleView.xaml" />
     <None Remove="views\DashboardView.xaml" />
+    <None Remove="Views\InvestmentsView.xaml" />
     <None Remove="Views\Dialogs\LoanApplicationDialog.xaml" />
     <None Remove="Views\Dialogs\PayInstallmentDialog.xaml" />
     <None Remove="Views\LoansAndSavingsView.xaml" />
@@ -86,6 +90,14 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\ChatRoutingView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\InvestmentsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="views\NavView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -134,7 +146,7 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
 </Project>
