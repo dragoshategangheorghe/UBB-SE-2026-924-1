@@ -77,19 +77,13 @@
             SetActiveNav(NavSavings);
             App.NavigationService.NavigateToContent<LoansAndSavingsView>();
         }
-
-        private void NavInvestments_Click(object sender, RoutedEventArgs e)
-        {
-            // Update the UI style to show this tab is active
-            this.SetActiveNav(NavInvestments);
-        }
-
+        
         private async void NavInvestments_Click(object sender, RoutedEventArgs e) {
             // Update the UI style to show this tab is active
             this.SetActiveNav(NavInvestments);
             // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
             App.NavigationService.NavigateToContent<InvestmentsView>();
-        }
+        
             // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
             App.NavigationService.NavigateToContent<InvestmentsView>();
         }
