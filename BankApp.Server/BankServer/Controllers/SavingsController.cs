@@ -36,7 +36,7 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpGet("user/{userId:int}")]
-        public async Task<ActionResult<List<SavingsAccount>>> GetAccounts([FromRoute] int userId, [FromQuery] bool includesClosed = false)
+        public async Task<ActionResult<List<SavingsAccount>>> GetAccountsAsync([FromRoute] int userId, [FromQuery] bool includesClosed = false)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("{accountId}/withdraw")]
-        public async Task<ActionResult<WithdrawResponseDto>> Withdraw(int accountId, [FromQuery] decimal amount, [FromQuery] string destinationLabel, [FromQuery] int userId)
+        public async Task<ActionResult<WithdrawResponseDto>> WithdrawAsync(int accountId, [FromQuery] decimal amount, [FromQuery] string destinationLabel, [FromQuery] int userId)
         {
             try
             {
