@@ -197,3 +197,11 @@ To run the NUnit Unit tests (not the xUnit ones), open a CLI in the `BankApp` fo
 ```text
 dotnet test BankApp\BankApp.Server.Tests\BankApp.Server.Tests.csproj
 ```
+
+## 11. EF Initial Create
+1. In order to get the new EF context up and runnning, you need to open the `Package Manager Console` (View -> Other Windows -> Package Manager Console).
+
+2. Check that the project you are in contains the `.csproj` file. The path should look like this:
+```text
+<YourPathTo..>\UBB-SE-2026-924-1\BankApp.Server\BankServer
+```
