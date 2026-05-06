@@ -77,7 +77,7 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<List<AmortizationRow>> GetAmortizationAsync(int loanId)
         {
-            return _apiService.GetAsync<List<AmortizationRow>>($"loans/{loanId}/amortization-schedule")S;
+            return _apiService.GetAsync<List<AmortizationRow>>($"loans/{loanId}/amortization-schedule");
         }
     }
 }

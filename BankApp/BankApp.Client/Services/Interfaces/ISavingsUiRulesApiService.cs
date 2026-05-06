@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Enums;
+using BankApp.Models.Features.Savings;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BankApp.Models.DTOs.Savings;
-using BankApp.Models.Enums;
 
 namespace BankApp.Client.Services.Interfaces
 {
@@ -13,7 +14,7 @@ namespace BankApp.Client.Services.Interfaces
     {
         Task<decimal> ParsePositiveAmount(string text);
 
-        Task<string> GetDepositPreview(DepositPreviewRequest request);
+        Task<string> GetDepositPreview(string depositAmountText, SavingsAccount selectedAccount);
 
         Task<decimal> GetWithdrawNetAmount(decimal requestedAmount, decimal penalty);
 
