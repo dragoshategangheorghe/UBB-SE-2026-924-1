@@ -3,6 +3,10 @@
     public class Transaction
     {
         public int Id { get; set; }
+
+        public int AccountId { get; set; }
+
+        public int CardId { get; set; }
         public virtual Account Account { get; set; }
         public virtual Card? Card { get; set; }
         public string TransactionRef { get; set; } = string.Empty;
@@ -14,6 +18,8 @@
         public string? CounterpartyName { get; set; }
         public string? CounterpartyIBAN { get; set; }
         public string? MerchantName { get; set; }
+
+        public int CategoryId { get; set; }
         public virtual Category? Category { get; set; }
         public string? Description { get; set; }
         public decimal Fee { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,10 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets the unique loan identifier.
         /// </summary>
+        [Key]
         public int Id { get; set; }
+        
+        public int UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the owning user.

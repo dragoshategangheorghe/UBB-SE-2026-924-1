@@ -29,7 +29,7 @@ public class ChatDAO : IChatDAO
 
         //return sessions;
 
-        List<ChatSession> sessions = db.ChatSessions.Where(s => s.UserId == userId).OrderByDescending(s => s.StartedAt).ToList();
+        List<ChatSession> sessions = db.ChatSessions.Where(s => s.Id == userId).OrderByDescending(s => s.StartedAt).ToList();
         return sessions;
     }
 
@@ -78,7 +78,7 @@ public class ChatDAO : IChatDAO
 
         db.ChatSessions.Add(session);
         return db.ChatSessions
-         .Where(cs => cs.UserId == session.UserId)
+         .Where(cs => cs.Id == session.Id)
          .OrderByDescending(cs => cs.Id)
          .Select(cs => cs.Id)
          .FirstOrDefault();

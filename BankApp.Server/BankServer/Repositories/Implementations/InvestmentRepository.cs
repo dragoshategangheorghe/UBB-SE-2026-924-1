@@ -26,7 +26,7 @@
                 .AsNoTracking()
                 .Include(p => p.Holdings)
                 .FirstOrDefault(p => EF.Property<int>(p, "UserId") == userId)
-                ?? new Portfolio { UserIdentificationNumber = userId };
+                ?? new Portfolio { UserId = userId };
         }
 
         public async Task RecordCryptoTradeAsync(int portfolioId, string ticker, string actionType, decimal quantity,
@@ -61,7 +61,7 @@
 
                 _db.Set<InvestmentTransaction>().Add(new InvestmentTransaction
                 {
-                    HoldingIdentificationNumber = holding.IdentificationNumber,
+                    HoldingId = holding.IdentificationNumber,
                     Ticker = ticker,
                     ActionType = actionType.ToUpperInvariant(),
                     Quantity = quantity,

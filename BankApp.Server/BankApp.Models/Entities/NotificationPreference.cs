@@ -1,9 +1,11 @@
-﻿using BankApp.Models.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using BankApp.Models.Enums;
 
 namespace BankApp.Models.Entities
 {
     public class NotificationPreference
     {
+        [Key]
         public int Id { get; set; }
         public virtual User User { get; set; }
         public NotificationType Category { get; set; }

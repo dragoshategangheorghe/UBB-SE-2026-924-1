@@ -30,7 +30,7 @@ public class ApiService : IApiService
     {
         var session = new ChatSession
         {
-            UserId = userId,
+            Id = userId,
             IssueCategory = issueCategory,
             SessionStatus = "Open",
             StartedAt = DateTime.UtcNow
@@ -57,7 +57,7 @@ public class ApiService : IApiService
     {
         var message = new ChatMessage
         {
-            SessionId = sessionId,
+            Id = sessionId,
             SenderType = senderType,
             Content = content,
             SentAt = DateTime.UtcNow
@@ -74,7 +74,7 @@ public class ApiService : IApiService
     {
         var attachment = new ChatAttachment
         {
-            MessageId = messageId,
+            Id = messageId,
             AttachmentName = attachmentName,
             FileType = fileType,
             FileSizeBytes = fileSizeBytes,

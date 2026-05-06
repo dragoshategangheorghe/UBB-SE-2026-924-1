@@ -10,6 +10,9 @@ public class ChatAttachment
     /// </summary>
     public int Id { get; set; }
 
+    public int MessageId { get; set; }
+
+
     /// <summary>
     /// Gets or sets the related message.
     /// </summary>

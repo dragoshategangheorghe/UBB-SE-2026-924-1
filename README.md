@@ -206,6 +206,7 @@ PREREQUISITES:
 Microsoft.EntityFrameWorkCore (9.0.15)
 Microsoft.EntityFrameWorkCore.Design (9.0.0)
 Microsoft.EntityFrameWorkCore.SqlServer (9.0.15)
+Microsoft.EntityFrameWorkCore.Tools (any version) - for the Migration Commands to work
 ```
 
 1. In order to get the new EF context up and runnning, you need to open the `Package Manager Console`:
@@ -218,14 +219,23 @@ Microsoft.EntityFrameWorkCore.SqlServer (9.0.15)
 C:\path\to\UBB-SE-2026-924-1\BankApp.Server\BankServer
 ```
 
-3. Run the command below to add the initial migration:
+3. Run the command below in CLI to add the initial migration:
 ```text
-dotnet ef migrations add <name of migration>
+dotnet ef migrations add <name of migration> (the name can be anything, for clarity choose InitialCreate)
 ```
+
+- To achieve the same result you can run the following command into the `Package Manager Console`:
+```text
+Add-Migration <name of migration>
+```
+
    
 4. After the project builds successfully, one can update the database by running this command:
 ```text
 dotnet ef database update
 ```
 
-5. All done!
+- To achieve the same result you can run the following command into the `Package Manager Console`:
+```text
+Update-Database
+```

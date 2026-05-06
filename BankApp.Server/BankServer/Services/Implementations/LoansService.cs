@@ -75,7 +75,7 @@ namespace BankApp.Server.Services.Implementations
 
             var application = new LoanApplication
             {
-                UserIdentificationNumber = request.UserId,
+                UserId = request.UserId,
                 LoanType = request.LoanType,
                 DesiredAmount = request.DesiredAmount,
                 PreferredTermMonths = request.PreferredTermMonths,
@@ -85,7 +85,7 @@ namespace BankApp.Server.Services.Implementations
             };
 
             var appId = await this.loanRepository.CreateLoanApplicationAsync(request);
-            application.IdentificationNumber = appId;
+            application.UserId = appId;
 
             return application;
         }
@@ -108,7 +108,7 @@ namespace BankApp.Server.Services.Implementations
         {
             var (status, reason) = await this.EvaluateApplicationAsync(application);
 
-            await this.loanRepository.UpdateLoanApplicationStatusAsync(application.IdentificationNumber, status, reason);
+            await this.loanRepository.UpdateLoanApplicationStatusAsync(application.UserId, status, reason);
 
             return (status, reason);
         }
@@ -123,7 +123,7 @@ namespace BankApp.Server.Services.Implementations
 
             var loan = new Loan
             {
-                UserId = application.UserIdentificationNumber,
+                UserId = application.UserId,
                 LoanType = application.LoanType,
                 Principal = application.DesiredAmount,
                 OutstandingBalance = application.DesiredAmount,
@@ -187,7 +187,7 @@ namespace BankApp.Server.Services.Implementations
                 ? LoanStatus.Passed
                 : loan.LoanStatus;
 
-            await this.loanRepository.UpdateLoanAfterPaymentAsync(loan.Id, newBalance, newRemainingMonths, newStatus);
+            await this.loanRepository.UpdateLoanAfterPaymentAsync(loan.UserId, newBalance, newRemainingMonths, newStatus);
         }
 
         public (decimal BalanceAfterPayment, int RemainingMonths) CalculatePaymentPreview(Loan loan, decimal? customAmount = null)
@@ -263,7 +263,7 @@ namespace BankApp.Server.Services.Implementations
 
         private async Task<(LoanApplicationStatus approved, string? reason)> EvaluateApplicationAsync(LoanApplication application)
         {
-            var currentLoans = await this.loanRepository.GetLoansByUserAsync(application.UserIdentificationNumber);
+            var currentLoans = await this.loanRepository.GetLoansByUserAsync(application.UserId);
 
             var totalOutstanding = currentLoans.Sum(loan => loan.OutstandingBalance);
             var activeLoansCount = currentLoans.Count(loan => loan.LoanStatus == LoanStatus.Active);

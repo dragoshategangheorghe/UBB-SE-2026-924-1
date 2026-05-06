@@ -1,6 +1,9 @@
-﻿// <copyright file="SelectedAttachment.cs" company="Dev Core">
+﻿// <copyright file="
+// .cs" company="Dev Core">
 // Copyright (c) Dev Core. All rights reserved.
 // </copyright>
+
+using System.ComponentModel.DataAnnotations;
 
 namespace BankApp.Models.Features.Chat;
 
@@ -9,6 +12,8 @@ namespace BankApp.Models.Features.Chat;
 /// </summary>
 public class SelectedAttachment
 {
+    [Key]
+    public int Id { get; set; }
     private const long BytesPerKilobyte = 1024;
     private const long BytesPerMegabyte = BytesPerKilobyte * BytesPerKilobyte;
     private const string SizePrecisionFormat = "F2";

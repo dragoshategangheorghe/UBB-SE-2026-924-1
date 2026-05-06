@@ -1,4 +1,5 @@
-﻿using BankApp.Models.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 
 namespace BankApp.Models.Features.Loans
@@ -8,7 +9,9 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets the unique application identifier.
         /// </summary>
-        public int IdentificationNumber { get; set; }
+        [Key]
+        public int Id { get; set; }
+        public int UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the applicant user.

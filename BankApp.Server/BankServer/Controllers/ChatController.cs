@@ -43,7 +43,7 @@ namespace BankApp.Server.Controllers
         public IActionResult GetSession(int sessionId)
         {
             ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.UserId != GetAuthenticatedUserId())
+            if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
@@ -67,7 +67,7 @@ namespace BankApp.Server.Controllers
         public IActionResult UpdateStatus(int sessionId, [FromBody] UpdateChatSessionStatusRequest request)
         {
             ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.UserId != GetAuthenticatedUserId())
+            if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
@@ -80,7 +80,7 @@ namespace BankApp.Server.Controllers
         public IActionResult SaveFeedback(int sessionId, [FromBody] SaveChatFeedbackRequest request)
         {
             ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.UserId != GetAuthenticatedUserId())
+            if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
@@ -93,7 +93,7 @@ namespace BankApp.Server.Controllers
         public IActionResult GetMessages(int sessionId)
         {
             ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.UserId != GetAuthenticatedUserId())
+            if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
@@ -105,7 +105,7 @@ namespace BankApp.Server.Controllers
         public IActionResult CreateMessage(int sessionId, [FromBody] CreateChatMessageRequest request)
         {
             ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.UserId != GetAuthenticatedUserId())
+            if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
@@ -183,7 +183,7 @@ namespace BankApp.Server.Controllers
         public IActionResult EmailTranscript(int sessionId, [FromBody] EmailTranscriptRequest request)
         {
             ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.UserId != GetAuthenticatedUserId())
+            if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }

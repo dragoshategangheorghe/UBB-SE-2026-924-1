@@ -16,6 +16,8 @@ public class ChatMessage
     /// </summary>
     public int Id { get; set; }
 
+    public int SessionId { get; set; }
+
     /// <summary>
     /// Gets or sets the parent session.
     /// </summary>

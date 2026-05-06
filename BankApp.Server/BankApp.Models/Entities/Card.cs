@@ -1,8 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BankApp.Models.Entities
 {
     public class Card
     {
+        [Key]
         public int Id { get; set; }
+
+        public int UserId { get; set; }
+        public int AccountId { get; set; }
         public virtual Account Account { get; set; } = null!;
         public virtual User User { get; set; } = null!;
         public string CardNumber { get; set; } = string.Empty;

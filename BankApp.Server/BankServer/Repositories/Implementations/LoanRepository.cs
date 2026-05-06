@@ -123,7 +123,7 @@ namespace BankApp.Server.Repositories.Implementations
         {
             var loanApplication = new LoanApplication
             {
-                UserIdentificationNumber = application.UserId,
+                UserId = application.UserId,
                 LoanType = application.LoanType,
                 DesiredAmount = application.DesiredAmount,
                 PreferredTermMonths = application.PreferredTermMonths,
@@ -134,7 +134,7 @@ namespace BankApp.Server.Repositories.Implementations
 
             dbContext.LoanApplications.Add(loanApplication);
             await dbContext.SaveChangesAsync();
-            return loanApplication.IdentificationNumber;
+            return loanApplication.UserId;
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace BankApp.Server.Repositories.Implementations
             LoanApplicationStatus loanApplicationStatus,
             string? reason)
         {
-            var application = await dbContext.LoanApplications.FirstOrDefaultAsync(x => x.IdentificationNumber == id);
+            var application = await dbContext.LoanApplications.FirstOrDefaultAsync(x => x.UserId == id);
             if (application == null)
             {
                 return;

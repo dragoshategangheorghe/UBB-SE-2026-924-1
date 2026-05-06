@@ -49,8 +49,6 @@ namespace BankApp.Server.DataAccess
 
         public DbSet<ChatSession> ChatSessions { get; set; }
 
-        public DbSet<SelectedAttachment> SelectedAttachments { get; set; }
-
 
         // FEATURES: Investments
         public DbSet<FundingSourceOption> FundingSourceOptions { get; set; }
@@ -59,6 +57,7 @@ namespace BankApp.Server.DataAccess
 
         public DbSet<Portfolio> Portfolios { get; set; }
 
+        public DbSet<SelectedAttachment> SelectedAttachments { get; set; }
 
         // FEATURE: Loans
         public DbSet<AmortizationRow> AmortizationRows { get; set; }
@@ -156,7 +155,7 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<UserCardPreference>(entity =>
             {
-                entity.HasKey(ucp => ucp.User.Id);
+                entity.HasKey(ucp => ucp.UserId);
 
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.UserCardPreferences)
@@ -223,6 +222,8 @@ namespace BankApp.Server.DataAccess
                 entity.HasMany(s => s.Messages)
                     .WithOne(m => m.Session)
                     .IsRequired();
+
+                entity.HasOne(s => s.Attachment);
             });
 
             modelBuilder.Entity<ChatAttachment>(entity =>

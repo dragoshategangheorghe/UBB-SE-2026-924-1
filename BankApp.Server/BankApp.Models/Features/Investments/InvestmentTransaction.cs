@@ -2,6 +2,8 @@
 // Copyright (c) Dev Core. All rights reserved.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations;
+
 namespace BankApp.Models.Features.Investments;
 
 using System;
@@ -14,7 +16,10 @@ public class InvestmentTransaction
     /// <summary>
     /// Gets or sets the transaction identifier.
     /// </summary>
-    public int IdentificationNumber { get; set; }
+    [Key]
+    public int Id { get; set; }
+
+    public int HoldingId { get; set; }
 
     /// <summary>
     /// Gets or sets the associated holding.

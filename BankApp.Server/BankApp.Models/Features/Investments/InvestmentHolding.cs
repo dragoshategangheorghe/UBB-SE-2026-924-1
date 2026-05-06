@@ -2,6 +2,8 @@
 // Copyright (c) Dev Core. All rights reserved.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations;
+
 namespace BankApp.Models.Features.Investments;
 
 using System.Collections.Generic;
@@ -13,6 +15,9 @@ using System.Runtime.CompilerServices;
 /// </summary>
 public class InvestmentHolding : INotifyPropertyChanged
 {
+    [Key]
+    public int Id { get; set; }
+
     private decimal currentPrice;
     private decimal unrealizedGainLoss;
 

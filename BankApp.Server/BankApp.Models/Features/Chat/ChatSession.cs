@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using BankApp.Models.Entities;
@@ -11,6 +12,7 @@ namespace BankApp.Models.Features.Chat
     {
         private const int NoMessagesCount = 0;
 
+        [Key]
         public int Id { get; set; }
 
         public virtual User User { get; set; } = null!;

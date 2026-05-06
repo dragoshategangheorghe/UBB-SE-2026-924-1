@@ -12,6 +12,7 @@ namespace BankApp.Models.Features.Savings
     /// </summary>
     public class SavingsAccount
     {
+        public int Id { get; set; }
         private const decimal MonthsInYear = 12m;
         private const decimal PercentageScale = 100m;
         private const decimal MinimumTargetAmountExclusive = 0m;

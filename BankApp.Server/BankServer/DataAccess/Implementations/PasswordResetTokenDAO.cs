@@ -31,7 +31,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
             var token = new PasswordResetToken
             {
-                UserId = userId,
+                Id = userId,
                 TokenHash = tokenHash,
                 ExpiresAt = expiresAt
             };

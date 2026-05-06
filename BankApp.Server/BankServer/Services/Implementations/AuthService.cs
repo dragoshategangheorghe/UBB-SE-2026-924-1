@@ -277,7 +277,7 @@ namespace BankApp.Server.Services.Implementations
             string rawToken = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 999999).ToString();
             PasswordResetToken resetToken = new PasswordResetToken
             {
-                UserId = user.Id,
+                Id = user.Id,
                 TokenHash = rawToken,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(5),
                 CreatedAt = DateTime.UtcNow
@@ -297,7 +297,7 @@ namespace BankApp.Server.Services.Implementations
             }
 
             string finalPasswordHash = hashService.GetHash(newPassword);
-            bool updated = authRepository.UpdatePassword(resetToken.UserId, finalPasswordHash);
+            bool updated = authRepository.UpdatePassword(resetToken.Id, finalPasswordHash);
 
             if (!updated)
             {
@@ -306,7 +306,7 @@ namespace BankApp.Server.Services.Implementations
 
             resetToken.UsedAt = DateTime.UtcNow;
             authRepository.SavePasswordResetToken(resetToken);
-            authRepository.InvalidateAllSessions(resetToken.UserId);
+            authRepository.InvalidateAllSessions(resetToken.Id);
 
             return true;
         }

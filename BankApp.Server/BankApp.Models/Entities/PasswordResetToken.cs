@@ -1,8 +1,12 @@
-﻿namespace BankApp.Models.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BankApp.Models.Entities
 {
     public class PasswordResetToken
     {
+        [Key]
         public int Id { get; set; }
+        public int UserId { get; set; }
         public virtual User User { get; set; }
         public string TokenHash { get; set; } = string.Empty;
         public DateTime ExpiresAt { get; set; }

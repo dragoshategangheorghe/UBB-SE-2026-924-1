@@ -121,7 +121,7 @@ namespace BankApp.Server.Utilities
 
                 var row = new AmortizationRow
                 {
-                    LoanId = loan.Id,
+                    Id = loan.Id,
                     InstallmentNumber = index,
                     DueDate = dueDate,
                     PrincipalPortion = principalPortion,

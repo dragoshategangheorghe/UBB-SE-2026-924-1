@@ -1,8 +1,12 @@
-﻿namespace BankApp.Models.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BankApp.Models.Entities
 {
     public class Session
     {
+        [Key]
         public int Id { get; set; }
+        public int UserId { get; set; }
         public virtual User User { get; set; } = null!;
         public string Token { get; set; } = string.Empty;
         public string? DeviceInfo { get; set; }

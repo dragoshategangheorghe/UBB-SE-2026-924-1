@@ -98,7 +98,7 @@ namespace BankApp.Server.Repositories.Implementations
 
         public void SavePasswordResetToken(PasswordResetToken token)
         {
-            passwordResetTokenDao.Create(token.UserId, token.TokenHash, token.ExpiresAt);
+            passwordResetTokenDao.Create(token.Id, token.TokenHash, token.ExpiresAt);
         }
 
         public PasswordResetToken? FindPasswordResetToken(string tokenHash)
