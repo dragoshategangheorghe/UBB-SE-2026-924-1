@@ -113,5 +113,88 @@ namespace BankApp.Server.DataAccess
                 connection = null;
             }
         }
+
+        public object? ExecuteScalar(string sql, object[] parameters)
+        {
+            var conn = GetConnection();
+            using var cmd = new SqlCommand(sql, conn, currentTransaction);
+            AddParameters(cmd, parameters);
+            return cmd.ExecuteScalar();
+        }
+
+        // async methods
+        public async Task<SqlConnection> GetConnectionAsync()
+        {
+            if (connection == null || connection.State == ConnectionState.Closed)
+            {
+                try
+                {
+                    connection = new SqlConnection(connectionString);
+                    await connection.OpenAsync(); // Deschidere asincronă
+                }
+                catch (SqlException e)
+                {
+                    throw new Exception($"Failed to connect to the database: {e.Message}", e);
+                }
+            }
+
+            return connection;
+        }
+
+        public async Task<int> ExecuteNonQueryAsync(string sql, object[] parameters)
+        {
+            var conn = await GetConnectionAsync();
+            using var cmd = new SqlCommand(sql, conn, currentTransaction);
+            AddParameters(cmd, parameters);
+            return await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<object?> ExecuteScalarAsync(string sql, object[] parameters)
+        {
+            var conn = await GetConnectionAsync();
+            using var cmd = new SqlCommand(sql, conn, currentTransaction);
+            AddParameters(cmd, parameters);
+            return await cmd.ExecuteScalarAsync();
+        }
+
+        public async Task<SqlDataReader> ExecuteQueryAsync(string sql, object[] parameters)
+        {
+            var conn = await GetConnectionAsync();
+            var cmd = new SqlCommand(sql, conn, currentTransaction);
+            AddParameters(cmd, parameters);
+            return await cmd.ExecuteReaderAsync();
+        }
+
+        public async Task<SqlTransaction> BeginTransactionAsync()
+        {
+            SqlConnection conn = await GetConnectionAsync();
+            try
+            {
+                currentTransaction = (SqlTransaction)await conn.BeginTransactionAsync();
+            }
+            catch (SqlException e)
+            {
+                throw new Exception($"Failed to begin transaction: {e.Message}", e);
+            }
+            return currentTransaction;
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            if (currentTransaction != null)
+            {
+                await currentTransaction.CommitAsync();
+                currentTransaction = null;
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (currentTransaction != null)
+            {
+                await currentTransaction.RollbackAsync();
+                currentTransaction = null;
+            }
+        }
     }
 }

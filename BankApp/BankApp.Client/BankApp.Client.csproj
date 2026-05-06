@@ -16,11 +16,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\AmortizationScheduleView.xaml" />
     <None Remove="views\DashboardView.xaml" />
     <None Remove="Views\InvestmentsView.xaml" />
+    <None Remove="Views\InvestmentsView.xaml" />
+    <None Remove="Views\Dialogs\LoanApplicationDialog.xaml" />
+    <None Remove="Views\Dialogs\PayInstallmentDialog.xaml" />
+    <None Remove="Views\LoansAndSavingsView.xaml" />
+    <None Remove="Views\LoansView.xaml" />
     <None Remove="Views\LoginView.xaml" />
     <None Remove="views\NavView.xaml" />
     <None Remove="Views\RegisterView.xaml" />
+    <None Remove="Views\SavingsView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +53,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Duende.IdentityModel.OidcClient" Version="7.1.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
@@ -56,6 +64,39 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
+    <ProjectReference Include="..\BankApp.Server\BankApp.Server.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\AmortizationScheduleView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Dialogs\PayInstallmentDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Dialogs\LoanApplicationDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\LoansAndSavingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\LoansView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\SavingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\ChatRoutingView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\InvestmentsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\ChatRoutingView.xaml">
@@ -114,4 +155,7 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
   </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
 </Project>

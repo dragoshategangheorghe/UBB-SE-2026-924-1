@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<UserControl
+    x:Class="BankApp.Client.Views.SavingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:BankApp.Models.Features.Savings"
+    xmlns:utils="using:BankApp.Client.Utilities"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <utils:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <utils:AccountStatusToBrushConverter x:Key="StatusToBrush" />
+        <utils:NullToVisibilityConverter x:Key="NullToVisibility" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header + Summary -->
+        <StackPanel Grid.Row="0" Margin="24,24,24,0">
+            <TextBlock Text="Savings Accounts" FontSize="28" FontWeight="Bold" Margin="0,0,0,16" />
+            <StackPanel Orientation="Horizontal" Spacing="40">
+                <StackPanel>
+                    <TextBlock Text="TOTAL SAVED" FontSize="11"
+                               Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock Text="{Binding TotalSavedAmount}" FontSize="22" FontWeight="Bold" />
+                    <TextBlock Text="{Binding NumberOfAccountsText}" FontSize="12"
+                               Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="BEST APY" FontSize="11"
+                               Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock Text="{Binding BestInterestRate}" FontSize="22" FontWeight="Bold" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Tabs -->
+        <NavigationView Grid.Row="1"
+                        x:Name="MainNavigationView"
+                        IsBackButtonVisible="Collapsed"
+                        PaneDisplayMode="Top"
+                        IsSettingsVisible="False"
+                        Margin="0,12,0,0"
+                        SelectionChanged="OnTabSelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="MyAccountsTab" Content="My Accounts" Tag="MyAccounts" />
+                <NavigationViewItem x:Name="OpenNewTab" Content="Open New" Tag="OpenNew" />
+                <NavigationViewItem x:Name="ManageTab" Content="Manage" Tag="Manage" />
+            </NavigationView.MenuItems>
+            <Grid />
+        </NavigationView>
+
+        <!-- Content -->
+        <Grid Grid.Row="2">
+
+            <!-- ══ MY ACCOUNTS ══ -->
+            <Grid x:Name="MyAccountsPanel" Margin="24,0,24,24">
+                <ProgressRing IsActive="{Binding IsLoading}" HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
+
+                <InfoBar IsOpen="{Binding HasError}" Severity="Error"
+                         Message="{Binding ErrorMessage}" IsClosable="False"
+                         VerticalAlignment="Top"
+                         Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+                <!-- Empty state -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
+                    <FontIcon Glyph="&#xE9F9;" FontSize="48"
+                              Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                    <TextBlock Text="No savings accounts yet."
+                               FontSize="16" HorizontalAlignment="Center" Margin="0,12,0,4" />
+                    <TextBlock Text="Switch to Open New to get started."
+                               FontSize="13" HorizontalAlignment="Center"
+                               Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                </StackPanel>
+
+                <!-- Cards -->
+                <ScrollViewer Visibility="{Binding ShowAccountsList, Converter={StaticResource BoolToVisibility}}">
+                    <ItemsControl ItemsSource="{Binding SavingsAccounts}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:SavingsAccount">
+                                <Border Margin="0,0,0,12" Padding="20" CornerRadius="8"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="{x:Bind AccountName}"
+                                                   FontSize="16" FontWeight="SemiBold" />
+
+                                        <Border Grid.Row="0" Grid.Column="1"
+                                                CornerRadius="12" Padding="10,4"
+                                                VerticalAlignment="Top"
+                                                Background="{x:Bind DisplayStatus, Converter={StaticResource StatusToBrush}}">
+                                            <TextBlock Text="{x:Bind DisplayStatus}"
+                                                       FontSize="12" FontWeight="SemiBold" Foreground="White" />
+                                        </Border>
+
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="2"
+                                                    Orientation="Horizontal" Spacing="20" Margin="0,6,0,0">
+                                            <TextBlock FontSize="13"
+                                                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}">
+                                                <Run Text="Type: " /><Run Text="{x:Bind SavingsType}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="13"
+                                                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}">
+                                                <Run Text="APY: " /><Run Text="{x:Bind AnnualPercentageYield}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="13"
+                                                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}">
+                                                <Run Text="Est. monthly: $" />
+                                                <Run Text="{x:Bind MonthlyInterestProjection}" />
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2"
+                                                   Text="{x:Bind FormattedBalance}"
+                                                   FontSize="24" FontWeight="Bold" Margin="0,8,0,0" />
+
+                                        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10,0,0"
+                                                    Visibility="{x:Bind TargetAmount, Converter={StaticResource NullToVisibility}}">
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Goal progress" FontSize="12"
+                                                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                                <TextBlock Grid.Column="1" FontSize="12"
+                                                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}">
+                                                    <Run Text="{x:Bind ProgressPercent, Mode=OneWay}" />
+                                                    <Run Text="%" />
+                                                </TextBlock>
+                                            </Grid>
+                                            <ProgressBar Value="{x:Bind ProgressPercent, Mode=OneWay}"
+                                                         Minimum="0" Maximum="100" Height="6" CornerRadius="3" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ══ OPEN NEW ══ -->
+            <ScrollViewer x:Name="OpenNewPanel" Visibility="Collapsed"
+                          VerticalScrollBarVisibility="Auto">
+                <Grid Margin="32,24,32,24" HorizontalAlignment="Left">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Open New Savings Account"
+                               FontSize="24" FontWeight="Bold" Margin="0,0,0,24" />
+
+                    <!-- Step 1: Type -->
+                    <StackPanel Grid.Row="1" Margin="0,0,0,20">
+                        <TextBlock Text="STEP 1 — ACCOUNT TYPE" FontSize="11" FontWeight="Bold"
+                                   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                                   Margin="0,0,0,8" />
+                        <RadioButtons x:Name="SavingsTypeRadioButtons"
+                                      SelectionChanged="OnSavingsTypeChanged">
+                            <RadioButton Content="Standard" Tag="Standard" />
+                            <RadioButton Content="High Yield" Tag="HighYield" />
+                            <RadioButton Content="Goal Savings" Tag="GoalSavings" />
+                            <RadioButton Content="Fixed Deposit" Tag="FixedDeposit" />
+                        </RadioButtons>
+                        <TextBlock x:Name="TypeErrorText" Foreground="Red" FontSize="12"
+                                   Margin="0,4,0,0" Visibility="Collapsed" />
+                    </StackPanel>
+
+                    <!-- Step 2: Details -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                        <TextBlock Text="STEP 2 — ACCOUNT DETAILS" FontSize="11" FontWeight="Bold"
+                                   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                                   Margin="0,0,0,8" />
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Account Nickname" Margin="0,0,0,4" />
+                            <TextBox x:Name="AccountNameTextBox" PlaceholderText="e.g. Emergency Fund" />
+                            <TextBlock x:Name="AccountNameError" Foreground="Red" FontSize="12"
+                                       Margin="0,4,0,0" Visibility="Collapsed" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Initial Deposit ($)" Margin="0,0,0,4" />
+                            <TextBox x:Name="InitialDepositTextBox" PlaceholderText="1000" InputScope="Number" />
+                            <TextBlock x:Name="InitialDepositError" Foreground="Red" FontSize="12"
+                                       Margin="0,4,0,0" Visibility="Collapsed" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Funding Source" Margin="0,0,0,4" />
+                            <ComboBox x:Name="FundingSourceComboBox" PlaceholderText="Select account"
+                                      HorizontalAlignment="Stretch" DisplayMemberPath="DisplayName" />
+                            <TextBlock x:Name="FundingSourceError" Foreground="Red" FontSize="12"
+                                       Margin="0,4,0,0" Visibility="Collapsed" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Deposit Frequency" Margin="0,0,0,4" />
+                            <RadioButtons x:Name="FrequencyRadioButtons"
+                                          SelectionChanged="OnFrequencySelectionChanged">
+                                <RadioButton Content="One Time" Tag="OneTime" />
+                                <RadioButton Content="Daily" Tag="Daily" />
+                                <RadioButton Content="Weekly" Tag="Weekly" />
+                                <RadioButton Content="Monthly" Tag="Monthly" />
+                            </RadioButtons>
+                            <TextBlock x:Name="FrequencyError" Foreground="Red" FontSize="12"
+                                       Margin="0,4,0,0" Visibility="Collapsed" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Step 3: Goal Settings (conditional) -->
+                    <StackPanel Grid.Row="3" x:Name="GoalSavingsPanel"
+                                Margin="0,0,0,20"
+                                Visibility="{Binding IsGoalSavings, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="STEP 3 — GOAL SETTINGS" FontSize="11" FontWeight="Bold"
+                                   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                                   Margin="0,0,0,8" />
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Target Amount ($)" Margin="0,0,0,4" />
+                            <TextBox x:Name="TargetAmountTextBox" PlaceholderText="e.g. 5000" InputScope="Number" />
+                            <TextBlock x:Name="TargetAmountError" Foreground="Red" FontSize="12"
+                                       Margin="0,4,0,0" Visibility="Collapsed" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Target Date" Margin="0,0,0,4" />
+                            <CalendarDatePicker x:Name="TargetDatePicker"
+                                                PlaceholderText="Pick a date" HorizontalAlignment="Stretch" />
+                            <TextBlock x:Name="TargetDateError" Foreground="Red" FontSize="12"
+                                       Margin="0,4,0,0" Visibility="Collapsed" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Step 3: Fixed Deposit Settings -->
+                    <StackPanel Grid.Row="3" x:Name="FixedDepositPanel"
+                                Margin="0,0,0,20"
+                                Visibility="{Binding IsFixedDeposit, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="STEP 3 — FIXED DEPOSIT SETTINGS"
+                                   FontSize="11" FontWeight="Bold"
+                                   Margin="0,0,0,8" />
+                        <StackPanel>
+                            <TextBlock Text="Maturity Date" Margin="0,0,0,4" />
+                            <CalendarDatePicker x:Name="MaturityDatePicker"
+                                                PlaceholderText="Pick a maturity date" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Feedback -->
+                    <InfoBar Grid.Row="4" x:Name="CreateErrorBar" IsOpen="False"
+                             Severity="Error" IsClosable="False" Margin="0,0,0,12" />
+                    <InfoBar Grid.Row="4" x:Name="CreateSuccessBar" IsOpen="False"
+                             Severity="Success" IsClosable="False" Margin="0,0,0,12"
+                             Title="Account created successfully!" />
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="12">
+                        <Button x:Name="OpenAccountButton" Content="Open Account"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Click="OnOpenAccountClicked" />
+                        <Button Content="Cancel" Click="OnCancelCreateClicked" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- ══ MANAGE ══ -->
+            <ScrollViewer x:Name="ManagePanel" Margin="24,0,24,24" Visibility="Collapsed"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="16" VerticalAlignment="Top">
+                    <TextBlock Text="Manage your accounts" FontSize="18" FontWeight="SemiBold" />
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Select account" FontSize="13"
+                                   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                        <ComboBox x:Name="ManageAccountComboBox"
+                                  HorizontalAlignment="Stretch" MinWidth="300"
+                                  ItemsSource="{Binding SavingsAccounts}"
+                                  DisplayMemberPath="AccountName"
+                                  SelectionChanged="OnManageAccountSelected" />
+                    </StackPanel>
+
+                    <!-- Action buttons -->
+                    <StackPanel x:Name="ManageButtonsPanel" Spacing="8" Visibility="Collapsed">
+                        <Button Content="Deposit"
+                                HorizontalAlignment="Stretch"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Click="OnDepositClicked" />
+                        <Button Content="Withdraw"
+                                HorizontalAlignment="Stretch"
+                                Click="OnWithdrawClicked" />
+                        <Button Content="Auto Deposit"
+                                HorizontalAlignment="Stretch"
+                                Click="OnAutoDepositClicked" />
+                        <Button Content="Close Account"
+                                HorizontalAlignment="Stretch"
+                                Click="OnCloseAccountClicked" />
+                    </StackPanel>
+
+                    <!-- ── DEPOSIT ACTION PANEL ── -->
+                    <StackPanel x:Name="DepositActionPanel" Spacing="12" Visibility="Collapsed">
+                        <TextBlock Text="Deposit Funds" FontSize="16" FontWeight="SemiBold" />
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Amount ($)" FontSize="13" />
+                            <TextBox x:Name="DepositAmountTextBox"
+                                     PlaceholderText="0.00" InputScope="Number"
+                                     Text="{Binding DepositAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock x:Name="DepositLivePreview" FontSize="12"
+                                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                                       Text="{Binding LivePreview}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Funding Source" FontSize="13" />
+                            <ComboBox x:Name="DepositSourceComboBox"
+                                      HorizontalAlignment="Stretch" MinWidth="280"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectionChanged="OnDepositSourceChanged" />
+                        </StackPanel>
+
+                        <InfoBar x:Name="DepositResultBar" IsOpen="False"
+                                 IsClosable="False" Margin="0,4,0,0" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Confirm Deposit"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Click="OnDepositConfirmed" />
+                            <Button Content="Back" Click="OnDepositBack" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ── WITHDRAW ACTION PANEL ── -->
+                    <StackPanel x:Name="WithdrawActionPanel" Spacing="12" Visibility="Collapsed">
+                        <TextBlock Text="Withdraw Funds" FontSize="16" FontWeight="SemiBold" />
+
+                        <!-- Early withdrawal penalty warning -->
+                        <Border x:Name="WithdrawPenaltyWarning"
+                                Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                CornerRadius="4" Padding="12,8"
+                                Visibility="{Binding WithdrawHasEarlyRisk, Converter={StaticResource BoolToVisibility}}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Early Withdrawal Warning" FontWeight="SemiBold" FontSize="13" />
+                                <TextBlock x:Name="WithdrawPenaltySummaryText" FontSize="12" TextWrapping="Wrap"
+                                           Text="{Binding WithdrawPenaltySummary}" />
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Amount ($)" FontSize="13" />
+                            <TextBox x:Name="WithdrawAmountTextBox"
+                                     PlaceholderText="0.00" InputScope="Number"
+                                     Text="{Binding WithdrawAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <!-- Penalty breakdown (shown only when applicable) -->
+                        <StackPanel x:Name="WithdrawPenaltyBreakdown" Spacing="2"
+                                    Visibility="{Binding WithdrawHasPenalty, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock x:Name="WithdrawPenaltyAmountText" FontSize="12"
+                                       Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                       Text="{Binding WithdrawPenaltyBreakdownText}" />
+                            <TextBlock x:Name="WithdrawNetAmountText" FontSize="12" FontWeight="SemiBold"
+                                       Text="{Binding WithdrawNetAmountText}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Destination Account" FontSize="13" />
+                            <ComboBox x:Name="WithdrawDestComboBox"
+                                      HorizontalAlignment="Stretch" MinWidth="280"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectionChanged="OnWithdrawDestChanged" />
+                        </StackPanel>
+
+                        <InfoBar x:Name="WithdrawResultBar" IsOpen="False"
+                                 IsClosable="False" Margin="0,4,0,0" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Confirm Withdrawal"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Click="OnWithdrawConfirmed" />
+                            <Button Content="Back" Click="OnWithdrawBack" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ── AUTO DEPOSIT ACTION PANEL ── -->
+                    <StackPanel x:Name="AutoDepositActionPanel" Spacing="12" Visibility="Collapsed">
+                        <TextBlock x:Name="AutoDepositTitle" Text="Set Up Auto Deposit"
+                                   FontSize="16" FontWeight="SemiBold" />
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Amount ($)" FontSize="13" />
+                            <TextBox x:Name="AutoDepositAmountTextBox"
+                                     PlaceholderText="0.00" InputScope="Number" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Frequency" FontSize="13" />
+                            <RadioButtons x:Name="AutoDepositFrequencyRadios"
+                                          SelectionChanged="OnAutoDepositFrequencyChanged">
+                                <RadioButton Content="Daily" Tag="Daily" />
+                                <RadioButton Content="Weekly" Tag="Weekly" />
+                                <RadioButton Content="Monthly" Tag="Monthly" />
+                            </RadioButtons>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Start Date" FontSize="13" />
+                            <CalendarDatePicker x:Name="AutoDepositStartDatePicker"
+                                                PlaceholderText="Pick start date"
+                                                HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <ToggleSwitch x:Name="AutoDepositActiveToggle"
+                                          Header="Active"
+                                          IsOn="True" />
+                        </StackPanel>
+
+                        <InfoBar x:Name="AutoDepositResultBar" IsOpen="False"
+                                 IsClosable="False" Margin="0,4,0,0" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Save"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Click="OnAutoDepositSaved" />
+                            <Button Content="Back" Click="OnAutoDepositBack" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ── CLOSE ACCOUNT ACTION PANEL ── -->
+                    <StackPanel x:Name="CloseAccountActionPanel" Spacing="12" Visibility="Collapsed">
+                        <TextBlock Text="Close Account" FontSize="16" FontWeight="SemiBold" />
+
+                        <!-- Early closure penalty warning -->
+                        <Border x:Name="ClosePenaltyWarning"
+                                Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                CornerRadius="4" Padding="12,8"
+                                Visibility="{Binding CloseHasPenalty, Converter={StaticResource BoolToVisibility}}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Early Closure Penalty" FontWeight="SemiBold" FontSize="13" />
+                                <TextBlock
+                                    Text="This is a Fixed Deposit account that has not yet reached maturity. An early closure penalty may apply."
+                                    FontSize="12" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Transfer balance to" FontSize="13" />
+                            <ComboBox x:Name="CloseDestComboBox"
+                                      HorizontalAlignment="Stretch" MinWidth="280"
+                                      DisplayMemberPath="AccountName"
+                                      SelectionChanged="OnCloseDestChanged" />
+                            <TextBlock Text="No other accounts available to transfer funds to."
+                                       x:Name="CloseNoDestText"
+                                       FontSize="12" Foreground="Red"
+                                       Visibility="Collapsed" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="CloseConfirmCheckBox"
+                                  Content="I understand this action is permanent and cannot be undone."
+                                  Checked="OnCloseConfirmChecked"
+                                  Unchecked="OnCloseConfirmUnchecked" />
+
+                        <InfoBar x:Name="CloseResultBar" IsOpen="False"
+                                 IsClosable="False" Margin="0,4,0,0" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button x:Name="CloseConfirmButton"
+                                    Content="Close Account"
+                                    IsEnabled="False"
+                                    Click="OnCloseConfirmed" />
+                            <Button Content="Back" Click="OnCloseBack" />
+                        </StackPanel>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Grid>
+</UserControl>

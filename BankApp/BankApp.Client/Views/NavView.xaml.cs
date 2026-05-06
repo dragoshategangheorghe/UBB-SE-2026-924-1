@@ -72,11 +72,18 @@
             App.NavigationService.NavigateToContent<TransactionHistoryView>();
         }
 
-        private void NavInvestments_Click(object sender, RoutedEventArgs e)
+        private void NavSavings_Click(object sender, RoutedEventArgs e)
         {
+            SetActiveNav(NavSavings);
+            App.NavigationService.NavigateToContent<LoansAndSavingsView>();
+        }
+        
+        private async void NavInvestments_Click(object sender, RoutedEventArgs e) {
             // Update the UI style to show this tab is active
             this.SetActiveNav(NavInvestments);
-
+            // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
+            App.NavigationService.NavigateToContent<InvestmentsView>();
+        
             // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
             App.NavigationService.NavigateToContent<InvestmentsView>();
         }
@@ -96,10 +103,7 @@
 
         private async void NavCurrencyExchange_Click(object sender, RoutedEventArgs e) =>
             await this.ShowComingSoonAsync("Currency Exchange");
-
-        private async void NavSavings_Click(object sender, RoutedEventArgs e) =>
-            await this.ShowComingSoonAsync("Savings & Loans");
-
+        
         private void NavSupport_Click(object sender, RoutedEventArgs e)
         {
             this.SetActiveNav(NavSupport);

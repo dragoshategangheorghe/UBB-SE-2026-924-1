@@ -1,0 +1,104 @@
+<ContentDialog
+    x:Class="BankApp.Client.Views.Dialogs.LoanApplicationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="{x:Bind viewModel.DialogTitle, Mode=OneWay}"
+    PrimaryButtonText="{x:Bind viewModel.DialogActionText, Mode=OneWay}"
+    CloseButtonText="Cancel"
+    PrimaryButtonClick="OnSubmitClicked">
+
+    <ScrollViewer>
+        <StackPanel Spacing="16" Width="400">
+
+            <StackPanel x:Name="FormPanel" Spacing="16"
+                        Visibility="{x:Bind viewModel.IsFormVisible, Mode=OneWay}">
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Loan Type" />
+                    <ComboBox ItemsSource="{Binding LoanTypes}"
+                              SelectedItem="{Binding SelectedLoanType, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Desired Amount ($)" />
+                    <NumberBox Value="{Binding DesiredAmount, Mode=TwoWay}"
+                               Minimum="0" Maximum="1000000" SmallChange="100" LargeChange="1000"
+                               PlaceholderText="10000" SpinButtonPlacementMode="Compact" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Preferred Term (months)" />
+                    <TextBox PlaceholderText="36" Text="{Binding PreferredTermMonths, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Purpose" />
+                    <TextBox PlaceholderText="Select purpose..." Text="{Binding Purpose, Mode=TwoWay}" />
+                </StackPanel>
+
+                <Border Padding="12" CornerRadius="8"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        Visibility="{x:Bind viewModel.IsEstimateVisible, Mode=OneWay}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="INDICATIVE ESTIMATE" FontSize="11" FontWeight="Bold"
+                                   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="32">
+                            <StackPanel>
+                                <TextBlock Text="Interest Rate" FontSize="12"
+                                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{Binding CurrentEstimate.IndicativeRate}" FontWeight="Bold" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Monthly" FontSize="12"
+                                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{Binding CurrentEstimate.MonthlyInstallment}" FontWeight="Bold" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Total" FontSize="12"
+                                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{Binding CurrentEstimate.TotalRepayable}" FontWeight="Bold" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel x:Name="ReviewPanel" Spacing="16"
+                        Visibility="{x:Bind viewModel.IsReviewVisible, Mode=OneWay}">
+                <TextBlock Text="Please review your application details:" FontWeight="Bold" FontSize="16"
+                           Margin="0,0,0,8" />
+
+                <StackPanel Spacing="12">
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Type:" Foreground="Gray" Width="70" />
+                        <TextBlock Text="{Binding SelectedLoanType}" FontWeight="SemiBold" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Amount:" Foreground="Gray" Width="70" />
+                        <TextBlock Text="{Binding DesiredAmount}" FontWeight="SemiBold" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Term:" Foreground="Gray" Width="70" />
+                        <TextBlock Text="{Binding PreferredTermMonths}" FontWeight="SemiBold" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Purpose:" Foreground="Gray" Width="70" />
+                        <TextBlock Text="{Binding Purpose}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                </StackPanel>
+
+                <TextBlock Text="By clicking Submit, your application will be sent for approval."
+                           FontSize="12" Foreground="Gray" Margin="0,16,0,0" />
+            </StackPanel>
+
+            <InfoBar x:Name="ResultBar" IsOpen="False" IsClosable="False" />
+
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

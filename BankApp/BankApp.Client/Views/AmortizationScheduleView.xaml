@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Page
+    x:Class="BankApp.Client.Views.AmortizationScheduleView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="using:BankApp.Client.Utilities"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <utils:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <utils:DateToMonthYearConverter x:Key="DateToMonthYearConverter" />
+        <utils:DecimalToCurrencyConverter x:Key="DecimalToCurrencyConverter" />
+    </Page.Resources>
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                MaxWidth="860"
+                Margin="40,32,40,32"
+                HorizontalAlignment="Center"
+                Spacing="24">
+
+                <!-- Header -->
+                <StackPanel Spacing="10">
+                    <TextBlock
+                        Text="Amortisation schedule"
+                        FontSize="30"
+                        FontWeight="SemiBold" />
+
+                    <TextBlock
+                        x:Name="LoanSubHeaderText"
+                        FontSize="15"
+                        Opacity="0.70"
+                        TextWrapping="WrapWholeWords" />
+
+                    <StackPanel Spacing="4">
+                        <TextBlock
+                            FontSize="15"
+                            Opacity="0.85"
+                            TextWrapping="WrapWholeWords">
+                            <Run x:Name="TotalInstallmentsText" />
+                            <Run Text=" installments" />
+                            <Run Text=" · " />
+                            <Run x:Name="PaidInstallmentsText" />
+                            <Run Text=" paid" />
+                        </TextBlock>
+
+                        <TextBlock
+                            FontSize="15"
+                            Opacity="0.85"
+                            TextWrapping="WrapWholeWords">
+                            <Run x:Name="RemainingInstallmentsText" />
+                            <Run Text=" remaining" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Schedule card -->
+                <Border
+                    HorizontalAlignment="Stretch"
+                    Padding="22"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="14">
+
+                    <StackPanel Spacing="14">
+
+                        <!-- Table header -->
+                        <Grid
+                            Margin="10,0,10,0"
+                            ColumnSpacing="20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50" />
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="1.2*" />
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="1.2*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Grid.Column="0"
+                                Text="#"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Opacity="0.72" />
+
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="Due date"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Opacity="0.72" />
+
+                            <TextBlock
+                                Grid.Column="2"
+                                Text="Principal"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Opacity="0.72" />
+
+                            <TextBlock
+                                Grid.Column="3"
+                                Text="Interest"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Opacity="0.72" />
+
+                            <TextBlock
+                                Grid.Column="4"
+                                Text="Balance"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Opacity="0.72" />
+                        </Grid>
+
+                        <!-- Table rows -->
+                        <ListView
+                            x:Name="AmortizationListView"
+                            ItemsSource="{Binding AmortizationRows}"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False"
+                            MaxHeight="420"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            Background="Transparent"
+                            BorderThickness="0">
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                    <Setter Property="MinHeight" Value="0" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Padding="12,14"
+                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10">
+
+                                        <Grid ColumnSpacing="20">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50" />
+                                                <ColumnDefinition Width="150" />
+                                                <ColumnDefinition Width="1.2*" />
+                                                <ColumnDefinition Width="1.1*" />
+                                                <ColumnDefinition Width="1.2*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding InstallmentNumber}" />
+
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding DueDate, Converter={StaticResource DateToMonthYearConverter}}" />
+
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding PrincipalPortion, Converter={StaticResource DecimalToCurrencyConverter}}" />
+
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding InterestPortion, Converter={StaticResource DecimalToCurrencyConverter}}" />
+
+                                            <TextBlock
+                                                Grid.Column="4"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding RemainingBalance, Converter={StaticResource DecimalToCurrencyConverter}}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
+                <!-- Download card -->
+                <Border
+                    HorizontalAlignment="Stretch"
+                    Padding="18"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="14">
+
+                    <Button
+                        x:Name="DownloadPdfButton"
+                        HorizontalAlignment="Stretch"
+                        Padding="16,14"
+                        Content="Download schedule (PDF)"
+                        Click="OnDownloadPdfClicked" />
+                </Border>
+
+                <!-- Back button -->
+                <Button
+                    x:Name="BackButton"
+                    HorizontalAlignment="Left"
+                    Padding="10,6"
+                    Content="Back"
+                    Click="OnBackClicked" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <ProgressRing
+            Width="48"
+            Height="48"
+            IsActive="{Binding IsLoading}"
+            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
+    </Grid>
+</Page>

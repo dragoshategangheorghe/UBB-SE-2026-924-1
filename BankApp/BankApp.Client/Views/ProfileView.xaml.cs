@@ -417,7 +417,7 @@ namespace BankApp.Client.Views
             }
             else
             {
-                TwoFactorPhoneDisplay.Text = user.PhoneNumber;
+                this.TwoFactorPhoneDisplay.Text = user.PhoneNumber;
                 ConfigureActionButton(ActionPhoneBtn, PhoneStatusBadge, PhoneStatusText, "Remove", "#F0FDF4", "#15803D", "Active");
             }
         }

@@ -1,0 +1,88 @@
+<ContentDialog
+    x:Class="BankApp.Client.View.Dialogs.PayInstallmentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Pay Installment"
+    PrimaryButtonText="Confirm Payment"
+    CloseButtonText="Cancel"
+    PrimaryButtonClick="OnConfirmClicked">
+
+    <ScrollViewer>
+        <StackPanel Spacing="16" Width="400">
+
+            <!-- Info loan -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="OUTSTANDING BALANCE" FontSize="11" Foreground="Gray" />
+                <TextBlock Text="{Binding SelectedLoan.Loan.OutstandingBalance}"
+                           FontSize="20" FontWeight="Bold" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="MINIMUM INSTALLMENT" FontSize="11" Foreground="Gray" />
+                <TextBlock Text="{Binding SelectedLoan.Loan.MonthlyInstallment}"
+                           FontWeight="Bold" />
+            </StackPanel>
+
+            <Border BorderThickness="0,1,0,0" BorderBrush="Gray" Margin="0,4,0,4" />
+
+            <!-- Optiuni -->
+            <TextBlock Text="Payment Type" FontWeight="SemiBold" />
+
+            <RadioButton x:Name="StandardRadio"
+                         Content="Standard — pay minimum installment"
+                         IsChecked="True"
+                         Checked="OnStandardChecked" />
+
+            <RadioButton x:Name="CustomRadio"
+                         Content="Custom — pay a different amount"
+                         Checked="OnCustomChecked" />
+
+            <StackPanel x:Name="CustomAmountPanel"
+                        Visibility="Collapsed"
+                        Spacing="4">
+                <TextBlock Text="Custom Amount ($)" FontSize="11" Foreground="Gray" />
+                <TextBox x:Name="CustomAmountBox"
+                         TextChanged="OnCustomAmountTextChanged"
+                         LostFocus="OnCustomAmountLostFocus"
+                         PlaceholderText="0.00" />
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#FF6B6B"
+                           FontSize="12"
+                           TextWrapping="Wrap" />
+                <TextBlock Text="Must be at least the minimum installment"
+                           FontSize="11" Foreground="Gray" />
+            </StackPanel>
+
+            <Border BorderBrush="Gray"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12"
+                    Margin="0,4,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Data after payment" FontWeight="SemiBold" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Outstanding balance" />
+                        <TextBlock x:Name="BalanceAfterPaymentText"
+                                   Grid.Column="1" />
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Remaining term" />
+                        <TextBlock x:Name="RemainingTermAfterPaymentText"
+                                   Grid.Column="1" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>
