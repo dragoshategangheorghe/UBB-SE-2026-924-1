@@ -17,9 +17,9 @@ namespace BankApp.Models.Features.Loans
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the associated loan identifier.
+        /// Gets or sets the associated loan.
         /// </summary>
-        public int LoanId { get; set; }
+        public virtual Loan Loan { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the installment sequence number.

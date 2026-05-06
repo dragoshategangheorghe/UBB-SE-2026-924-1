@@ -18,9 +18,9 @@ namespace BankApp.Models.Features.Savings
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the linked savings account identifier.
+        /// Gets or sets the linked savings account.
         /// </summary>
-        public int SavingsAccountId { get; set; }
+        public virtual SavingsAccount SavingsAccount { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the amount transferred each run.

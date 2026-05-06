@@ -1,6 +1,7 @@
 ﻿using BankApp.Models.Entities;
 using BankApp.Server.DataAccess.Interfaces;
-using System.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace BankApp.Server.DataAccess.Implementations
 {
     public class AccountDAO : IAccountDAO
@@ -12,53 +13,27 @@ namespace BankApp.Server.DataAccess.Implementations
             this.dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Loads an account together with its owning user through the EF navigation mapping.
+        /// </summary>
         public Account? FindById(int id)
         {
-            //var query =
-            //    @"SELECT Id, UserId, AccountName, IBAN, Currency, Balance, AccountType, Status, CreatedAt from Account where Id = @p0";
-            //using var reader = dbContext.ExecuteQuery(query, new object[] { id });
-            //if (reader.Read())
-            //{
-            //    return MapToAccount(reader);
-            //}
-
-            Account? account = dbContext.Accounts.FirstOrDefault(a => a.Id == id);
-
-            return account;
+            return dbContext.Accounts
+                .Include(a => a.User)
+                .Include(a => a.Cards)
+                .Include(a => a.Transactions)
+                .FirstOrDefault(a => a.Id == id);
         }
 
+        /// <summary>
+        /// Loads all accounts for a user through the Account.User navigation property.
+        /// </summary>
         public List<Account> FindByUserId(int userId)
         {
-            //var accounts = new List<Account>();
-            //var query =
-            //    @"SELECT Id, UserId, AccountName, IBAN, Currency, Balance, AccountType, Status, CreatedAt from Account where UserId = @p0";
-            //using var reader = dbContext.ExecuteQuery(query, new object[] { userId });
-            //while (reader.Read())
-            //{
-            //    accounts.Add(MapToAccount(reader));
-            //}
-
-            //return accounts;
-
-            List<Account> accounts = dbContext.Accounts.Where(a => a.UserId == userId).ToList();
-
-            return accounts;
+            return dbContext.Accounts
+                .Include(a => a.User)
+                .Where(a => a.User.Id == userId)
+                .ToList();
         }
-
-        //private Account MapToAccount(IDataReader r)
-        //{
-        //    return new Account
-        //    {
-        //        Id = r.GetInt32(r.GetOrdinal("Id")),
-        //        UserId = r.GetInt32(r.GetOrdinal("UserId")),
-        //        AccountName = r.IsDBNull(r.GetOrdinal("AccountName")) ? null : r.GetString(r.GetOrdinal("AccountName")),
-        //        IBAN = r.GetString(r.GetOrdinal("IBAN")),
-        //        Currency = r.GetString(r.GetOrdinal("Currency")),
-        //        Balance = r.GetDecimal(r.GetOrdinal("Balance")),
-        //        AccountType = r.GetString(r.GetOrdinal("AccountType")),
-        //        Status = r.GetString(r.GetOrdinal("Status")),
-        //        CreatedAt = r.GetDateTime(r.GetOrdinal("CreatedAt"))
-        //    };
-        //}
     }
 }

@@ -3,7 +3,7 @@
     public class OAuthLink
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
+        public virtual User User { get; set; }
         public string Provider { get; set; } = string.Empty;
         public string ProviderUserId { get; set; } = string.Empty;
         public string? ProviderEmail { get; set; }
@@ -15,7 +15,7 @@
 
             return other != null &&
                    Id == other.Id &&
-                   UserId == other.UserId &&
+                   User == other.User &&
                    Provider == other.Provider &&
                    ProviderUserId == other.ProviderUserId &&
                    ProviderEmail == other.ProviderEmail &&

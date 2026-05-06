@@ -139,7 +139,7 @@ namespace BankApp.Server.Services.Implementations
 
                     OAuthLink newLink = new OAuthLink
                     {
-                        UserId = user!.Id,
+                        User = user!,
                         Provider = request.Provider,
                         ProviderUserId = providerUserId,
                         ProviderEmail = email
@@ -212,9 +212,15 @@ namespace BankApp.Server.Services.Implementations
                 targetUserId = savedUser.Id;
             }
 
+            User? linkedUser = existingUser ?? authRepository.FindUserByEmail(request.Email);
+            if (linkedUser == null)
+            {
+                return new RegisterResponse { Success = false, Error = "Error retrieving created user." };
+            }
+
             OAuthLink newLink = new OAuthLink
             {
-                UserId = targetUserId,
+                User = linkedUser,
                 Provider = request.Provider,
                 ProviderUserId = request.ProviderToken,
                 ProviderEmail = request.Email

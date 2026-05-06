@@ -1,8 +1,7 @@
 ﻿using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 using BankApp.Server.DataAccess.Interfaces;
-using System.Data;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace BankApp.Server.DataAccess
 {
@@ -17,27 +16,17 @@ namespace BankApp.Server.DataAccess
 
         public bool Create(int userId, string category)
         {
-            //try
-            //{
-            //    string insertQuery = @"INSERT INTO NotificationPreference (UserId, Category, PushEnabled, EmailEnabled, SmsEnabled)
-            //                            VALUES
-            //                            (@p0, @p1, 0, 0, 0);
-            //                        ";
-
-            //    int rows = this.appDbContext.ExecuteNonQuery(insertQuery, ([userId, category]));
-
-            //    return rows > 0;
-            //}
-            //catch (Exception ex)
-            //{
-            //    return false;
-            //}
-
             try
             {
+                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (appDbContext.Entry(user).State == EntityState.Detached)
+                {
+                    appDbContext.Attach(user);
+                }
+
                 var preference = new NotificationPreference
                 {
-                    UserId = userId,
+                    User = user,
                     Category = (NotificationType)Enum.Parse(typeof(NotificationType), category),
                     PushEnabled = false,
                     EmailEnabled = false,
@@ -57,75 +46,32 @@ namespace BankApp.Server.DataAccess
 
         public List<NotificationPreference> FindByUserId(int userId)
         {
-            //List<NotificationPreference> result = new List<NotificationPreference>();
-            //string selectQuery = @"SELECT * FROM NotificationPreference WHERE userId = @p0";
-
-            //using IDataReader data = this.appDbContext.ExecuteQuery(selectQuery, ([userId]));
-            //while (data.Read())
-            //{
-            //    NotificationPreference notificationPreference = new NotificationPreference
-            //    {
-            //        Id = Convert.ToInt32(data["Id"]),
-            //        UserId = Convert.ToInt32(data["UserId"]),
-            //        Category = NotificationTypeExtensions.FromString(Convert.ToString(data["Category"])),
-            //        PushEnabled = Convert.ToBoolean(data["PushEnabled"]),
-            //        EmailEnabled = Convert.ToBoolean(data["EmailEnabled"]),
-            //        SmsEnabled = Convert.ToBoolean(data["SmsEnabled"]),
-            //        MinAmountThreshold = data["MinAmountThreshold"] == DBNull.Value ? null : Convert.ToDecimal(data["MinAmountThreshold"])
-            //    };
-
-            //    result.Add(notificationPreference);
-            //}
-            //return result;
-
-            List<NotificationPreference> result = appDbContext.NotificationPreferences.Where(p => p.UserId == userId).ToList();
-            return result;
+            return appDbContext.NotificationPreferences
+                .Include(p => p.User)
+                .Where(p => p.User.Id == userId)
+                .ToList();
         }
+
         public bool Update(int userId, List<NotificationPreference> prefs)
         {
-            //    try
-            //    {
-            //        string deleteQuery = @"DELETE FROM NotificationPreference WHERE userId = @p0";
-            //        this.appDbContext.ExecuteNonQuery(deleteQuery, ([userId]));
-
-            //        string insertQuery = @"INSERT INTO NotificationPreference (UserId, Category, PushEnabled, EmailEnabled, SmsEnabled, MinAmountThreshold)
-            //                                VALUES
-            //                            (@p0, @p1, @p2, @p3, @p4, @p5);
-            //                        ";
-
-            //        foreach (NotificationPreference preference in prefs)
-            //        {
-            //            this.appDbContext.ExecuteNonQuery(insertQuery, ([
-            //                    preference.UserId,
-            //                NotificationTypeExtensions.ToDisplayName(preference.Category),
-            //                preference.PushEnabled,
-            //                preference.EmailEnabled,
-            //                preference.SmsEnabled,
-            //                preference.MinAmountThreshold!
-            //                ]));
-            //        }
-
-            //        return true;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        return false;
-            //    }
-            //}
-
             try
             {
                 var existing = appDbContext.NotificationPreferences
-                                           .Where(p => p.UserId == userId);
+                                           .Where(p => p.User.Id == userId);
 
                 appDbContext.NotificationPreferences.RemoveRange(existing);
 
+                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (appDbContext.Entry(user).State == EntityState.Detached)
+                {
+                    appDbContext.Attach(user);
+                }
 
                 foreach (var preference in prefs)
                 {
                     appDbContext.NotificationPreferences.Add(new NotificationPreference
                     {
-                        UserId = preference.UserId,
+                        User = user,
                         Category = preference.Category,
                         PushEnabled = preference.PushEnabled,
                         EmailEnabled = preference.EmailEnabled,

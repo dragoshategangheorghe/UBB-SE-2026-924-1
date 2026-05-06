@@ -1,4 +1,5 @@
-﻿using BankApp.Models.Enums;
+﻿using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 
 namespace BankApp.Models.Features.Loans
 {
@@ -10,9 +11,9 @@ namespace BankApp.Models.Features.Loans
         public int IdentificationNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the applicant user identifier.
+        /// Gets or sets the applicant user.
         /// </summary>
-        public int UserIdentificationNumber { get; set; }
+        public virtual User User { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the requested loan type.

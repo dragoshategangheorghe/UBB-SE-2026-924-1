@@ -5,6 +5,7 @@
 namespace BankApp.Models.Features.Investments;
 
 using System.Collections.Generic;
+using BankApp.Models.Entities;
 
 /// <summary>
 /// Represents an aggregated view of a user's investment holdings.
@@ -17,9 +18,9 @@ public class Portfolio
     public int IdentificationNumber { get; set; }
 
     /// <summary>
-    /// Gets or sets the owning user identifier.
+    /// Gets or sets the owning user.
     /// </summary>
-    public int UserIdentificationNumber { get; set; }
+    public virtual User User { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the total market value of all holdings.

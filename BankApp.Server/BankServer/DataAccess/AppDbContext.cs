@@ -77,209 +77,178 @@ namespace BankApp.Server.DataAccess
 
         public DbSet<SavingsTransaction> SavingsTransactions { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Account>(entity =>
+            {
+                entity.HasOne(a => a.User)
+                    .WithMany(u => u.Accounts)
+                    .IsRequired();
 
+                entity.HasMany(a => a.Cards)
+                    .WithOne(c => c.Account)
+                    .IsRequired();
+
+                entity.HasMany(a => a.Transactions)
+                    .WithOne(t => t.Account)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Card>(entity =>
+            {
+                entity.HasOne(c => c.User)
+                    .WithMany(u => u.Cards)
+                    .IsRequired();
+
+                entity.HasMany(c => c.Transactions)
+                    .WithOne(t => t.Card);
+            });
+
+            modelBuilder.Entity<Transaction>(entity =>
+            {
+                entity.HasOne(t => t.Account)
+                    .WithMany(a => a.Transactions)
+                    .IsRequired();
+
+                entity.HasOne(t => t.Card)
+                    .WithMany(c => c.Transactions);
+
+                entity.HasOne(t => t.Category)
+                    .WithMany();
+            });
+
+            modelBuilder.Entity<Session>(entity =>
+            {
+                entity.HasOne(s => s.User)
+                    .WithMany(u => u.Sessions)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasOne(n => n.User)
+                    .WithMany(u => u.Notifications)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<OAuthLink>(entity =>
+            {
+                entity.HasOne(o => o.User)
+                    .WithMany(u => u.OAuthLinks)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<NotificationPreference>(entity =>
+            {
+                entity.HasOne(p => p.User)
+                    .WithMany(u => u.NotificationPreferences)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.HasOne(p => p.User)
+                    .WithMany(u => u.PasswordResetTokens)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<UserCardPreference>(entity =>
+            {
+                entity.HasKey(ucp => ucp.User.Id);
+
+                entity.HasOne(p => p.User)
+                    .WithMany(u => u.UserCardPreferences)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<TransactionCategoryOverride>(entity =>
+            {
+                entity.HasOne(t => t.Transaction)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasOne(t => t.User)
+                    .WithMany(u => u.TransactionCategoryOverrides)
+                    .IsRequired();
+
+                entity.HasOne(t => t.Category)
+                    .WithMany()
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Loan>(entity =>
+            {
+                entity.HasOne(l => l.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasMany(l => l.AmortizationRows)
+                    .WithOne(a => a.Loan)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<SavingsAccount>(entity =>
+            {
+                entity.HasOne(s => s.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasOne(s => s.FundingAccount)
+                    .WithMany();
+
+                entity.HasMany(s => s.AutoDeposits)
+                    .WithOne(a => a.SavingsAccount)
+                    .IsRequired();
+
+                entity.HasMany(s => s.Transactions)
+                    .WithOne(t => t.SavingsAccount)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<SavingsTransaction>(entity =>
+            {
+                entity.HasOne(t => t.Account)
+                    .WithMany()
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<ChatSession>(entity =>
+            {
+                entity.HasOne(s => s.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasMany(s => s.Messages)
+                    .WithOne(m => m.Session)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<ChatAttachment>(entity =>
+            {
+                entity.HasOne(a => a.Message)
+                    .WithMany()
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Portfolio>(entity =>
+            {
+                entity.HasOne(p => p.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasMany(p => p.Holdings)
+                    .WithOne(h => h.Portfolio)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<InvestmentHolding>(entity =>
+            {
+                entity.HasMany(h => h.Transactions)
+                    .WithOne(t => t.Holding)
+                    .IsRequired();
+            });
+        }
     }
 }
-
-
-//using System.Data;
-//using Microsoft.Data.SqlClient;
-//namespace BankApp.Server.DataAccess
-//{
-//    public class AppDbContext : IDbContext
-//    {
-//        private readonly string connectionString;
-//        private SqlConnection? connection;
-//        private SqlTransaction? currentTransaction;
-
-//        public AppDbContext(string connectionString)
-//        {
-//            this.connectionString = connectionString;
-//        }
-
-//        public SqlConnection GetConnection()
-//        {
-//            if (connection == null || connection.State == ConnectionState.Closed)
-//            {
-//                try
-//                {
-//                    connection = new SqlConnection(connectionString);
-//                    connection.Open();
-//                }
-//                catch (SqlException e)
-//                {
-//                    throw new Exception($"Failed to connect to the database: {e.Message}", e);
-//                }
-//            }
-//            return connection;
-//        }
-
-//        public SqlTransaction BeginTransaction()
-//        {
-//            SqlConnection conn = GetConnection();
-//            try
-//            {
-//                currentTransaction = conn.BeginTransaction();
-//            }
-//            catch (SqlException e)
-//            {
-//                throw new Exception($"Failed to begin transaction: {e.Message}", e);
-//            }
-//            return currentTransaction;
-//        }
-
-//        public void CommitTransaction()
-//        {
-//            if (currentTransaction != null)
-//            {
-//                currentTransaction.Commit();
-//                currentTransaction = null;
-//            }
-//        }
-
-//        public void RollbackTransaction()
-//        {
-//            if (currentTransaction != null)
-//            {
-//                currentTransaction.Rollback();
-//                currentTransaction = null;
-//            }
-//        }
-
-//        public SqlTransaction? GetCurrentTransaction()
-//        {
-//            return currentTransaction;
-//        }
-
-//        private void AddParameters(SqlCommand cmd, object[] parameters)
-//        {
-//            if (parameters == null)
-//            {
-//                return;
-//            }
-//            for (int i = 0; i < parameters.Length; i++)
-//            {
-//                cmd.Parameters.AddWithValue($"@p{i}", parameters[i] ?? DBNull.Value);
-//            }
-//        }
-
-//        public IDataReader ExecuteQuery(string sqlStatement, object[] parameters)
-//        {
-//            var conn = GetConnection();
-//            var cmd = new SqlCommand(sqlStatement, conn, currentTransaction);
-//            AddParameters(cmd, parameters);
-//            return cmd.ExecuteReader(); // returns rows back
-//        }
-
-//        public int ExecuteNonQuery(string sqlStatement, object[] parameters)
-//        {
-//            var conn = GetConnection();
-//            using var cmd = new SqlCommand(sqlStatement, conn, currentTransaction); // disposes the command when done with it
-//            AddParameters(cmd, parameters);
-//            return cmd.ExecuteNonQuery(); // how many rows are affected
-//        }
-
-//        public void Dispose()
-//        {
-//            if (currentTransaction != null)
-//            {
-//                currentTransaction.Dispose();
-//            }
-
-//            if (connection != null)
-//            {
-//                if (connection.State != ConnectionState.Closed)
-//                {
-//                    connection.Close();
-//                }
-
-//                connection.Dispose();
-//                connection = null;
-//            }
-//        }
-
-//        public object? ExecuteScalar(string sql, object[] parameters)
-//        {
-//            var conn = GetConnection();
-//            using var cmd = new SqlCommand(sql, conn, currentTransaction);
-//            AddParameters(cmd, parameters);
-//            return cmd.ExecuteScalar();
-//        }
-
-//        // async methods
-//        public async Task<SqlConnection> GetConnectionAsync()
-//        {
-//            if (connection == null || connection.State == ConnectionState.Closed)
-//            {
-//                try
-//                {
-//                    connection = new SqlConnection(connectionString);
-//                    await connection.OpenAsync(); // Deschidere asincronă
-//                }
-//                catch (SqlException e)
-//                {
-//                    throw new Exception($"Failed to connect to the database: {e.Message}", e);
-//                }
-//            }
-
-//            return connection;
-//        }
-
-//        public async Task<int> ExecuteNonQueryAsync(string sql, object[] parameters)
-//        {
-//            var conn = await GetConnectionAsync();
-//            using var cmd = new SqlCommand(sql, conn, currentTransaction);
-//            AddParameters(cmd, parameters);
-//            return await cmd.ExecuteNonQueryAsync();
-//        }
-
-//        public async Task<object?> ExecuteScalarAsync(string sql, object[] parameters)
-//        {
-//            var conn = await GetConnectionAsync();
-//            using var cmd = new SqlCommand(sql, conn, currentTransaction);
-//            AddParameters(cmd, parameters);
-//            return await cmd.ExecuteScalarAsync();
-//        }
-
-//        public async Task<SqlDataReader> ExecuteQueryAsync(string sql, object[] parameters)
-//        {
-//            var conn = await GetConnectionAsync();
-//            var cmd = new SqlCommand(sql, conn, currentTransaction);
-//            AddParameters(cmd, parameters);
-//            return await cmd.ExecuteReaderAsync();
-//        }
-
-//        public async Task<SqlTransaction> BeginTransactionAsync()
-//        {
-//            SqlConnection conn = await GetConnectionAsync();
-//            try
-//            {
-//                currentTransaction = (SqlTransaction)await conn.BeginTransactionAsync();
-//            }
-//            catch (SqlException e)
-//            {
-//                throw new Exception($"Failed to begin transaction: {e.Message}", e);
-//            }
-//            return currentTransaction;
-//        }
-
-//        public async Task CommitTransactionAsync()
-//        {
-//            if (currentTransaction != null)
-//            {
-//                await currentTransaction.CommitAsync();
-//                currentTransaction = null;
-//            }
-//        }
-
-//        public async Task RollbackTransactionAsync()
-//        {
-//            if (currentTransaction != null)
-//            {
-//                await currentTransaction.RollbackAsync();
-//                currentTransaction = null;
-//            }
-//        }
-//    }
-//}

@@ -4,7 +4,6 @@ using BankApp.Server.Configuration;
 using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Infrastructure.Interfaces;
 using BankApp.Server.Services.Interfaces;
-using BankApp.Server.Repositories.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace BankApp.Server.Services.Implementations
@@ -249,18 +248,18 @@ namespace BankApp.Server.Services.Implementations
         private Card? GetOwnedCard(int userId, int cardId)
         {
             Card? card = cardRepository.GetCardById(cardId);
-            return card != null && card.UserId == userId ? card : null;
+            return card != null && card.User?.Id == userId ? card : null;
         }
 
         private CardSummaryDto MapToSummary(Card card)
         {
-            Account? account = cardRepository.GetAccountById(card.AccountId);
+            Account? account = card.Account;
 
             return new CardSummaryDto
             {
                 Id = card.Id,
-                AccountId = card.AccountId,
-                AccountName = account?.AccountName ?? $"Account {card.AccountId}",
+                AccountId = account?.Id ?? 0,
+                AccountName = account?.AccountName ?? $"Account {account?.Id ?? 0}",
                 AccountIban = account?.IBAN ?? string.Empty,
                 MaskedCardNumber = MaskCardNumber(card.CardNumber),
                 CardholderName = card.CardholderName,
@@ -322,7 +321,7 @@ namespace BankApp.Server.Services.Implementations
                 return "****";
             }
 
-            return $"**** **** **** {cardNumber[^4..]}";
+            return $"**** {cardNumber[^4..]}";
         }
 
         private static CardCommandResponse CreateCommandFailure(string message)
