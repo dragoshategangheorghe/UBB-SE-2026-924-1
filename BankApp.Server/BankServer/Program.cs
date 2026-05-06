@@ -9,9 +9,7 @@ using BankApp.Server.Services.Implementations;
 using BankApp.Server.Services.Infrastructure.Implementations;
 using BankApp.Server.Services.Infrastructure.Interfaces;
 using BankApp.Server.Services.Interfaces;
-using BankApp.Server.Repositories.Interfaces;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,8 +52,11 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
-string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddScoped<AppDbContext>(_ => new AppDbContext(connectionString!));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//builder.Services.AddDbContext<AppDbContext>(_ => new AppDbContext(connectionString!));
+//builder.Services.AddDbContext<BankAppContext>(options => options.UseSqlServer(connectionString!));
 
 // --- DATA ACCESS OBJECTS ---
 builder.Services.AddScoped<IUserDAO, UserDAO>();
