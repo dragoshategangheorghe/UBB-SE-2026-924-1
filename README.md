@@ -202,16 +202,16 @@ dotnet test BankApp\BankApp.Server.Tests\BankApp.Server.Tests.csproj
 PREREQUISITES:
 - Check that the connection string in the `appsettings.json` file is correct
 - Check that the following packages are installed correctly:
-  ```text
-  Microsoft.EntityFrameWorkCore (9.0.15)
-  Microsoft.EntityFrameWorkCore.Design (9.0.0)
-  Microsoft.EntityFrameWorkCore.SqlServer (9.0.15)
-  ```
+```text
+Microsoft.EntityFrameWorkCore (9.0.15)
+Microsoft.EntityFrameWorkCore.Design (9.0.0)
+Microsoft.EntityFrameWorkCore.SqlServer (9.0.15)
+```
 
 1. In order to get the new EF context up and runnning, you need to open the `Package Manager Console`:
-   ```text
-     Top Bar: View -> Other Windows -> Package Manager Console
-   ```
+```text
+ Top Bar: View -> Other Windows -> Package Manager Console
+```
 
 2. Check that the project you are in contains the `.csproj` file. The path should look like this:
 ```text
@@ -219,11 +219,13 @@ C:\path\to\UBB-SE-2026-924-1\BankApp.Server\BankServer
 ```
 
 3. Run the command below to add the initial migration:
-   ```text
-    dotnet ef migrations add <name of migration>
-   ```
+```text
+dotnet ef migrations add <name of migration>
+```
    
 4. After the project builds successfully, one can update the database by running this command:
-   ```text
-   dotnet ef database update
-   ```
+```text
+dotnet ef database update
+```
+
+5. All done!
