@@ -1,8 +1,8 @@
 namespace BankApp.Client.Views
 {
+    using System;
     using BankApp.Client.ViewModels;
     using BankApp.Models.Features.Loans;
-    using BankApp.Server.Utilities;
     using Microsoft.UI;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
@@ -66,7 +66,14 @@ namespace BankApp.Client.Views
 
         private double GetRepaymentProgress(Loan loan)
         {
-            return (double)AmortizationCalculator.ComputeRepaymentProgress(loan.Principal, loan.OutstandingBalance);
+            if (loan.Principal <= 0)
+            {
+                return 0;
+            }
+
+            var paidAmount = Math.Max(0m, loan.Principal - loan.OutstandingBalance);
+            var progress = paidAmount / loan.Principal;
+            return (double)Math.Clamp(progress, 0m, 1m);
         }
 
         private void OnRowContainerContentChanging(
