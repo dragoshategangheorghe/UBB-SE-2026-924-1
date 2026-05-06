@@ -17,9 +17,9 @@ public class InvestmentTransaction
     public int IdentificationNumber { get; set; }
 
     /// <summary>
-    /// Gets or sets the associated holding identifier.
+    /// Gets or sets the associated holding.
     /// </summary>
-    public int HoldingIdentificationNumber { get; set; }
+    public virtual InvestmentHolding Holding { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the traded symbol.

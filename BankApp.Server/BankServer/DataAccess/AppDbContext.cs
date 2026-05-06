@@ -1,200 +1,254 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient;
+﻿using BankApp.Models.Entities;
+using BankApp.Models.Features.Chat;
+using BankApp.Models.Features.Investments;
+using BankApp.Models.Features.Loans;
+using BankApp.Models.Features.Savings;
+using Microsoft.EntityFrameworkCore;
+
 namespace BankApp.Server.DataAccess
 {
-    public class AppDbContext : IDbContext
+    public class AppDbContext : DbContext
     {
-        private readonly string connectionString;
-        private SqlConnection? connection;
-        private SqlTransaction? currentTransaction;
+        public AppDbContext() { }
 
-        public AppDbContext(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public SqlConnection GetConnection()
+        // Entity sets for the tables
+
+        public DbSet<Account> Accounts { get; set; }
+
+        public DbSet<Card> Cards { get; set; }
+
+        public DbSet<Category> Categories { get; set; }
+
+        public DbSet<Notification> Notifications { get; set; }
+
+        public DbSet<NotificationPreference> NotificationPreferences { get; set; }
+
+        public DbSet<OAuthLink> OAuthLinks { get; set; }
+
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
+        public DbSet<Session> Sessions { get; set; }
+
+        public DbSet<Transaction> Transactions { get; set; }
+
+        public DbSet<TransactionCategoryOverride> TransactionCategoriesOverride { get; set; }
+
+        public DbSet<User> Users { get; set; }
+
+        public DbSet<UserCardPreference> UserCardPreferences { get; set; }
+
+
+        // FEATURES: Chat
+        public DbSet<AttachmentUploadResponse> AttachmentUploadResponses { get; set; }
+
+        public DbSet<ChatAttachment> ChatAttachments { get; set; }
+
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
+        public DbSet<ChatSession> ChatSessions { get; set; }
+
+        public DbSet<SelectedAttachment> SelectedAttachments { get; set; }
+
+
+        // FEATURES: Investments
+        public DbSet<FundingSourceOption> FundingSourceOptions { get; set; }
+
+        public DbSet<InvestmentHolding> InvestmentHoldings { get; set; }
+
+        public DbSet<Portfolio> Portfolios { get; set; }
+
+
+        // FEATURE: Loans
+        public DbSet<AmortizationRow> AmortizationRows { get; set; }
+
+        public DbSet<Loan> Loans { get; set; }
+
+        public DbSet<LoanApplication> LoanApplications { get; set; }
+
+        public DbSet<LoanEstimate> LoanEstimates { get; set; }
+
+
+        // FEATURE: Savings
+        public DbSet<AutoDeposit> AutoDeposits { get; set; }
+
+        public DbSet<SavingsAccount> SavingsAccounts { get; set; }
+
+        public DbSet<SavingsTransaction> SavingsTransactions { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            if (connection == null || connection.State == ConnectionState.Closed)
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Account>(entity =>
             {
-                try
-                {
-                    connection = new SqlConnection(connectionString);
-                    connection.Open();
-                }
-                catch (SqlException e)
-                {
-                    throw new Exception($"Failed to connect to the database: {e.Message}", e);
-                }
-            }
-            return connection;
-        }
+                entity.HasOne(a => a.User)
+                    .WithMany(u => u.Accounts)
+                    .IsRequired();
 
-        public SqlTransaction BeginTransaction()
-        {
-            SqlConnection conn = GetConnection();
-            try
+                entity.HasMany(a => a.Cards)
+                    .WithOne(c => c.Account)
+                    .IsRequired();
+
+                entity.HasMany(a => a.Transactions)
+                    .WithOne(t => t.Account)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Card>(entity =>
             {
-                currentTransaction = conn.BeginTransaction();
-            }
-            catch (SqlException e)
+                entity.HasOne(c => c.User)
+                    .WithMany(u => u.Cards)
+                    .IsRequired();
+
+                entity.HasMany(c => c.Transactions)
+                    .WithOne(t => t.Card);
+            });
+
+            modelBuilder.Entity<Transaction>(entity =>
             {
-                throw new Exception($"Failed to begin transaction: {e.Message}", e);
-            }
-            return currentTransaction;
-        }
+                entity.HasOne(t => t.Account)
+                    .WithMany(a => a.Transactions)
+                    .IsRequired();
 
-        public void CommitTransaction()
-        {
-            if (currentTransaction != null)
+                entity.HasOne(t => t.Card)
+                    .WithMany(c => c.Transactions);
+
+                entity.HasOne(t => t.Category)
+                    .WithMany();
+            });
+
+            modelBuilder.Entity<Session>(entity =>
             {
-                currentTransaction.Commit();
-                currentTransaction = null;
-            }
-        }
+                entity.HasOne(s => s.User)
+                    .WithMany(u => u.Sessions)
+                    .IsRequired();
+            });
 
-        public void RollbackTransaction()
-        {
-            if (currentTransaction != null)
+            modelBuilder.Entity<Notification>(entity =>
             {
-                currentTransaction.Rollback();
-                currentTransaction = null;
-            }
-        }
+                entity.HasOne(n => n.User)
+                    .WithMany(u => u.Notifications)
+                    .IsRequired();
+            });
 
-        public SqlTransaction? GetCurrentTransaction()
-        {
-            return currentTransaction;
-        }
-
-        private void AddParameters(SqlCommand cmd, object[] parameters)
-        {
-            if (parameters == null)
+            modelBuilder.Entity<OAuthLink>(entity =>
             {
-                return;
-            }
-            for (int i = 0; i < parameters.Length; i++)
+                entity.HasOne(o => o.User)
+                    .WithMany(u => u.OAuthLinks)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<NotificationPreference>(entity =>
             {
-                cmd.Parameters.AddWithValue($"@p{i}", parameters[i] ?? DBNull.Value);
-            }
-        }
+                entity.HasOne(p => p.User)
+                    .WithMany(u => u.NotificationPreferences)
+                    .IsRequired();
+            });
 
-        public IDataReader ExecuteQuery(string sqlStatement, object[] parameters)
-        {
-            var conn = GetConnection();
-            var cmd = new SqlCommand(sqlStatement, conn, currentTransaction);
-            AddParameters(cmd, parameters);
-            return cmd.ExecuteReader(); // returns rows back
-        }
-
-        public int ExecuteNonQuery(string sqlStatement, object[] parameters)
-        {
-            var conn = GetConnection();
-            using var cmd = new SqlCommand(sqlStatement, conn, currentTransaction); // disposes the command when done with it
-            AddParameters(cmd, parameters);
-            return cmd.ExecuteNonQuery(); // how many rows are affected
-        }
-
-        public void Dispose()
-        {
-            if (currentTransaction != null)
+            modelBuilder.Entity<PasswordResetToken>(entity =>
             {
-                currentTransaction.Dispose();
-            }
+                entity.HasOne(p => p.User)
+                    .WithMany(u => u.PasswordResetTokens)
+                    .IsRequired();
+            });
 
-            if (connection != null)
+            modelBuilder.Entity<UserCardPreference>(entity =>
             {
-                if (connection.State != ConnectionState.Closed)
-                {
-                    connection.Close();
-                }
+                entity.HasKey(ucp => ucp.User.Id);
 
-                connection.Dispose();
-                connection = null;
-            }
-        }
+                entity.HasOne(p => p.User)
+                    .WithMany(u => u.UserCardPreferences)
+                    .IsRequired();
+            });
 
-        public object? ExecuteScalar(string sql, object[] parameters)
-        {
-            var conn = GetConnection();
-            using var cmd = new SqlCommand(sql, conn, currentTransaction);
-            AddParameters(cmd, parameters);
-            return cmd.ExecuteScalar();
-        }
-
-        // async methods
-        public async Task<SqlConnection> GetConnectionAsync()
-        {
-            if (connection == null || connection.State == ConnectionState.Closed)
+            modelBuilder.Entity<TransactionCategoryOverride>(entity =>
             {
-                try
-                {
-                    connection = new SqlConnection(connectionString);
-                    await connection.OpenAsync(); // Deschidere asincronă
-                }
-                catch (SqlException e)
-                {
-                    throw new Exception($"Failed to connect to the database: {e.Message}", e);
-                }
-            }
+                entity.HasOne(t => t.Transaction)
+                    .WithMany()
+                    .IsRequired();
 
-            return connection;
-        }
+                entity.HasOne(t => t.User)
+                    .WithMany(u => u.TransactionCategoryOverrides)
+                    .IsRequired();
 
-        public async Task<int> ExecuteNonQueryAsync(string sql, object[] parameters)
-        {
-            var conn = await GetConnectionAsync();
-            using var cmd = new SqlCommand(sql, conn, currentTransaction);
-            AddParameters(cmd, parameters);
-            return await cmd.ExecuteNonQueryAsync();
-        }
+                entity.HasOne(t => t.Category)
+                    .WithMany()
+                    .IsRequired();
+            });
 
-        public async Task<object?> ExecuteScalarAsync(string sql, object[] parameters)
-        {
-            var conn = await GetConnectionAsync();
-            using var cmd = new SqlCommand(sql, conn, currentTransaction);
-            AddParameters(cmd, parameters);
-            return await cmd.ExecuteScalarAsync();
-        }
-
-        public async Task<SqlDataReader> ExecuteQueryAsync(string sql, object[] parameters)
-        {
-            var conn = await GetConnectionAsync();
-            var cmd = new SqlCommand(sql, conn, currentTransaction);
-            AddParameters(cmd, parameters);
-            return await cmd.ExecuteReaderAsync();
-        }
-
-        public async Task<SqlTransaction> BeginTransactionAsync()
-        {
-            SqlConnection conn = await GetConnectionAsync();
-            try
+            modelBuilder.Entity<Loan>(entity =>
             {
-                currentTransaction = (SqlTransaction)await conn.BeginTransactionAsync();
-            }
-            catch (SqlException e)
-            {
-                throw new Exception($"Failed to begin transaction: {e.Message}", e);
-            }
-            return currentTransaction;
-        }
+                entity.HasOne(l => l.User)
+                    .WithMany()
+                    .IsRequired();
 
-        public async Task CommitTransactionAsync()
-        {
-            if (currentTransaction != null)
-            {
-                await currentTransaction.CommitAsync();
-                currentTransaction = null;
-            }
-        }
+                entity.HasMany(l => l.AmortizationRows)
+                    .WithOne(a => a.Loan)
+                    .IsRequired();
+            });
 
-        public async Task RollbackTransactionAsync()
-        {
-            if (currentTransaction != null)
+            modelBuilder.Entity<SavingsAccount>(entity =>
             {
-                await currentTransaction.RollbackAsync();
-                currentTransaction = null;
-            }
+                entity.HasOne(s => s.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasOne(s => s.FundingAccount)
+                    .WithMany();
+
+                entity.HasMany(s => s.AutoDeposits)
+                    .WithOne(a => a.SavingsAccount)
+                    .IsRequired();
+
+                entity.HasMany(s => s.Transactions)
+                    .WithOne(t => t.SavingsAccount)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<SavingsTransaction>(entity =>
+            {
+                entity.HasOne(t => t.Account)
+                    .WithMany()
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<ChatSession>(entity =>
+            {
+                entity.HasOne(s => s.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasMany(s => s.Messages)
+                    .WithOne(m => m.Session)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<ChatAttachment>(entity =>
+            {
+                entity.HasOne(a => a.Message)
+                    .WithMany()
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Portfolio>(entity =>
+            {
+                entity.HasOne(p => p.User)
+                    .WithMany()
+                    .IsRequired();
+
+                entity.HasMany(p => p.Holdings)
+                    .WithOne(h => h.Portfolio)
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<InvestmentHolding>(entity =>
+            {
+                entity.HasMany(h => h.Transactions)
+                    .WithOne(t => t.Holding)
+                    .IsRequired();
+            });
         }
     }
 }

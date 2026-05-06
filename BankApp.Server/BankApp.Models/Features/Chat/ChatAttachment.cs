@@ -11,9 +11,9 @@ public class ChatAttachment
     public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the related message identifier.
+    /// Gets or sets the related message.
     /// </summary>
-    public int MessageId { get; set; }
+    public virtual ChatMessage Message { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the original attachment file name.

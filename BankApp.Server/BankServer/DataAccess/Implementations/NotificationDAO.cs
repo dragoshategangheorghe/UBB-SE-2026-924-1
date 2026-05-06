@@ -1,57 +1,54 @@
 ﻿using BankApp.Models.Entities;
 using BankApp.Server.DataAccess.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankApp.Server.DataAccess.Implementations
 {
     public class NotificationDAO : INotificationDAO
     {
-        private readonly AppDbContext dbContext;
-        public NotificationDAO(AppDbContext dbContext)
+        private readonly AppDbContext appDbContext;
+
+        public NotificationDAO(AppDbContext appDbContext)
         {
-            this.dbContext = dbContext;
+            this.appDbContext = appDbContext;
+        }
+
+        public bool Create(int userId, string title, string message, string type, string channel, string? relatedEntityType, int? relatedEntityId)
+        {
+            var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
+            if (appDbContext.Entry(user).State == EntityState.Detached)
+            {
+                appDbContext.Attach(user);
+            }
+
+            var notification = new Notification
+            {
+                User = user,
+                Title = title,
+                Message = message,
+                Type = type,
+                Channel = channel,
+                RelatedEntityType = relatedEntityType,
+                RelatedEntityId = relatedEntityId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            appDbContext.Notifications.Add(notification);
+            return appDbContext.SaveChanges() > 0;
         }
 
         public int CountUnreadByUserId(int userId)
         {
-            var query = @"SELECT COUNT(*) FROM Notification WHERE UserId = @p0 and IsRead = 0";
-            using var reader = dbContext.ExecuteQuery(query, new object[] { userId });
-            if (reader.Read())
-            {
-                return reader.GetInt32(0);
-            }
-            return 0;
+            return appDbContext.Notifications
+                    .Count(n => n.User.Id == userId && !n.IsRead);
         }
 
         public List<Notification> FindByUserId(int userId)
         {
-            var notifications = new List<Notification>();
-            var query = @"SELECT * FROM Notification where UserId = @p0";
-            using var reader = dbContext.ExecuteQuery(query, new object[] { userId });
-            while (reader.Read())
-            {
-                notifications.Add(MapToNotification(reader));
-            }
-
-            return notifications;
-        }
-
-        private Notification MapToNotification(System.Data.IDataReader r)
-        {
-            return new Notification
-            {
-                Id = r.GetInt32(r.GetOrdinal("Id")),
-                UserId = r.GetInt32(r.GetOrdinal("UserId")),
-                Title = r.GetString(r.GetOrdinal("Title")),
-                Message = r.GetString(r.GetOrdinal("Message")),
-                Type = r.GetString(r.GetOrdinal("Type")),
-                Channel = r.GetString(r.GetOrdinal("Channel")),
-                IsRead = r.GetBoolean(r.GetOrdinal("IsRead")),
-                RelatedEntityType = r.IsDBNull(r.GetOrdinal("RelatedEntityType"))
-                    ? null : r.GetString(r.GetOrdinal("RelatedEntityType")),
-                RelatedEntityId = r.IsDBNull(r.GetOrdinal("RelatedEntityId"))
-                    ? null : r.GetInt32(r.GetOrdinal("RelatedEntityId")),
-                CreatedAt = r.GetDateTime(r.GetOrdinal("CreatedAt"))
-            };
+            return appDbContext.Notifications
+                .Include(n => n.User)
+                .Where(n => n.User.Id == userId)
+                .ToList();
         }
     }
 }

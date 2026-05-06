@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using BankApp.Server.Repositories.Interfaces;
-using Microsoft.Data.SqlClient;
 using BankApp.Models.DTOs;
 using BankApp.Models.DTOs.Savings;
-using BankApp.Models.Features.Savings;
-using BankApp.Models.Features.Investments;
 using BankApp.Models.Enums;
+using BankApp.Models.Features.Investments;
+using BankApp.Models.Features.Savings;
 using BankApp.Server.DataAccess;
+using BankApp.Server.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankApp.Server.Repositories.Implementations
 {
     /// <summary>
-    /// SQL-backed savings repository implementation.
+    /// EF Core-backed savings repository implementation.
     /// </summary>
     public class SavingsRepository : ISavingsRepository
     {
@@ -27,141 +28,132 @@ namespace BankApp.Server.Repositories.Implementations
         private const string PrimaryFundingSourceName = "Checking Account One";
         private const string SecondaryFundingSourceName = "Checking Account Two";
 
-        private readonly AppDbContext dbContext;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SavingsRepository"/> class.
         /// </summary>
-        /// <param name="dbContext"></param>
+        /// <param name="dbContext">The application's EF Core database context.</param>
         public SavingsRepository(AppDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            _context = dbContext;
         }
 
         /// <summary>
-        /// Gets savings accounts for a user with optional inclusion of closed accounts.
+        /// Gets savings accounts for a user through navigation mappings.
         /// </summary>
-        /// <param name="userIdentificationNumber">The user identifier.</param>
-        /// <param name="includesClosedAccounts">Whether closed accounts should be included.</param>
-        /// <returns>The user's matching savings accounts.</returns>
         public async Task<List<SavingsAccount>> GetSavingsAccountsByUserIdAsync(
             int userIdentificationNumber,
             bool includesClosedAccounts = false)
         {
-            var selectAccountsQuery = @"
-                SELECT id, userId, savingsType, balance, accruedInterest, apy,
-                       maturityDate, accountStatus, createdAt,
-                       accountName, fundingAccountId, targetAmount, targetDate
-                FROM SavingsAccount
-                WHERE userId = @UserId"
-                                      + (includesClosedAccounts ? string.Empty : " AND accountStatus != 'Closed'") +
-                                      " ORDER BY balance DESC";
+            var query = _context.SavingsAccounts
+                .AsNoTracking()
+                .Include(a => a.User)
+                .Include(a => a.FundingAccount)
+                .Include(a => a.AutoDeposits)
+                .Include(a => a.Transactions)
+                .Where(a => a.User.Id == userIdentificationNumber);
 
-            var accountsList = new List<SavingsAccount>();
-
-            using var reader = await dbContext.ExecuteQueryAsync(selectAccountsQuery, new object[] { userIdentificationNumber });
-            while (await reader.ReadAsync())
+            if (!includesClosedAccounts)
             {
-                accountsList.Add(MapReaderToAccount(reader));
+                query = query.Where(a => a.AccountStatus != "Closed");
             }
 
-            return accountsList;
+            return await query.OrderByDescending(a => a.Balance).ToListAsync();
         }
 
         /// <summary>
-        /// Creates a new savings account using the provided request and APY.
+        /// Creates a new savings account using EF Core and returns the created entity.
         /// </summary>
-        /// <param name="dataTransferObject">The create-account request payload.</param>
-        /// <param name="annualPercentageYield">The annual percentage yield to assign.</param>
-        /// <returns>The created savings account.</returns>
         public async Task<SavingsAccount> CreateSavingsAccountAsync(CreateSavingsAccountDto dataTransferObject, decimal annualPercentageYield)
         {
-            const string insertAccountQuery = @"
-                INSERT INTO SavingsAccount
-                    (userId, savingsType, balance, accruedInterest, apy, maturityDate,
-                     accountStatus, createdAt, accountName,
-                     fundingAccountId, targetAmount, targetDate)
-                OUTPUT INSERTED.id
-                VALUES
-                    (@UserId, @SavingsType, @Balance, @AccruedInterest, @Apy, @MaturityDate,
-                     'Active', @CreatedAt, @AccountName,
-                     @FundingAccountId, @TargetAmount, @TargetDate)";
+            var user = await _context.Users
+                .Include(u => u.Accounts)
+                .FirstOrDefaultAsync(u => u.Id == dataTransferObject.UserIdentificationNumber);
 
-            var newSavingsAccountIdentificationNumber = (int)(await dbContext.ExecuteScalarAsync(insertAccountQuery, new object[]
+            if (user == null)
             {
-                dataTransferObject.UserIdentificationNumber,
-                dataTransferObject.SavingsType,
-                dataTransferObject.InitialDeposit,
-                ZeroAmount,
-                annualPercentageYield,
-                (object?)dataTransferObject.MaturityDate ?? DBNull.Value,
-                DateTime.Now,
-                (object?)dataTransferObject.AccountName ?? DBNull.Value,
-                dataTransferObject.FundingAccountId == NoFundingAccountId ? DBNull.Value : dataTransferObject.FundingAccountId,
-                (object?)dataTransferObject.TargetAmount ?? DBNull.Value,
-                (object?)dataTransferObject.TargetDate ?? DBNull.Value,
-            }))!;
+                throw new InvalidOperationException("User was not found.");
+            }
 
-            return new SavingsAccount
+            var fundingAccount = dataTransferObject.FundingAccountId == NoFundingAccountId
+                ? null
+                : await _context.Accounts
+                    .Include(a => a.User)
+                    .FirstOrDefaultAsync(a => a.Id == dataTransferObject.FundingAccountId);
+
+            var account = new SavingsAccount
             {
-                IdentificationNumber = newSavingsAccountIdentificationNumber,
-                UserIdentificationNumber = dataTransferObject.UserIdentificationNumber,
+                User = user,
                 SavingsType = dataTransferObject.SavingsType,
                 AccountName = dataTransferObject.AccountName,
                 Balance = dataTransferObject.InitialDeposit,
                 AccruedInterest = ZeroAmount,
                 AnnualPercentageYield = annualPercentageYield,
                 AccountStatus = "Active",
-                CreatedAt = DateTime.Now,
-                FundingAccountIdentificationNumber = dataTransferObject.FundingAccountId == NoFundingAccountId ? null : dataTransferObject.FundingAccountId,
+                CreatedAt = DateTime.UtcNow,
+                FundingAccount = fundingAccount,
                 TargetAmount = dataTransferObject.TargetAmount,
                 TargetDate = dataTransferObject.TargetDate,
+                MaturityDate = dataTransferObject.MaturityDate,
             };
+
+            _context.SavingsAccounts.Add(account);
+            await _context.SaveChangesAsync();
+            return account;
         }
 
         /// <summary>
         /// Deposits funds into a savings account and records a transaction row.
         /// </summary>
-        /// <param name="accountIdentificationNumber">The target account identifier.</param>
-        /// <param name="amount">The amount to deposit.</param>
-        /// <param name="source">The source label for the deposit.</param>
-        /// <returns>The resulting deposit response.</returns>
         public async Task<DepositResponseDto> DepositAsync(int accountIdentificationNumber, decimal amount, string source)
         {
-            await dbContext.BeginTransactionAsync();
-
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                const string updateAccountBalanceQuery = @"
-                    UPDATE SavingsAccount
-                    SET balance = balance + @Amount
-                    WHERE id = @AccountId";
+                var account = await _context.SavingsAccounts
+                    .Include(x => x.User)
+                    .Include(x => x.FundingAccount)
+                    .FirstOrDefaultAsync(x => x.IdentificationNumber == accountIdentificationNumber);
 
-                await dbContext.ExecuteNonQueryAsync(updateAccountBalanceQuery, new object[] { amount, accountIdentificationNumber });
+                if (account == null)
+                {
+                    throw new InvalidOperationException("Savings account was not found.");
+                }
 
-                const string selectAccountBalanceQuery = "SELECT balance FROM SavingsAccount WHERE id = @AccountId";
-                decimal newAccountBalance = (decimal)(await dbContext.ExecuteScalarAsync(selectAccountBalanceQuery, new object[] { accountIdentificationNumber }))!;
+                if (account.FundingAccount == null)
+                {
+                    throw new InvalidOperationException("Funding account was not found.");
+                }
 
-                const string insertTransactionQuery = @"
-                INSERT INTO SavingsTransaction
-                (accountId, transactionType, amount, balanceAfter, source, description, createdAt)
-                OUTPUT INSERTED.id
-                VALUES (@AccountId, @TransactionType, @Amount, @BalanceAfter, @Source, @Description, GETUTCDATE())";
-                var newTransactionIdentificationNumber = (int)(await dbContext.ExecuteScalarAsync(insertTransactionQuery,
-                    new object[] { accountIdentificationNumber, "Deposit", amount, newAccountBalance, source ?? "Manual", DBNull.Value }))!;
+                account.Balance += amount;
+                var newAccountBalance = account.Balance;
 
-                await dbContext.CommitTransactionAsync();
+                var savingsTransaction = new SavingsTransaction
+                {
+                    SavingsAccount = account,
+                    Account = account.FundingAccount,
+                    Amount = amount,
+                    Type = TransactionType.Deposit,
+                    Source = source ?? "Manual",
+                    BalanceAfter = newAccountBalance,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                _context.SavingsTransactions.Add(savingsTransaction);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return new DepositResponseDto
                 {
                     NewBalance = newAccountBalance,
-                    TransactionId = newTransactionIdentificationNumber,
-                    Timestamp = DateTime.Now,
+                    TransactionId = savingsTransaction.Id,
+                    Timestamp = DateTime.UtcNow,
                 };
             }
             catch
             {
-                await dbContext.RollbackTransactionAsync();
+                await transaction.RollbackAsync();
                 throw;
             }
         }
@@ -169,61 +161,54 @@ namespace BankApp.Server.Repositories.Implementations
         /// <summary>
         /// Closes a savings account and transfers the specified amount to another account.
         /// </summary>
-        /// <param name="accountIdentificationNumber">The source account identifier to close.</param>
-        /// <param name="destinationAccountIdentificationNumber">The destination account identifier.</param>
-        /// <param name="transferAmount">The amount to transfer out during closure.</param>
-        /// <param name="earlyClosurePenalty">The penalty applied on closure, if any.</param>
-        /// <returns>The closure operation result.</returns>
         public async Task<ClosureResultDto> CloseSavingsAccountAsync(
             int accountIdentificationNumber,
             int destinationAccountIdentificationNumber,
             decimal transferAmount,
             decimal earlyClosurePenalty)
         {
-            await dbContext.BeginTransactionAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                decimal oldAccountBalance;
-                string oldAccountType;
-                DateTime? oldAccountMaturityDate;
+                var sourceAccount = await _context.SavingsAccounts
+                    .Include(x => x.FundingAccount)
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(x => x.IdentificationNumber == accountIdentificationNumber);
 
-                // First step: lock and fetch source account data.
-                string selectSourceAccountDataQuery = @"
-                SELECT balance, savingsType, maturityDate, accountStatus
-                FROM SavingsAccount WITH (UPDLOCK, ROWLOCK)
-                WHERE id = @Id";
-                using var reader = await dbContext.ExecuteQueryAsync(selectSourceAccountDataQuery, new object[] { accountIdentificationNumber });
+                var destinationAccount = await _context.SavingsAccounts
+                    .Include(x => x.FundingAccount)
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(x => x.IdentificationNumber == destinationAccountIdentificationNumber);
 
-                oldAccountBalance = (decimal)reader["balance"];
-                oldAccountType = reader["savingsType"].ToString()!;
-                oldAccountMaturityDate = reader["maturityDate"] as DateTime?;
+                if (sourceAccount == null || destinationAccount == null)
+                {
+                    throw new InvalidOperationException("One or more savings accounts were not found.");
+                }
 
-                // Second step: transfer funds to destination.
-                string transferAmountToDestinationQuery = @"
-                UPDATE SavingsAccount 
-                SET balance = balance + @Amount
-                WHERE id = @DestId";
-                await dbContext.ExecuteNonQueryAsync(transferAmountToDestinationQuery, new object[] { transferAmount, destinationAccountIdentificationNumber });
+                if (sourceAccount.FundingAccount == null)
+                {
+                    throw new InvalidOperationException("Funding account was not found.");
+                }
 
-                // Third step: close the source account.
-                string closeSourceAccountQuery = @"
-                UPDATE SavingsAccount
-                SET balance = @ClosedBalance,
-                    accountStatus = 'Closed',
-                    updatedAt = GETUTCDATE()
-                WHERE id = @Id";
-                await dbContext.ExecuteNonQueryAsync(closeSourceAccountQuery, new object[] { ZeroAmount, accountIdentificationNumber });
+                sourceAccount.Balance = ZeroAmount;
+                sourceAccount.AccountStatus = "Closed";
+                destinationAccount.Balance += transferAmount;
 
-                // Fourth step: insert closure transaction.
-                string insertClosureTransactionQuery = @"
-                INSERT INTO SavingsTransaction
-                (accountId, transactionType, amount, balanceAfter, source, description, createdAt)
-                VALUES
-                (@AccountId, 'Closure', @Amount, @BalanceAfter, 'Closure', 'Account closed', GETUTCDATE())";
-                await dbContext.ExecuteNonQueryAsync(insertClosureTransactionQuery, new object[] { accountIdentificationNumber, transferAmount, ZeroAmount });
+                _context.SavingsTransactions.Add(new SavingsTransaction
+                {
+                    SavingsAccount = sourceAccount,
+                    Account = sourceAccount.FundingAccount,
+                    Amount = transferAmount,
+                    Type = TransactionType.Deposit,
+                    Source = "Closure",
+                    Description = "Account closed",
+                    BalanceAfter = ZeroAmount,
+                    CreatedAt = DateTime.UtcNow,
+                });
 
-                await dbContext.CommitTransactionAsync();
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return new ClosureResultDto
                 {
@@ -236,7 +221,7 @@ namespace BankApp.Server.Repositories.Implementations
             }
             catch (Exception exception)
             {
-                await dbContext.RollbackTransactionAsync();
+                await transaction.RollbackAsync();
 
                 return new ClosureResultDto
                 {
@@ -252,52 +237,52 @@ namespace BankApp.Server.Repositories.Implementations
         /// <summary>
         /// Withdraws funds from a savings account and logs the transaction.
         /// </summary>
-        /// <param name="accountId">The source account identifier.</param>
-        /// <param name="amount">The amount to withdraw.</param>
-        /// <param name="destinationLabel">The destination label shown in transaction history.</param>
-        /// <param name="earlyWithdrawalPenalty">The early-withdrawal penalty, if any.</param>
-        /// <returns>The withdrawal operation result.</returns>
         public async Task<WithdrawResponseDto> WithdrawAsync(
             int accountId,
             decimal amount,
             string destinationLabel,
             decimal earlyWithdrawalPenalty)
         {
-            await dbContext.BeginTransactionAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                string savingsAccountType;
-                DateTime? maturityDate;
-                decimal oldBalance;
+                var account = await _context.SavingsAccounts
+                    .Include(x => x.User)
+                    .Include(x => x.FundingAccount)
+                    .FirstOrDefaultAsync(x => x.IdentificationNumber == accountId);
 
-                string selectAccountDataQuery = @"
-                SELECT balance, savingsType, maturityDate
-                FROM SavingsAccount WITH (UPDLOCK, ROWLOCK)
-                WHERE id = @Id";
-                using var reader = await dbContext.ExecuteQueryAsync(selectAccountDataQuery, new object[] { accountId });
+                if (account == null)
+                {
+                    throw new InvalidOperationException("Savings account was not found.");
+                }
 
-                oldBalance = (decimal)reader["balance"];
-                savingsAccountType = reader["savingsType"].ToString()!;
-                maturityDate = reader["maturityDate"] as DateTime?;
+                if (account.FundingAccount == null)
+                {
+                    throw new InvalidOperationException("Funding account was not found.");
+                }
 
-                var newBalance = oldBalance - amount;
+                var newBalance = account.Balance - amount;
+                account.Balance = newBalance;
 
-                string updateAccountBalanceQuery = @"
-                UPDATE SavingsAccount SET balance = @Balance WHERE id = @Id";
-                await dbContext.ExecuteNonQueryAsync(updateAccountBalanceQuery, new object[] { newBalance, accountId });
-
-                string insertWithdrawalTransactionQuery = @"
-                INSERT INTO SavingsTransaction
-                (accountId, transactionType, amount, balanceAfter, source, description, createdAt)
-                VALUES (@AccountId, 'Withdrawal', @Amount, @BalanceAfter, 'Manual',@Description, GETUTCDATE())";
                 var withdrawalDescription = earlyWithdrawalPenalty > NoPenaltyAmount
                     ? $"To: {destinationLabel} | Early withdrawal penalty: {earlyWithdrawalPenalty:C2}"
                     : $"To: {destinationLabel}";
 
-                await dbContext.ExecuteNonQueryAsync(insertWithdrawalTransactionQuery, new object[] { accountId, amount, newBalance, withdrawalDescription });
+                _context.SavingsTransactions.Add(new SavingsTransaction
+                {
+                    SavingsAccount = account,
+                    Account = account.FundingAccount,
+                    Amount = amount,
+                    Type = TransactionType.Withdrawal,
+                    Source = "Manual",
+                    Description = withdrawalDescription,
+                    BalanceAfter = newBalance,
+                    CreatedAt = DateTime.UtcNow,
+                });
 
-                await dbContext.CommitTransactionAsync();
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return new WithdrawResponseDto
                 {
@@ -313,7 +298,7 @@ namespace BankApp.Server.Repositories.Implementations
             }
             catch (Exception exception)
             {
-                await dbContext.RollbackTransactionAsync();
+                await transaction.RollbackAsync();
                 return new WithdrawResponseDto
                 {
                     Success = false,
@@ -326,166 +311,74 @@ namespace BankApp.Server.Repositories.Implementations
         /// <summary>
         /// Gets auto-deposit configuration for a savings account.
         /// </summary>
-        /// <param name="accountId">The account identifier.</param>
-        /// <returns>The auto-deposit settings, or <see langword="null"/> when missing.</returns>
         public async Task<AutoDeposit?> GetAutoDepositAsync(int accountId)
         {
-            const string selectAutoDepositByAccountIdQuery = @"
-                SELECT id, savingsAccountId, amount, frequency, nextRunDate, isActive
-                FROM AutoDeposit
-                WHERE savingsAccountId = @AccountId";
-            using var reader = await dbContext.ExecuteQueryAsync(selectAutoDepositByAccountIdQuery, new object[] { accountId });
-
-            if (!await reader.ReadAsync())
-            {
-                return null;
-            }
-
-            return new AutoDeposit
-            {
-                Id = (int)reader["id"],
-                SavingsAccountId = (int)reader["savingsAccountId"],
-                Amount = (decimal)reader["amount"],
-                Frequency = Enum.Parse<DepositFrequency>(reader["frequency"].ToString()!),
-                NextRunDate = (DateTime)reader["nextRunDate"],
-                IsActive = (bool)reader["isActive"],
-            };
+            return await _context.AutoDeposits
+                .AsNoTracking()
+                .Include(x => x.SavingsAccount)
+                .ThenInclude(x => x.User)
+                .FirstOrDefaultAsync(x => x.SavingsAccount.IdentificationNumber == accountId);
         }
 
         /// <summary>
         /// Creates or updates auto-deposit settings for a savings account.
         /// </summary>
-        /// <param name="autoDeposit">The auto-deposit entity to save.</param>
-        /// <returns>A task that completes when persistence is done.</returns>
         public async Task SaveAutoDepositAsync(AutoDeposit autoDeposit)
         {
             if (autoDeposit.Id == NewAutoDepositId)
             {
-                const string insertAutoDepositQuery = @"
-                    INSERT INTO AutoDeposit (savingsAccountId, amount, frequency, nextRunDate, isActive)
-                    VALUES (@AccountId, @Amount, @Frequency, @NextRunDate, @IsActive)";
-                await dbContext.ExecuteNonQueryAsync(insertAutoDepositQuery, new object[]
-                    { autoDeposit.SavingsAccountId, autoDeposit.Amount, autoDeposit.Frequency.ToString(), autoDeposit.NextRunDate, autoDeposit.IsActive });
+                _context.AutoDeposits.Add(autoDeposit);
             }
             else
             {
-                const string updateAutoDepositQuery = @"
-                    UPDATE AutoDeposit
-                    SET amount = @Amount, frequency = @Frequency,
-                        nextRunDate = @NextRunDate, isActive = @IsActive
-                    WHERE id = @Id";
-                await dbContext.ExecuteNonQueryAsync(updateAutoDepositQuery, new object[]
-                    { autoDeposit.Amount, autoDeposit.Frequency.ToString(), autoDeposit.NextRunDate, autoDeposit.IsActive, autoDeposit.Id });
+                _context.AutoDeposits.Update(autoDeposit);
             }
+
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
         /// Gets available funding-source options for a user.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <returns>The list of funding-source options.</returns>
         public Task<List<FundingSourceOption>> GetFundingSourcesAsync(int userId)
         {
             return Task.FromResult(
                 new List<FundingSourceOption>
                 {
-                new() { Id = PrimaryFundingSourceId, DisplayName = PrimaryFundingSourceName },
-                new() { Id = SecondaryFundingSourceId, DisplayName = SecondaryFundingSourceName },
+                    new() { Id = PrimaryFundingSourceId, DisplayName = PrimaryFundingSourceName },
+                    new() { Id = SecondaryFundingSourceId, DisplayName = SecondaryFundingSourceName },
                 });
         }
 
         /// <summary>
         /// Gets paginated savings transactions for an account and filter.
         /// </summary>
-        /// <param name="accountId">The account identifier.</param>
-        /// <param name="typeFilter">The transaction-type filter value.</param>
-        /// <param name="page">The one-based page number.</param>
-        /// <param name="pageSize">The page size.</param>
-        /// <returns>A tuple containing page items and total transaction count.</returns>
         public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
             int accountId,
             string typeFilter,
             int page,
             int pageSize)
         {
-            var baseQuery = @"
-                FROM SavingsTransaction
-                WHERE accountId = @AccountId";
+            var query = _context.SavingsTransactions
+                .AsNoTracking()
+                .Include(x => x.SavingsAccount)
+                .ThenInclude(x => x.User)
+                .Include(x => x.Account)
+                .Where(x => x.SavingsAccount.IdentificationNumber == accountId);
 
-            // filter
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
             {
-                baseQuery += " AND transactionType = @Type";
+                query = query.Where(x => x.Type.ToString() == typeFilter);
             }
 
-            // total count
-            string selectCountQuery = "SELECT COUNT(*) " + baseQuery;
-            int numberOfAccountTransactions;
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - FirstPageNumber) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-            if (baseQuery.Contains("@Type"))
-            {
-                numberOfAccountTransactions = (int)(await dbContext.ExecuteScalarAsync(selectCountQuery, new object[] {accountId, typeFilter}))!;
-            }
-            else
-            {
-                numberOfAccountTransactions = (int)(await dbContext.ExecuteScalarAsync(selectCountQuery, new object[] { accountId }))!;
-            }
-
-            // paginated selectAccountsQuery
-            var paginatedSelectAccountsQuery = @"
-                SELECT id, accountId, transactionType, amount, balanceAfter, source, description, createdAt
-                " + baseQuery + @"
-                ORDER BY createdAt DESC
-                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
-            SqlDataReader reader;
-            if (baseQuery.Contains("@Type"))
-            {
-                reader = await dbContext.ExecuteQueryAsync(paginatedSelectAccountsQuery, new object[] { accountId, typeFilter, (page - FirstPageNumber) * pageSize, pageSize });
-            }
-            else
-            {
-                reader = await dbContext.ExecuteQueryAsync(paginatedSelectAccountsQuery, new object[] { accountId, (page - FirstPageNumber) * pageSize, pageSize });
-            }
-
-            var transactionsList = new List<SavingsTransaction>();
-
-            while (await reader.ReadAsync())
-            {
-                transactionsList.Add(
-                    new SavingsTransaction
-                    {
-                        Id = (int)reader["id"],
-                        AccountId = (int)reader["accountId"],
-                        Type = Enum.Parse<TransactionType>(reader["transactionType"].ToString()!),
-                        Amount = (decimal)reader["amount"],
-                        BalanceAfter = (decimal)reader["balanceAfter"],
-                        Source = reader["source"].ToString(),
-                        Description = reader["description"] as string,
-                        CreatedAt = (DateTime)reader["createdAt"],
-                    });
-            }
-
-            return (transactionsList, numberOfAccountTransactions);
-        }
-
-        private static SavingsAccount MapReaderToAccount(SqlDataReader sqlDataReader)
-        {
-            return new SavingsAccount
-            {
-                IdentificationNumber = sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("id")),
-                UserIdentificationNumber = sqlDataReader.GetInt32(sqlDataReader.GetOrdinal("userId")),
-                SavingsType = sqlDataReader["savingsType"]?.ToString() ?? string.Empty,
-                Balance = sqlDataReader.GetDecimal(sqlDataReader.GetOrdinal("balance")),
-                AccruedInterest = sqlDataReader.GetDecimal(sqlDataReader.GetOrdinal("accruedInterest")),
-                AnnualPercentageYield = sqlDataReader.GetDecimal(sqlDataReader.GetOrdinal("apy")),
-                MaturityDate = sqlDataReader["maturityDate"] as DateTime?,
-                AccountStatus = sqlDataReader["accountStatus"]?.ToString() ?? string.Empty,
-                CreatedAt = sqlDataReader.GetDateTime(sqlDataReader.GetOrdinal("createdAt")),
-                AccountName = sqlDataReader["accountName"] as string,
-                FundingAccountIdentificationNumber = sqlDataReader["fundingAccountId"] as int?,
-                TargetAmount = sqlDataReader["targetAmount"] as decimal?,
-                TargetDate = sqlDataReader["targetDate"] as DateTime?,
-            };
+            return (items, totalCount);
         }
     }
 }

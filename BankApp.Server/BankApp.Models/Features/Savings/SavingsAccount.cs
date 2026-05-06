@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BankApp.Models.Entities;
 
 namespace BankApp.Models.Features.Savings
 {
@@ -22,9 +23,9 @@ namespace BankApp.Models.Features.Savings
         public int IdentificationNumber { get; set; }
 
         /// <summary>
-        ///     Gets or sets the unique identifier for the user who owns the savings account.
+        ///     Gets or sets the user who owns the savings account.
         /// </summary>
-        public int UserIdentificationNumber { get; set; }
+        public virtual User User { get; set; } = null!;
 
         /// <summary>
         ///     Gets or sets the type of savings account, which can be "Standard", "GoalSavings", "FixedDeposit", or "HighYield".
@@ -76,9 +77,9 @@ namespace BankApp.Models.Features.Savings
         public string? AccountName { get; set; }
 
         /// <summary>
-        ///     Gets or sets the unique identifier for the funding account associated with this savings account, if any.
+        ///     Gets or sets the funding account associated with this savings account, if any.
         /// </summary>
-        public int? FundingAccountIdentificationNumber { get; set; }
+        public virtual Account? FundingAccount { get; set; }
 
         /// <summary>
         ///     Gets or sets the target amount for goal savings accounts, which the user aims to achieve.
@@ -126,5 +127,9 @@ namespace BankApp.Models.Features.Savings
             this.MaturityDate.Value <= DateTime.UtcNow
                 ? "Matured"
                 : this.AccountStatus;
+
+        // Navigation Properties
+        public virtual ICollection<AutoDeposit> AutoDeposits { get; set; } = new List<AutoDeposit>();
+        public virtual ICollection<SavingsTransaction> Transactions { get; set; } = new List<SavingsTransaction>();
     }
 }

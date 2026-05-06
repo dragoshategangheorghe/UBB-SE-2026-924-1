@@ -4,6 +4,7 @@
 
 namespace BankApp.Models.Features.Investments;
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -26,9 +27,9 @@ public class InvestmentHolding : INotifyPropertyChanged
     public int IdentificationNumber { get; set; }
 
     /// <summary>
-    /// Gets or sets the parent portfolio identifier.
+    /// Gets or sets the parent portfolio.
     /// </summary>
-    public int PortfolioIdentificationNumber { get; set; }
+    public virtual Portfolio Portfolio { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the market ticker symbol.
@@ -84,4 +85,7 @@ public class InvestmentHolding : INotifyPropertyChanged
     {
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    // Navigation Properties
+    public virtual ICollection<InvestmentTransaction> Transactions { get; set; } = new List<InvestmentTransaction>();
 }

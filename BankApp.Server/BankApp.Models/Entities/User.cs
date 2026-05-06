@@ -19,6 +19,17 @@
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        // Navigation Properties
+        public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
+        public virtual ICollection<Card> Cards { get; set; } = new List<Card>();
+        public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
+        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public virtual ICollection<NotificationPreference> NotificationPreferences { get; set; } = new List<NotificationPreference>();
+        public virtual ICollection<OAuthLink> OAuthLinks { get; set; } = new List<OAuthLink>();
+        public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+        public virtual ICollection<UserCardPreference> UserCardPreferences { get; set; } = new List<UserCardPreference>();
+        public virtual ICollection<TransactionCategoryOverride> TransactionCategoryOverrides { get; set; } = new List<TransactionCategoryOverride>();
+
         public override bool Equals(object? obj)
         {
             if (obj == null || GetType() != obj.GetType())

@@ -5,7 +5,7 @@ namespace BankApp.Models.Entities
     public class NotificationPreference
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
+        public virtual User User { get; set; }
         public NotificationType Category { get; set; }
         // public string Category { get; set; } = string.Empty;
         public bool PushEnabled { get; set; } = true;
@@ -18,7 +18,7 @@ namespace BankApp.Models.Entities
             NotificationPreference other = obj as NotificationPreference;
             return other != null &&
                    Id == other.Id &&
-                   UserId == other.UserId &&
+                   User == other.User &&
                    Category == other.Category &&
                    PushEnabled == other.PushEnabled &&
                    EmailEnabled == other.EmailEnabled &&

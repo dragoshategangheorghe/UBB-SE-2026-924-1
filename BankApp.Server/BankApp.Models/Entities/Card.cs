@@ -1,10 +1,10 @@
-﻿namespace BankApp.Models.Entities
+namespace BankApp.Models.Entities
 {
     public class Card
     {
         public int Id { get; set; }
-        public int AccountId { get; set; }
-        public int UserId { get; set; }
+        public virtual Account Account { get; set; } = null!;
+        public virtual User User { get; set; } = null!;
         public string CardNumber { get; set; } = string.Empty;
         public string CardholderName { get; set; } = string.Empty;
         public DateTime ExpiryDate { get; set; }
@@ -21,5 +21,8 @@
         public int SortOrder { get; set; }
         public DateTime? CancelledAt { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        // Navigation Properties
+        public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     }
 }
