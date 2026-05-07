@@ -84,7 +84,7 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(a => a.User)
                     .WithMany(u => u.Accounts)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(a => a.Cards)
                     .WithOne(c => c.Account)
@@ -99,7 +99,7 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(c => c.User)
                     .WithMany(u => u.Cards)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(c => c.Transactions)
                     .WithOne(t => t.Card);
@@ -109,7 +109,7 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(t => t.Account)
                     .WithMany(a => a.Transactions)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(t => t.Card)
                     .WithMany(c => c.Transactions);
@@ -122,35 +122,35 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(s => s.User)
                     .WithMany(u => u.Sessions)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.HasOne(n => n.User)
                     .WithMany(u => u.Notifications)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<OAuthLink>(entity =>
             {
                 entity.HasOne(o => o.User)
                     .WithMany(u => u.OAuthLinks)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<NotificationPreference>(entity =>
             {
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.NotificationPreferences)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<PasswordResetToken>(entity =>
             {
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.PasswordResetTokens)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<UserCardPreference>(entity =>
@@ -159,29 +159,29 @@ namespace BankApp.Server.DataAccess
 
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.UserCardPreferences)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<TransactionCategoryOverride>(entity =>
             {
                 entity.HasOne(t => t.Transaction)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(t => t.User)
                     .WithMany(u => u.TransactionCategoryOverrides)
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(t => t.Category)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Loan>(entity =>
             {
                 entity.HasOne(l => l.User)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(l => l.AmortizationRows)
                     .WithOne(a => a.Loan)
@@ -192,10 +192,10 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(s => s.User)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(s => s.FundingAccount)
-                    .WithMany();
+                    .WithMany().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(s => s.AutoDeposits)
                     .WithOne(a => a.SavingsAccount)
@@ -210,14 +210,14 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(t => t.Account)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<ChatSession>(entity =>
             {
                 entity.HasOne(s => s.User)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(s => s.Messages)
                     .WithOne(m => m.Session)
@@ -230,14 +230,14 @@ namespace BankApp.Server.DataAccess
             {
                 entity.HasOne(a => a.Message)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Portfolio>(entity =>
             {
                 entity.HasOne(p => p.User)
                     .WithMany()
-                    .IsRequired();
+                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(p => p.Holdings)
                     .WithOne(h => h.Portfolio)
