@@ -685,6 +685,7 @@ namespace BankApp.Server.Tests
             {
                 Id = 7,
                 UserId = 3,
+                User = new User { Id = 3 },
                 AccountId = 11,
                 CardNumber = "5555444433331111",
                 CardholderName = "Ada Lovelace",
