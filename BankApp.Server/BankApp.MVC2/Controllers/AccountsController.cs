@@ -8,24 +8,25 @@ using Microsoft.EntityFrameworkCore;
 using BankApp.Models.Entities;
 using BankApp.Server.DataAccess;
 
-namespace BankApp.MVC2
+namespace BankApp.MVC2.Controllers
 {
-    public class UsersController : Controller
+    public class AccountsController : Controller
     {
         private readonly AppDbContext _context;
 
-        public UsersController(AppDbContext context)
+        public AccountsController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: Users
+        // GET: Accounts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            var appDbContext = _context.Accounts.Include(a => a.User);
+            return View(await appDbContext.ToListAsync());
         }
 
-        // GET: Users/Details/5
+        // GET: Accounts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,39 +34,42 @@ namespace BankApp.MVC2
                 return NotFound();
             }
 
-            var user = await _context.Users
+            var account = await _context.Accounts
+                .Include(a => a.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
+            if (account == null)
             {
                 return NotFound();
             }
 
-            return View(user);
+            return View(account);
         }
 
-        // GET: Users/Create
+        // GET: Accounts/Create
         public IActionResult Create()
         {
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Email");
             return View();
         }
 
-        // POST: Users/Create
+        // POST: Accounts/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Email,PasswordHash,FullName,PhoneNumber,DateOfBirth,Address,Nationality,PreferredLanguage,Is2FAEnabled,Preferred2FAMethod,IsLocked,LockoutEnd,FailedLoginAttempts,CreatedAt,UpdatedAt")] User user)
+        public async Task<IActionResult> Create([Bind("Id,UserId,AccountName,IBAN,Currency,Balance,AccountType,Status,CreatedAt")] Account account)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(user);
+                _context.Add(account);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(user);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Email", account.UserId);
+            return View(account);
         }
 
-        // GET: Users/Edit/5
+        // GET: Accounts/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -73,22 +77,23 @@ namespace BankApp.MVC2
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
             {
                 return NotFound();
             }
-            return View(user);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Email", account.UserId);
+            return View(account);
         }
 
-        // POST: Users/Edit/5
+        // POST: Accounts/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Email,PasswordHash,FullName,PhoneNumber,DateOfBirth,Address,Nationality,PreferredLanguage,Is2FAEnabled,Preferred2FAMethod,IsLocked,LockoutEnd,FailedLoginAttempts,CreatedAt,UpdatedAt")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,AccountName,IBAN,Currency,Balance,AccountType,Status,CreatedAt")] Account account)
         {
-            if (id != user.Id)
+            if (id != account.Id)
             {
                 return NotFound();
             }
@@ -97,12 +102,12 @@ namespace BankApp.MVC2
             {
                 try
                 {
-                    _context.Update(user);
+                    _context.Update(account);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UserExists(user.Id))
+                    if (!AccountExists(account.Id))
                     {
                         return NotFound();
                     }
@@ -113,10 +118,11 @@ namespace BankApp.MVC2
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(user);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Email", account.UserId);
+            return View(account);
         }
 
-        // GET: Users/Delete/5
+        // GET: Accounts/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,34 +130,35 @@ namespace BankApp.MVC2
                 return NotFound();
             }
 
-            var user = await _context.Users
+            var account = await _context.Accounts
+                .Include(a => a.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
+            if (account == null)
             {
                 return NotFound();
             }
 
-            return View(user);
+            return View(account);
         }
 
-        // POST: Users/Delete/5
+        // POST: Accounts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
+            var account = await _context.Accounts.FindAsync(id);
+            if (account != null)
             {
-                _context.Users.Remove(user);
+                _context.Accounts.Remove(account);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UserExists(int id)
+        private bool AccountExists(int id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            return _context.Accounts.Any(e => e.Id == id);
         }
     }
 }
