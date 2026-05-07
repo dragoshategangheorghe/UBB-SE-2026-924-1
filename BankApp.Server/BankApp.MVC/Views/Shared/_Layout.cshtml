@@ -26,6 +26,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item d-flex align-items-center gap-2">
+                            <a class="nav-link text-dark d-inline-flex align-items-center gap-2" asp-page="/Notifications/Index">
+                                <span>Notifications</span>
+                                <span id="notificationUnreadBadge" class="badge rounded-pill bg-danger d-none" aria-live="polite" aria-label="Unread notifications count">0</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -37,13 +43,18 @@
         </main>
     </div>
 
+    <div id="notificationToastHost" class="toast-container position-fixed top-0 end-0 p-3" aria-live="polite" aria-atomic="true"></div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - BankApp.MVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &amp;copy; 2026 - BankApp.MVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/notifications.api.js" asp-append-version="true"></script>
+    <script src="~/js/notifications.store.js" asp-append-version="true"></script>
+    <script src="~/js/notifications.realtime.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

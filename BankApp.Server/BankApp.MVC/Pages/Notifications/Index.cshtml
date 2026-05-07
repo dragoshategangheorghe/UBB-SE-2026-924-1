@@ -1,0 +1,399 @@
+@page
+@model BankApp.MVC.Pages.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="notifications-page container py-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <p class="text-uppercase text-muted small mb-1">Notification center</p>
+            <h1 class="h3 mb-1">Notifications</h1>
+            <p class="text-muted mb-0">Review account alerts, security notices, promotions, and system messages.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-primary" id="markAllReadButton">Mark all as read</button>
+            <button type="button" class="btn btn-outline-danger" id="clearAllButton">Clear all</button>
+        </div>
+    </div>
+
+    @if (TempData["StatusMessage"] is string statusMessage && !string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="alert alert-success" role="status">@statusMessage</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-7">
+            <section class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Notification list</h2>
+                            <p class="text-muted small mb-0">Unread items are highlighted for quick action.</p>
+                        </div>
+                        <div class="btn-group" role="tablist" aria-label="Notification filters">
+                            <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="unread">Unread</button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+                        <span id="notificationCountLabel">Loading notifications…</span>
+                        <span id="unreadCountLabel">0 unread</span>
+                    </div>
+
+                    <div id="notificationError" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="notificationSkeleton" class="list-group list-group-flush">
+                        <div class="placeholder-glow mb-3"><span class="placeholder col-12"></span></div>
+                        <div class="placeholder-glow mb-3"><span class="placeholder col-10"></span></div>
+                        <div class="placeholder-glow mb-3"><span class="placeholder col-11"></span></div>
+                    </div>
+                    <div id="notificationList" class="notification-list list-group list-group-flush d-none" role="list" aria-live="polite"></div>
+
+                    <nav class="d-flex justify-content-between align-items-center gap-3 mt-4" aria-label="Notification pagination">
+                        <button type="button" class="btn btn-outline-secondary" id="prevPageButton">Previous</button>
+                        <span class="text-muted small" id="pageInfoLabel">Page 1 of 1</span>
+                        <button type="button" class="btn btn-outline-secondary" id="nextPageButton">Next</button>
+                    </nav>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <section class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-1">Admin creation form</h2>
+                    <p class="text-muted small">Secure draft form for internal/system notification broadcasts.</p>
+
+                    <form method="post" asp-page-handler="Create" class="needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Draft.Title" class="form-label"></label>
+                            <input asp-for="Draft.Title" class="form-control" />
+                            <span asp-validation-for="Draft.Title" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Draft.Message" class="form-label"></label>
+                            <textarea asp-for="Draft.Message" class="form-control" rows="5"></textarea>
+                            <span asp-validation-for="Draft.Message" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Draft.Type" class="form-label"></label>
+                            <select asp-for="Draft.Type" asp-items="Model.NotificationTypeOptions" class="form-select"></select>
+                            <span asp-validation-for="Draft.Type" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Draft.RecipientUserIds" class="form-label"></label>
+                            <input asp-for="Draft.RecipientUserIds" class="form-control" placeholder="1001, 1008, 1022" />
+                            <span asp-validation-for="Draft.RecipientUserIds" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Draft.ActionUrl" class="form-label"></label>
+                            <input asp-for="Draft.ActionUrl" class="form-control" placeholder="https://example.com/action" />
+                            <span asp-validation-for="Draft.ActionUrl" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Create notification</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="notificationDetailModal" tabindex="-1" aria-labelledby="notificationDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <p class="text-uppercase text-muted small mb-1">Notification detail</p>
+                    <h2 class="modal-title h5 mb-0" id="notificationDetailLabel">Notification</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2 d-flex flex-wrap gap-2">
+                    <span class="badge bg-primary" id="detailType"></span>
+                    <span class="badge bg-warning text-dark d-none" id="detailUnreadBadge">Unread</span>
+                </div>
+                <p class="text-muted small mb-2" id="detailMeta"></p>
+                <p class="fw-semibold mb-2" id="detailTitle"></p>
+                <div class="notification-detail-message border rounded-3 bg-light p-3" id="detailMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-primary d-none" id="detailActionLink" target="_blank" rel="noopener">Open action</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const state = { filter: 'all', pageNumber: 1, pageSize: 8 };
+            const listEl = document.getElementById('notificationList');
+            const skeletonEl = document.getElementById('notificationSkeleton');
+            const errorEl = document.getElementById('notificationError');
+            const countLabel = document.getElementById('notificationCountLabel');
+            const unreadLabel = document.getElementById('unreadCountLabel');
+            const pageInfoLabel = document.getElementById('pageInfoLabel');
+            const prevButton = document.getElementById('prevPageButton');
+            const nextButton = document.getElementById('nextPageButton');
+            const markAllButton = document.getElementById('markAllReadButton');
+            const clearAllButton = document.getElementById('clearAllButton');
+            const modalEl = document.getElementById('notificationDetailModal');
+            const modal = new bootstrap.Modal(modalEl);
+            const titleEl = document.getElementById('detailTitle');
+            const metaEl = document.getElementById('detailMeta');
+            const messageEl = document.getElementById('detailMessage');
+            const typeEl = document.getElementById('detailType');
+            const unreadEl = document.getElementById('detailUnreadBadge');
+            const actionLink = document.getElementById('detailActionLink');
+            const filterButtons = document.querySelectorAll('[data-filter]');
+
+            function escapeText(value) {
+                return String(value ?? '');
+            }
+
+            function setLoading(isLoading) {
+                skeletonEl.classList.toggle('d-none', !isLoading);
+                listEl.classList.toggle('d-none', isLoading);
+            }
+
+            function setError(message) {
+                if (!message) {
+                    errorEl.classList.add('d-none');
+                    errorEl.textContent = '';
+                    return;
+                }
+
+                errorEl.textContent = message;
+                errorEl.classList.remove('d-none');
+            }
+
+            function renderItem(item) {
+                const article = document.createElement('article');
+                article.className = `list-group-item border rounded-3 mb-3 ${item.isRead ? 'notification-read' : 'notification-unread'}`;
+                article.setAttribute('role', 'listitem');
+
+                const header = document.createElement('div');
+                header.className = 'd-flex justify-content-between gap-3';
+
+                const content = document.createElement('div');
+                content.className = 'flex-grow-1';
+
+                const badges = document.createElement('div');
+                badges.className = 'd-flex align-items-center gap-2 mb-2';
+                const typeBadge = document.createElement('span');
+                typeBadge.className = 'badge bg-primary';
+                typeBadge.textContent = escapeText(item.type);
+                badges.appendChild(typeBadge);
+                if (!item.isRead) {
+                    const unreadBadge = document.createElement('span');
+                    unreadBadge.className = 'badge bg-warning text-dark';
+                    unreadBadge.textContent = 'Unread';
+                    badges.appendChild(unreadBadge);
+                }
+
+                const openButton = document.createElement('button');
+                openButton.type = 'button';
+                openButton.className = 'btn btn-link p-0 text-start text-decoration-none notification-open-link';
+                openButton.innerHTML = `<h3 class="h6 mb-1 ${item.isRead ? 'fw-normal' : 'fw-semibold'}"></h3>`;
+                openButton.querySelector('h3').textContent = escapeText(item.title);
+                openButton.dataset.notification = JSON.stringify(item);
+
+                const message = document.createElement('p');
+                message.className = 'mb-2 text-muted';
+                message.textContent = escapeText(item.message.length > 160 ? `${item.message.slice(0, 157)}...` : item.message);
+
+                const meta = document.createElement('dl');
+                meta.className = 'row small mb-0 text-muted';
+                meta.innerHTML = `
+                    <dt class="col-sm-4 col-xl-3">Recipients</dt>
+                    <dd class="col-sm-8 col-xl-9"></dd>
+                    <dt class="col-sm-4 col-xl-3">Created</dt>
+                    <dd class="col-sm-8 col-xl-9"></dd>
+                `;
+                meta.children[1].textContent = escapeText(item.recipientUserIds);
+                meta.children[3].textContent = escapeText(item.createdAt);
+
+                content.appendChild(badges);
+                content.appendChild(openButton);
+                content.appendChild(message);
+                content.appendChild(meta);
+
+                const actions = document.createElement('div');
+                actions.className = 'd-flex flex-column gap-2 align-items-end';
+
+                const markButton = document.createElement('button');
+                markButton.type = 'button';
+                markButton.className = 'btn btn-sm btn-outline-success';
+                markButton.textContent = 'Mark as read';
+                markButton.disabled = item.isRead;
+                markButton.addEventListener('click', async () => {
+                    try {
+                        await NotificationApi.markAsRead(item.id);
+                        NotificationStore.markAsRead(item.id);
+                        await reload();
+                        BankAppNotifications.toast('Notification marked as read.', 'success');
+                    } catch (error) {
+                        BankAppNotifications.toast('Unable to mark notification as read.', 'danger');
+                    }
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'btn btn-sm btn-outline-danger';
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', async () => {
+                    if (!confirm('Delete this notification?')) {
+                        return;
+                    }
+
+                    try {
+                        await NotificationApi.deleteNotification(item.id);
+                        NotificationStore.remove(item.id);
+                        await reload();
+                        BankAppNotifications.toast('Notification deleted.', 'success');
+                    } catch {
+                        BankAppNotifications.toast('Unable to delete notification.', 'danger');
+                    }
+                });
+
+                actions.appendChild(markButton);
+                actions.appendChild(deleteButton);
+
+                header.appendChild(content);
+                header.appendChild(actions);
+                article.appendChild(header);
+                return article;
+            }
+
+            async function reload() {
+                setLoading(true);
+                setError('');
+                try {
+                    const data = await NotificationApi.fetchNotifications(state);
+                    const items = data.items ?? data.Items ?? [];
+                    const unreadCount = data.unreadCount ?? data.UnreadCount ?? 0;
+                    const totalCount = data.totalCount ?? data.TotalCount ?? items.length;
+                    const totalPages = data.totalPages ?? data.TotalPages ?? 1;
+                    state.pageNumber = data.pageNumber ?? data.PageNumber ?? state.pageNumber;
+
+                    listEl.innerHTML = '';
+                    items.forEach(item => listEl.appendChild(renderItem(item)));
+
+                    countLabel.textContent = `${totalCount} notification${totalCount === 1 ? '' : 's'}`;
+                    unreadLabel.textContent = `${unreadCount} unread`;
+                    pageInfoLabel.textContent = `Page ${state.pageNumber} of ${totalPages}`;
+                    prevButton.disabled = state.pageNumber <= 1;
+                    nextButton.disabled = state.pageNumber >= totalPages;
+
+                    NotificationStore.refreshUnreadCount();
+                } catch (error) {
+                    setError(error instanceof Error ? error.message : 'Failed to load notifications.');
+                    BankAppNotifications.toast('Failed to load notifications.', 'danger');
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(item => item.classList.remove('active'));
+                    button.classList.add('active');
+                    state.filter = button.dataset.filter;
+                    state.pageNumber = 1;
+                    reload();
+                });
+            });
+
+            prevButton.addEventListener('click', () => {
+                if (state.pageNumber > 1) {
+                    state.pageNumber -= 1;
+                    reload();
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                state.pageNumber += 1;
+                reload();
+            });
+
+            markAllButton.addEventListener('click', async () => {
+                try {
+                    await NotificationApi.markAllAsRead();
+                    NotificationStore.markAllRead();
+                    await reload();
+                    BankAppNotifications.toast('All notifications marked as read.', 'success');
+                } catch {
+                    BankAppNotifications.toast('Unable to update notifications.', 'danger');
+                }
+            });
+
+            clearAllButton.addEventListener('click', async () => {
+                if (!confirm('Clear all notifications? This cannot be undone.')) {
+                    return;
+                }
+
+                try {
+                    await NotificationApi.deleteAll();
+                    NotificationStore.clear();
+                    await reload();
+                    BankAppNotifications.toast('All notifications cleared.', 'success');
+                } catch {
+                    BankAppNotifications.toast('Unable to clear notifications.', 'danger');
+                }
+            });
+
+            modalEl.addEventListener('show.bs.modal', (event) => {
+                const trigger = event.relatedTarget?.closest?.('.notification-open-link') || event.relatedTarget;
+                if (!trigger?.dataset?.notification) {
+                    return;
+                }
+
+                const data = JSON.parse(trigger.dataset.notification);
+                titleEl.textContent = data.title;
+                metaEl.textContent = `${data.createdAt} · ${data.type}`;
+                messageEl.textContent = data.message;
+                typeEl.textContent = data.type;
+                unreadEl.classList.toggle('d-none', !!data.isRead);
+                actionLink.href = data.actionUrl || '#';
+                actionLink.classList.toggle('d-none', !data.actionUrl);
+            });
+
+            document.addEventListener('click', async (event) => {
+                const button = event.target.closest('.notification-open-link');
+                if (!button) {
+                    return;
+                }
+
+                const data = JSON.parse(button.dataset.notification);
+                titleEl.textContent = data.title;
+                metaEl.textContent = `${data.createdAt} · ${data.type}`;
+                messageEl.textContent = data.message;
+                typeEl.textContent = data.type;
+                unreadEl.classList.toggle('d-none', !!data.isRead);
+                actionLink.href = data.actionUrl || '#';
+                actionLink.classList.toggle('d-none', !data.actionUrl);
+                modal.show();
+            });
+
+            NotificationStore.subscribe(stateSnapshot => {
+                renderUnreadBadge(stateSnapshot.unreadCount);
+                if (stateSnapshot.error) {
+                    BankAppNotifications.toast(stateSnapshot.error, 'danger');
+                }
+            });
+
+            reload();
+        })();
+    </script>
+}
