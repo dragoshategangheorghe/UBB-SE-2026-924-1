@@ -103,7 +103,7 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpGet("payment-amount/{input:string}")]
+        [HttpGet("payment-amount/{input}")]
         public ActionResult<decimal?> GetParsedCustomPaymentAmount([FromRoute] string input)
         {
             var result = _loanService.ParseCustomPaymentAmount(input);
