@@ -1,0 +1,104 @@
+﻿@model BankApp.Models.Entities.User
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PasswordHash" class="control-label"></label>
+                <input asp-for="PasswordHash" class="form-control" />
+                <span asp-validation-for="PasswordHash" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FullName" class="control-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateOfBirth" class="control-label"></label>
+                <input asp-for="DateOfBirth" class="form-control" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Nationality" class="control-label"></label>
+                <input asp-for="Nationality" class="form-control" />
+                <span asp-validation-for="Nationality" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PreferredLanguage" class="control-label"></label>
+                <input asp-for="PreferredLanguage" class="form-control" />
+                <span asp-validation-for="PreferredLanguage" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Is2FAEnabled" /> @Html.DisplayNameFor(model => model.Is2FAEnabled)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="Preferred2FAMethod" class="control-label"></label>
+                <input asp-for="Preferred2FAMethod" class="form-control" />
+                <span asp-validation-for="Preferred2FAMethod" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsLocked" /> @Html.DisplayNameFor(model => model.IsLocked)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="LockoutEnd" class="control-label"></label>
+                <input asp-for="LockoutEnd" class="form-control" />
+                <span asp-validation-for="LockoutEnd" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FailedLoginAttempts" class="control-label"></label>
+                <input asp-for="FailedLoginAttempts" class="form-control" />
+                <span asp-validation-for="FailedLoginAttempts" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreatedAt" class="control-label"></label>
+                <input asp-for="CreatedAt" class="form-control" />
+                <span asp-validation-for="CreatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UpdatedAt" class="control-label"></label>
+                <input asp-for="UpdatedAt" class="form-control" />
+                <span asp-validation-for="UpdatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

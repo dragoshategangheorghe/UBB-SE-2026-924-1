@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="BankApp.Models/BankApp.Models.csproj" />
+  <Project Path="BankApp.MVC2/BankApp.MVC2.csproj" Id="22b47167-786f-49dd-b48c-28adc2d34dd0" />
   <Project Path="BankServer/BankApp.Server.csproj" />
   <Project Path="ServerTests/ServerTests.csproj" />
 </Solution>
