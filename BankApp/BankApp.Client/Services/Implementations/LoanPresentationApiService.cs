@@ -20,7 +20,7 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<decimal> GetRepaymentProgress(Loan loan)
         {
-            return _apiService.PostAsync<Loan, decimal>("api/loans/repayment-progress", loan);
+            return _apiService.PostAsync<Loan, decimal>("/api/loans/repayment-progress", loan);
         }
     }
 }

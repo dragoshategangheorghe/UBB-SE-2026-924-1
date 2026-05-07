@@ -20,7 +20,7 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<BuildApplicationOutcomeResponse?> GetBuildApplicationOutcome(string? rejectionReason)
         {
-            return _apiService.GetAsync<BuildApplicationOutcomeResponse>($"api/loans/loan-application-presentation-outcome?rejectionReason={Uri.EscapeDataString(rejectionReason ?? string.Empty)}");
+            return _apiService.GetAsync<BuildApplicationOutcomeResponse>($"/api/loans/loan-application-presentation-outcome?rejectionReason={Uri.EscapeDataString(rejectionReason ?? string.Empty)}");
         }
     }
 }

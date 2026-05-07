@@ -96,7 +96,7 @@ namespace BankApp.Client.ViewModels
             try
             {
 
-                var portfolio = await App.ApiService.GetAsync<Portfolio>($"api/investments/portfolio/1");
+                var portfolio = await App.ApiService.GetAsync<Portfolio>($"/api/investments/portfolio/1");
 
                 if (portfolio != null)
                 {

@@ -19,7 +19,7 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<bool> GetShouldComputeEstimate(double desiredAmount, int preferredTermMonths, string purpose)
         {
-            return _apiService.GetAsync<bool>($"api/loans/should-compute-estimate?desiredAmount={desiredAmount}&preferredTermMonths={preferredTermMonths}&purpose={Uri.EscapeDataString(purpose)}");
+            return _apiService.GetAsync<bool>($"/api/loans/should-compute-estimate?desiredAmount={desiredAmount}&preferredTermMonths={preferredTermMonths}&purpose={Uri.EscapeDataString(purpose)}");
         }
     }
 }

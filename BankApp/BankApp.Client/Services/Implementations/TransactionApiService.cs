@@ -18,28 +18,28 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<TransactionFilterMetadataResponse?> GetFilterMetadataAsync()
         {
-            return _apiService.GetAsync<TransactionFilterMetadataResponse>("api/transactions/filters");
+            return _apiService.GetAsync<TransactionFilterMetadataResponse>("/api/transactions/filters");
         }
 
         public Task<TransactionHistoryResponse?> GetHistoryAsync(TransactionHistoryRequest request)
         {
-            return _apiService.PostAsync<TransactionHistoryRequest, TransactionHistoryResponse>("api/transactions/history", request);
+            return _apiService.PostAsync<TransactionHistoryRequest, TransactionHistoryResponse>("/api/transactions/history", request);
         }
 
         public Task<TransactionDetailsResponse?> GetTransactionAsync(int transactionId)
         {
-            return _apiService.GetAsync<TransactionDetailsResponse>($"api/transactions/{transactionId}");
+            return _apiService.GetAsync<TransactionDetailsResponse>($"/api/transactions/{transactionId}");
         }
 
         public async Task<ExportedFileResult?> ExportTransactionsAsync(TransactionExportRequest request)
         {
-            DownloadResponse? response = await _apiService.PostDownloadAsync("api/transactions/export", request);
+            DownloadResponse? response = await _apiService.PostDownloadAsync("/api/transactions/export", request);
             return response == null ? null : await SaveDownloadAsync(response);
         }
 
         public async Task<ExportedFileResult?> ExportReceiptAsync(int transactionId)
         {
-            DownloadResponse? response = await _apiService.GetDownloadAsync($"api/transactions/{transactionId}/receipt");
+            DownloadResponse? response = await _apiService.GetDownloadAsync($"/api/transactions/{transactionId}/receipt");
             return response == null ? null : await SaveDownloadAsync(response);
         }
 
