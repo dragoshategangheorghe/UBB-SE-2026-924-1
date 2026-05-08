@@ -1,9 +1,13 @@
-﻿namespace BankApp.Models.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BankApp.Models.Entities
 {
     public class OAuthLink
     {
+        [Key]
         public int Id { get; set; }
         public int UserId { get; set; }
+        public virtual User User { get; set; }
         public string Provider { get; set; } = string.Empty;
         public string ProviderUserId { get; set; } = string.Empty;
         public string? ProviderEmail { get; set; }
@@ -14,8 +18,8 @@
             OAuthLink other = obj as OAuthLink;
 
             return other != null &&
-                   Id == other.Id &&
                    UserId == other.UserId &&
+                   User == other.User &&
                    Provider == other.Provider &&
                    ProviderUserId == other.ProviderUserId &&
                    ProviderEmail == other.ProviderEmail &&

@@ -3,6 +3,7 @@
 // </copyright>
 
 using System;
+using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Represents a single row from a loan amortization schedule.
@@ -14,12 +15,15 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets the row identifier.
         /// </summary>
+        [Key]
+
         public int Id { get; set; }
+        public int LoanId { get; set; }
 
         /// <summary>
-        /// Gets or sets the associated loan identifier.
+        /// Gets or sets the associated loan.
         /// </summary>
-        public int LoanId { get; set; }
+        public virtual Loan Loan { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the installment sequence number.

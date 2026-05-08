@@ -16,10 +16,12 @@ public class ChatMessage
     /// </summary>
     public int Id { get; set; }
 
-    /// <summary>
-    /// Gets or sets the parent session identifier.
-    /// </summary>
     public int SessionId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the parent session.
+    /// </summary>
+    public virtual ChatSession Session { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the sender role (for example user or bot).

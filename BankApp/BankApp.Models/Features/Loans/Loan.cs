@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 
 namespace BankApp.Models.Features.Loans
@@ -12,12 +14,15 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets the unique loan identifier.
         /// </summary>
+        [Key]
         public int Id { get; set; }
+        
+        public int UserId { get; set; }
 
         /// <summary>
-        /// Gets or sets the owning user identifier.
+        /// Gets or sets the owning user.
         /// </summary>
-        public int UserId { get; set; }
+        public virtual User User { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the loan product type.
@@ -63,5 +68,8 @@ namespace BankApp.Models.Features.Loans
         /// Gets or sets the date when the loan became active.
         /// </summary>
         public DateTime StartDate { get; set; }
+
+        // Navigation Properties
+        public virtual ICollection<AmortizationRow> AmortizationRows { get; set; } = new List<AmortizationRow>();
     }
 }

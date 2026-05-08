@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 
 namespace BankApp.Models.Features.Savings
@@ -15,9 +16,9 @@ namespace BankApp.Models.Features.Savings
         public int Id { get; set; }
 
         /// <summary>
-        ///     Gets or sets the unique identifier for a savings account involved in the transaction.
+        ///     Gets or sets the savings account involved in the transaction.
         /// </summary>
-        public int SavingsAccountId { get; set; }
+        public virtual SavingsAccount SavingsAccount { get; set; } = null!;
 
         /// <summary>
         ///     Gets or sets the amount of money involved in the transaction.
@@ -41,11 +42,11 @@ namespace BankApp.Models.Features.Savings
         public DateTime CreatedAt { get; set; }
 
         /// <summary>
-        ///     Gets or sets the unique identifier for the account associated with this transaction.
+        ///     Gets or sets the account associated with this transaction.
         ///     This is the account that the transaction is being made on, and it is used to link the transaction to the correct
         ///     account in the database.
         /// </summary>
-        public int AccountId { get; set; }
+        public virtual Account Account { get; set; } = null!;
 
         /// <summary>
         ///     Gets or sets the balance of the savings account after the transaction has been processed.

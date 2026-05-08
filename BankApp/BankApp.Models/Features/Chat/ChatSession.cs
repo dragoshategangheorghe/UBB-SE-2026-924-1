@@ -1,8 +1,10 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using BankApp.Models.Entities;
 
 namespace BankApp.Models.Features.Chat
 {
@@ -10,9 +12,10 @@ namespace BankApp.Models.Features.Chat
     {
         private const int NoMessagesCount = 0;
 
+        [Key]
         public int Id { get; set; }
 
-        public int UserId { get; set; }
+        public virtual User User { get; set; } = null!;
 
         public string IssueCategory { get; set; } = string.Empty;
 
