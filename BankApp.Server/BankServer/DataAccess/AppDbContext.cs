@@ -80,6 +80,20 @@ namespace BankApp.Server.DataAccess
         {
             base.OnModelCreating(modelBuilder);
 
+            // Align EF table names with DatabaseSchema/BankAppDb_creation.sql
+            modelBuilder.Entity<User>().ToTable("User"); // dbo.[User]
+            modelBuilder.Entity<Session>().ToTable("Session"); // dbo.[Session]
+            modelBuilder.Entity<Account>().ToTable("Account");
+            modelBuilder.Entity<Card>().ToTable("Card");
+            modelBuilder.Entity<Category>().ToTable("Category");
+            modelBuilder.Entity<Transaction>().ToTable("Transaction"); // dbo.[Transaction]
+            modelBuilder.Entity<Notification>().ToTable("Notification");
+            modelBuilder.Entity<NotificationPreference>().ToTable("NotificationPreference");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetToken");
+            modelBuilder.Entity<OAuthLink>().ToTable("OAuthLink");
+            modelBuilder.Entity<TransactionCategoryOverride>().ToTable("TransactionCategoryOverride");
+            modelBuilder.Entity<UserCardPreference>().ToTable("UserCardPreference");
+
             modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasOne(a => a.User)
@@ -159,6 +173,7 @@ namespace BankApp.Server.DataAccess
 
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.UserCardPreferences)
+                    .HasForeignKey(p => p.UserId)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
