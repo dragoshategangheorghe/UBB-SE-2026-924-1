@@ -36,6 +36,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="10">
                                     <Button Content="Apply Sort" Command="{Binding ApplySortCommand}" />
                                     <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+                                    <Button Content="Add Card" Click="AddCardButton_Click" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>

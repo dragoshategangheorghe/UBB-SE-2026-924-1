@@ -7,6 +7,7 @@ namespace BankApp.Client.Services.Interfaces
     {
         Task<GetCardsResponse?> GetCardsAsync();
         Task<CardDetailsResponse?> GetCardAsync(int cardId);
+        Task<CardCommandResponse?> CreateCardAsync(CreateCardRequest request);
         Task<RevealCardResponse?> RevealCardAsync(int cardId, RevealCardRequest request);
         Task<CardCommandResponse?> FreezeCardAsync(int cardId);
         Task<CardCommandResponse?> UnfreezeCardAsync(int cardId);

@@ -6,6 +6,7 @@ namespace BankApp.Server.Services.Interfaces
     {
         GetCardsResponse GetCards(int userId);
         CardDetailsResponse GetCard(int userId, int cardId);
+        CardCommandResponse AddCard(int userId, CreateCardRequest request);
         RevealCardResponse RevealSensitiveDetails(int userId, int cardId, RevealCardRequest request);
         CardCommandResponse FreezeCard(int userId, int cardId);
         CardCommandResponse UnfreezeCard(int userId, int cardId);

@@ -30,6 +30,19 @@ namespace BankApp.Server.Controllers
             return response.Success ? Ok(response) : NotFound(response);
         }
 
+        [HttpPost]
+        public IActionResult CreateCard([FromBody] CreateCardRequest request)
+        {
+            CardCommandResponse response = cardService.AddCard(GetAuthenticatedUserId(), request);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            // Return 201 with Location header pointing to GET /api/cards/{cardId}
+            return CreatedAtAction(nameof(GetCard), new { cardId = response.Card!.Id }, response);
+        }
+
         [HttpPost("{cardId:int}/reveal")]
         public IActionResult RevealCard(int cardId, [FromBody] RevealCardRequest request)
         {

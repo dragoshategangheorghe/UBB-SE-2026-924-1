@@ -66,6 +66,20 @@ namespace BankApp.Models.DTOs.Cards
         public string SortOption { get; set; } = CardSortOptions.Custom;
     }
 
+    public class CreateCardRequest
+    {
+        public int AccountId { get; set; }
+        public string CardholderName { get; set; } = string.Empty;
+        public DateTime ExpiryDate { get; set; }
+        public string CardType { get; set; } = string.Empty;
+        public string? CardBrand { get; set; }
+        public string? CardNumber { get; set; }
+        public string? Cvv { get; set; }
+        public decimal? MonthlySpendingCap { get; set; }
+        public bool? IsOnlinePaymentsEnabled { get; set; }
+        public bool? IsContactlessPaymentsEnabled { get; set; }
+    }
+
     public class CardCommandResponse
     {
         public bool Success { get; set; }

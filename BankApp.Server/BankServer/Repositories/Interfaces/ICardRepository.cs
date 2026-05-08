@@ -9,6 +9,7 @@ namespace BankApp.Server.Repositories.Interfaces
         Card? GetCardById(int cardId);
 
         Account? GetAccountById(int accountId);
+        Card CreateCard(Card card);
 
         UserCardPreference? GetSortPreference(int userId);
 

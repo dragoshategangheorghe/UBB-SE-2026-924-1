@@ -6,6 +6,7 @@ namespace BankApp.Server.DataAccess.Interfaces
     {
         List<Card> FindByUserId(int userId);
         Card? FindById(int id);
+        Card Insert(Card card);
         bool UpdateStatus(int cardId, string status);
         bool UpdateSettings(int cardId, decimal? spendingLimit, bool isOnlinePaymentsEnabled, bool isContactlessPaymentsEnabled);
     }

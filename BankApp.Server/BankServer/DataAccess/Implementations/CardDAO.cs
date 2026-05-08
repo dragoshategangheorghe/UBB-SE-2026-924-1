@@ -58,5 +58,14 @@ namespace BankApp.Server.DataAccess.Implementations
 
             return rowsAffected > 0;
         }
+
+        public Card Insert(Card card)
+        {
+            if (card == null) throw new ArgumentNullException(nameof(card));
+            if (card.CreatedAt == default) card.CreatedAt = DateTime.UtcNow;
+            var entry = dbContext.Cards.Add(card);
+            dbContext.SaveChanges();
+            return entry.Entity;
+        }
     }
 }

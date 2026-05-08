@@ -24,6 +24,11 @@ namespace BankApp.Client.Services.Implementations
             return _apiService.GetAsync<CardDetailsResponse>($"/api/cards/{cardId}");
         }
 
+        public Task<CardCommandResponse?> CreateCardAsync(CreateCardRequest request)
+        {
+            return _apiService.PostAsync<CreateCardRequest, CardCommandResponse>("/api/cards", request);
+        }
+
         public Task<RevealCardResponse?> RevealCardAsync(int cardId, RevealCardRequest request)
         {
             return _apiService.PostAsync<RevealCardRequest, RevealCardResponse>($"/api/cards/{cardId}/reveal", request);

@@ -679,6 +679,848 @@ namespace BankApp.Server.Tests
             }
         }
 
+        #region AddCard Tests
+
+        [Test]
+        public void AddCard_ValidRequest_CreatesCardSuccessfully()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardBrand = "Visa",
+                CardNumber = "4532015112830366", // Valid Luhn number
+                Cvv = "123",
+                MonthlySpendingCap = 5000m,
+                IsOnlinePaymentsEnabled = true,
+                IsContactlessPaymentsEnabled = true
+            };
+
+            Card createdCard = new Card
+            {
+                Id = 1,
+                UserId = user.Id,
+                AccountId = account.Id,
+                CardNumber = request.CardNumber,
+                CardholderName = request.CardholderName,
+                ExpiryDate = request.ExpiryDate,
+                CVV = request.Cvv,
+                CardType = request.CardType,
+                CardBrand = request.CardBrand,
+                MonthlySpendingCap = request.MonthlySpendingCap,
+                IsOnlineEnabled = true,
+                IsContactlessEnabled = true,
+                Status = "Active",
+                SortOrder = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(createdCard);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.True);
+                Assert.That(response.Message, Is.EqualTo("Card created successfully."));
+                Assert.That(response.Card, Is.Not.Null);
+                Assert.That(response.Card!.CardholderName, Is.EqualTo("John Doe"));
+            }
+        }
+
+        [Test]
+        public void AddCard_InvalidAccountId_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = 0,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("AccountId is required."));
+            }
+        }
+
+        [Test]
+        public void AddCard_NegativeAccountId_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = -1,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("AccountId is required."));
+            }
+        }
+
+        [Test]
+        public void AddCard_EmptyCardholderName_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = 1,
+                CardholderName = string.Empty,
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Cardholder name is required."));
+            }
+        }
+
+        [Test]
+        public void AddCard_WhitespaceCardholderName_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = 1,
+                CardholderName = "   ",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Cardholder name is required."));
+            }
+        }
+
+        [Test]
+        public void AddCard_ExpiryDateIsToday_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = 1,
+                CardholderName = "John Doe",
+                ExpiryDate = DateTime.UtcNow.Date,
+                CardType = "Credit"
+            };
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Expiry date must be in the future."));
+            }
+        }
+
+        [Test]
+        public void AddCard_ExpiryDateInPast_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = 1,
+                CardholderName = "John Doe",
+                ExpiryDate = DateTime.UtcNow.Date.AddDays(-1),
+                CardType = "Credit"
+            };
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Expiry date must be in the future."));
+            }
+        }
+
+        [Test]
+        public void AddCard_NegativeSpendingCap_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                MonthlySpendingCap = -100m
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Spending limit must be a non-negative value."));
+            }
+        }
+
+        [Test]
+        public void AddCard_SpendingCapExceedsMaximum_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                MonthlySpendingCap = 100000m
+            };
+
+            CardService testService = new CardService(mockCardRepository, mockUserRepository,
+                mockHashService, mockOtpService, mockEmailService, Options.Create(new TeamCOptions
+                {
+                    MaximumSpendingLimit = 50000m
+                }));
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = testService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Does.Contain("cannot exceed 50000"));
+            }
+        }
+
+        [Test]
+        public void AddCard_AccountNotFound_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = 999,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            mockCardRepository.GetAccountById(999).Returns((Account)null!);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Account not found."));
+            }
+        }
+
+        [Test]
+        public void AddCard_AccountDoesNotBelongToUser_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            User otherUser = new User { Id = 99 };
+            Account account = new Account { Id = 1, UserId = otherUser.Id, User = otherUser };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Account does not belong to the authenticated user."));
+            }
+        }
+
+        [Test]
+        public void AddCard_InvalidCardNumberContainsNonDigits_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "453201511283ABCD"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Card number must be 13-19 digits."));
+            }
+        }
+
+        [Test]
+        public void AddCard_CardNumberTooShort_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "453201"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Card number must be 13-19 digits."));
+            }
+        }
+
+        [Test]
+        public void AddCard_CardNumberTooLong_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "45320151128303661234567"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Card number must be 13-19 digits."));
+            }
+        }
+
+        [Test]
+        public void AddCard_InvalidCardNumberFailsLuhnValidation_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830365" // Invalid Luhn (last digit is wrong)
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Card number is invalid."));
+            }
+        }
+
+        [Test]
+        public void AddCard_InvalidCvvContainsNonDigits_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366", // Valid number
+                Cvv = "12A"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("CVV must be 3 or 4 digits."));
+            }
+        }
+
+        [Test]
+        public void AddCard_CvvTooShort_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "12"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("CVV must be 3 or 4 digits."));
+            }
+        }
+
+        [Test]
+        public void AddCard_CvvTooLong_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "12345"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("CVV must be 3 or 4 digits."));
+            }
+        }
+
+        [Test]
+        public void AddCard_RepositoryFailsToCreate_ReturnsFailure()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit"
+            };
+
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns((Card)null!);
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.False);
+                Assert.That(response.Message, Is.EqualTo("Failed to create card."));
+            }
+        }
+
+        [Test]
+        public void AddCard_GeneratesCardNumberWhenNotProvided_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = null,
+                Cvv = null
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(response.Success, Is.True);
+                Assert.That(capturedCard, Is.Not.Null);
+                Assert.That(capturedCard!.CardNumber, Is.Not.Null);
+                Assert.That(capturedCard.CardNumber, Is.Not.Empty);
+                Assert.That(capturedCard.CardNumber.Length, Is.EqualTo(16));
+                Assert.That(capturedCard.CVV, Is.Not.Null);
+                Assert.That(capturedCard.CVV, Is.Not.Empty);
+                Assert.That(capturedCard.CVV.Length, Is.EqualTo(3));
+            }
+        }
+
+        [Test]
+        public void AddCard_SetsSortOrderCorrectly_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123"
+            };
+
+            List<Card> existingCards = new List<Card>
+            {
+                new Card { Id = 1, UserId = user.Id, SortOrder = 0 },
+                new Card { Id = 2, UserId = user.Id, SortOrder = 1 },
+                new Card { Id = 3, UserId = user.Id, SortOrder = 2 }
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(existingCards);
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.SortOrder, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void AddCard_SetsStatusToActive_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123"
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.Status, Is.EqualTo("Active"));
+        }
+
+        [Test]
+        public void AddCard_SetsCreatedAtToNow_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123"
+            };
+
+            Card? capturedCard = null;
+            DateTime beforeCall = DateTime.UtcNow;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+            DateTime afterCall = DateTime.UtcNow;
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.CreatedAt, Is.GreaterThanOrEqualTo(beforeCall));
+            Assert.That(capturedCard.CreatedAt, Is.LessThanOrEqualTo(afterCall));
+        }
+
+        [Test]
+        public void AddCard_SetsSortOrderToZeroForFirstCard_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123"
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>()); // No existing cards
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.SortOrder, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void AddCard_UsesProvidedCardNumberInsteadOfGenerating_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            string providedCardNumber = "5425233010103442";
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = providedCardNumber,
+                Cvv = "234"
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.CardNumber, Is.EqualTo(providedCardNumber));
+        }
+
+        [Test]
+        public void AddCard_DefaultsOnlinePaymentsToTrue_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123",
+                IsOnlinePaymentsEnabled = null
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.IsOnlineEnabled, Is.True);
+        }
+
+        [Test]
+        public void AddCard_DefaultsContactlessPaymentsToTrue_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123",
+                IsContactlessPaymentsEnabled = null
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.IsContactlessEnabled, Is.True);
+        }
+
+        [Test]
+        public void AddCard_TrimsCardholderName_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "  John Doe  ",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = "4532015112830366",
+                Cvv = "123"
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.CardholderName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void AddCard_TrimsCardNumber_ReturnsSuccess()
+        {
+            User user = CreateUser(false);
+            Account account = new Account { Id = 1, UserId = user.Id, User = user };
+            string cardNumberWithSpaces = "  4532015112830366  ";
+            CreateCardRequest request = new CreateCardRequest
+            {
+                AccountId = account.Id,
+                CardholderName = "John Doe",
+                ExpiryDate = new DateTime(2027, 12, 31),
+                CardType = "Credit",
+                CardNumber = cardNumberWithSpaces,
+                Cvv = "123"
+            };
+
+            Card? capturedCard = null;
+            mockCardRepository.GetAccountById(account.Id).Returns(account);
+            mockCardRepository.GetCardsByUserId(user.Id).Returns(new List<Card>());
+            mockCardRepository.CreateCard(Arg.Any<Card>()).Returns(x =>
+            {
+                capturedCard = (Card)x[0];
+                return capturedCard;
+            });
+
+            CardCommandResponse response = cardService.AddCard(user.Id, request);
+
+            Assert.That(response.Success, Is.True);
+            Assert.That(capturedCard, Is.Not.Null);
+            Assert.That(capturedCard!.CardNumber, Is.EqualTo("4532015112830366"));
+        }
+
+        #endregion
         public static Card CreateCard()
         {
             return new Card

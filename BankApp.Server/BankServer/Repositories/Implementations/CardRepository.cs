@@ -51,5 +51,10 @@ namespace BankApp.Server.Repositories.Implementations
         {
             return cardDao.UpdateSettings(cardId, spendingLimit, isOnlinePaymentsEnabled, isContactlessPaymentsEnabled);
         }
+
+        public Card CreateCard(Card card)
+        {
+            return cardDao.Insert(card);
+        }
     }
 }

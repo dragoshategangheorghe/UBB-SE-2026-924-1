@@ -274,6 +274,37 @@ namespace BankApp.Client.ViewModels
             }
         }
 
+        public async Task<CardCommandResponse?> CreateCardAsync(CreateCardRequest request)
+        {
+            try
+            {
+                IsLoading = true;
+                CardCommandResponse? response = await _cardApiService.CreateCardAsync(request);
+                if (response == null || response.Success != true)
+                {
+                    ShowStatus(response?.Message ?? "Failed to create card.", InfoBarSeverity.Error);
+                    return response;
+                }
+
+                if (response.Card != null)
+                {
+                    ReplaceCard(response.Card);
+                }
+
+                ShowStatus(response.Message, InfoBarSeverity.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                ShowStatus($"Failed to create card: {ex.Message}", InfoBarSeverity.Error);
+                return null;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         private async Task FreezeSelectedCardAsync()
         {
             if (SelectedCard == null)

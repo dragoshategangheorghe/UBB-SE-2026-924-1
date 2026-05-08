@@ -70,6 +70,122 @@ namespace BankApp.Server.Services.Implementations
             };
         }
 
+        public CardCommandResponse AddCard(int userId, CreateCardRequest request)
+        {
+            // Basic validation
+            if (request.AccountId <= 0)
+            {
+                return CreateCommandFailure("AccountId is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.CardholderName))
+            {
+                return CreateCommandFailure("Cardholder name is required.");
+            }
+
+            if (request.ExpiryDate <= DateTime.UtcNow.Date)
+            {
+                return CreateCommandFailure("Expiry date must be in the future.");
+            }
+
+            // Check spending cap
+            if (request.MonthlySpendingCap.HasValue)
+            {
+                if (request.MonthlySpendingCap.Value < 0)
+                {
+                    return CreateCommandFailure("Spending limit must be a non-negative value.");
+                }
+
+                if (request.MonthlySpendingCap.Value > options.MaximumSpendingLimit)
+                {
+                    return CreateCommandFailure($"Spending limit cannot exceed {options.MaximumSpendingLimit:0.##}.");
+                }
+            }
+
+            // Account existence and ownership
+            Account? account = cardRepository.GetAccountById(request.AccountId);
+            if (account == null)
+            {
+                return CreateCommandFailure("Account not found.");
+            }
+
+            if (account.User?.Id != userId)
+            {
+                return CreateCommandFailure("Account does not belong to the authenticated user.");
+            }
+
+            // Card number / CVV validation or generation
+            string cardNumber = request.CardNumber?.Trim() ?? string.Empty;
+            string cvv = request.Cvv?.Trim() ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(cardNumber))
+            {
+                if (!IsDigitsOnly(cardNumber) || cardNumber.Length < 13 || cardNumber.Length > 19)
+                {
+                    return CreateCommandFailure("Card number must be 13-19 digits.");
+                }
+
+                if (!IsLuhnValid(cardNumber))
+                {
+                    return CreateCommandFailure("Card number is invalid.");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(cvv))
+            {
+                if (!IsDigitsOnly(cvv) || (cvv.Length != 3 && cvv.Length != 4))
+                {
+                    return CreateCommandFailure("CVV must be 3 or 4 digits.");
+                }
+            }
+
+            // Generate card number / cvv if not provided
+            if (string.IsNullOrEmpty(cardNumber))
+            {
+                cardNumber = GenerateCardNumber(16);
+            }
+
+            if (string.IsNullOrEmpty(cvv))
+            {
+                cvv = GenerateCvv(3);
+            }
+
+            // Determine sort order
+            List<Card> existing = cardRepository.GetCardsByUserId(userId);
+            int sortOrder = existing.Any() ? existing.Max(c => c.SortOrder) + 1 : 0;
+
+            Card newCard = new Card
+            {
+                UserId = userId,
+                AccountId = request.AccountId,
+                CardNumber = cardNumber,
+                CardholderName = request.CardholderName.Trim(),
+                ExpiryDate = request.ExpiryDate,
+                CVV = cvv,
+                CardType = request.CardType ?? string.Empty,
+                CardBrand = request.CardBrand,
+                MonthlySpendingCap = request.MonthlySpendingCap,
+                IsOnlineEnabled = request.IsOnlinePaymentsEnabled ?? true,
+                IsContactlessEnabled = request.IsContactlessPaymentsEnabled ?? true,
+                CreatedAt = DateTime.UtcNow,
+                SortOrder = sortOrder,
+                Status = ActiveCardStatus
+            };
+
+            Card created = cardRepository.CreateCard(newCard);
+            if (created == null)
+            {
+                return CreateCommandFailure("Failed to create card.");
+            }
+
+            return new CardCommandResponse
+            {
+                Success = true,
+                Message = "Card created successfully.",
+                Card = MapToSummary(created)
+            };
+        }
+
         public RevealCardResponse RevealSensitiveDetails(int userId, int cardId, RevealCardRequest request)
         {
             User? user = userRepository.FindById(userId);
@@ -322,6 +438,80 @@ namespace BankApp.Server.Services.Implementations
             }
 
             return $"**** {cardNumber[^4..]}";
+        }
+
+        private static bool IsDigitsOnly(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+            foreach (char c in s)
+            {
+                if (!char.IsDigit(c)) return false;
+            }
+            return true;
+        }
+
+        private static bool IsLuhnValid(string number)
+        {
+            int sum = 0;
+            bool alternate = false;
+            for (int i = number.Length - 1; i >= 0; i--)
+            {
+                char c = number[i];
+                if (!char.IsDigit(c)) return false;
+                int n = c - '0';
+                if (alternate)
+                {
+                    n *= 2;
+                    if (n > 9) n -= 9;
+                }
+                sum += n;
+                alternate = !alternate;
+            }
+            return (sum % 10) == 0;
+        }
+
+        private static string GenerateCardNumber(int length)
+        {
+            if (length < 13) length = 16;
+            // generate length-1 random digits and compute Luhn check digit
+            int payloadLength = length - 1;
+            Span<char> digits = stackalloc char[length];
+            for (int i = 0; i < payloadLength; i++)
+            {
+                digits[i] = (char)('0' + System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 10));
+            }
+
+            // compute check digit
+            int sum = 0;
+            bool alternate = true; // because we'll add check digit at end
+            for (int i = payloadLength - 1; i >= 0; i--)
+            {
+                int n = digits[i] - '0';
+                if (alternate)
+                {
+                    n *= 2;
+                    if (n > 9) n -= 9;
+                }
+                sum += n;
+                alternate = !alternate;
+            }
+
+            int mod = sum % 10;
+            int check = mod == 0 ? 0 : 10 - mod;
+            digits[payloadLength] = (char)('0' + check);
+
+            return new string(digits);
+        }
+
+        private static string GenerateCvv(int length)
+        {
+            if (length < 3) length = 3;
+            char[] buffer = new char[length];
+            for (int i = 0; i < length; i++)
+            {
+                buffer[i] = (char)('0' + System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 10));
+            }
+            return new string(buffer);
         }
 
         private static CardCommandResponse CreateCommandFailure(string message)
