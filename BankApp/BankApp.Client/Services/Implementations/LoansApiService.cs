@@ -46,7 +46,7 @@ namespace BankApp.Client.Services.Implementations
         public async Task<int> CreateLoanApplicationAsync(LoanApplicationRequest request)
         {
             var result = await _apiService.PostAsync<LoanApplicationRequest, int>("/api/loans/applications", request);
-            return result ?? 0;
+            return result;
         }
 
         public async Task UpdateLoanApplicationStatusAsync(int applicationId, LoanApplicationStatus status, string? reason)
@@ -60,7 +60,7 @@ namespace BankApp.Client.Services.Implementations
         public async Task<int> CreateLoanAsync(Loan loan)
         {
             var result = await _apiService.PostAsync<Loan, int>("/api/loans", loan);
-            return result ?? 0;
+            return result;
         }
 
         public async Task UpdateLoanAfterPaymentAsync(int loanId, decimal newBalance, int newRemainingMonths, LoanStatus newStatus)

@@ -372,7 +372,7 @@ namespace BankApp.Client.ViewModels
             var autoDeposit = new AutoDeposit
             {
                 Id = this.currentAutoDeposit?.Id ?? default,
-                SavingsAccountId = this.SelectedAccount!.IdentificationNumber,
+                SavingsAccount = this.SelectedAccount!,
                 Amount = amount,
                 Frequency = frequency,
                 NextRunDate = this.AutoDepositStartDate?.DateTime ?? DateTime.Now.AddDays(InitialAutoDepositDelayDays),
@@ -452,7 +452,9 @@ namespace BankApp.Client.ViewModels
             this.CloseUserConfirmed = false;
             this.CloseResultMessage = string.Empty;
             this.CloseSuccess = false;
-            var openAccountsList = await this.savingsService.GetValidTransferDestinationsAsync(this.SelectedAccount!.IdentificationNumber);
+            var openAccountsList = await this.savingsService.GetValidTransferDestinationsAsync(
+                this.SelectedAccount!.IdentificationNumber,
+                this.CurrentUser.Id);
             this.CloseDestinationAccounts.Clear();
             foreach (var account in openAccountsList)
             {

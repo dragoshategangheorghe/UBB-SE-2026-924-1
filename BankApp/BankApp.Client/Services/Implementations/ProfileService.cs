@@ -52,14 +52,14 @@ namespace BankApp.Client.Services.Implementations
             return _apiService.PutAsync<object, Toggle2FAResponse>("/api/profile/2fa/disable", new { });
         }
 
-        public Task<bool?> VerifyPasswordAsync(string password)
+        public async Task<bool> VerifyPasswordAsync(string password)
         {
-            return _apiService.PostAsync<string, bool>("/api/profile/verify-password", password);
+            return await _apiService.PostAsync<string, bool>("/api/profile/verify-password", password);
         }
 
-        public Task<bool?> UpdateNotificationPreferencesAsync(List<NotificationPreference> prefs)
+        public async Task<bool> UpdateNotificationPreferencesAsync(List<NotificationPreference> prefs)
         {
-            return _apiService.PutAsync<List<NotificationPreference>, bool>("/api/profile/notifications/preferences", prefs);
+            return await _apiService.PutAsync<List<NotificationPreference>, bool>("/api/profile/notifications/preferences", prefs);
         }
     }
 }

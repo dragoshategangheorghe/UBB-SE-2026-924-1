@@ -16,8 +16,8 @@ namespace BankApp.Client.Services.Interfaces
         Task<ChangePasswordResponse?> ChangePasswordAsync(ChangePasswordRequest request);
         Task<Toggle2FAResponse?> Enable2FAAsync(TwoFactorMethod method);
         Task<Toggle2FAResponse?> Disable2FAAsync();
-        Task<bool?> VerifyPasswordAsync(string password);
-        Task<bool?> UpdateNotificationPreferencesAsync(List<NotificationPreference> prefs);
+        Task<bool> VerifyPasswordAsync(string password);
+        Task<bool> UpdateNotificationPreferencesAsync(List<NotificationPreference> prefs);
     }
 }
 

@@ -301,9 +301,9 @@ namespace BankApp.Client.ViewModels
 
                 State.SetValue(ProfileState.Loading);
 
-                bool? result = await _profileService.UpdateNotificationPreferencesAsync(preferences);
+                bool result = await _profileService.UpdateNotificationPreferencesAsync(preferences);
 
-                if (result == true)
+                if (result)
                 {
                     NotificationPreferences = preferences;
                     State.SetValue(ProfileState.UpdateSuccess);
@@ -313,7 +313,7 @@ namespace BankApp.Client.ViewModels
                     State.SetValue(ProfileState.Error);
                 }
 
-                return result ?? false;
+                return result;
             }
             catch (Exception ex)
             {
@@ -335,9 +335,7 @@ namespace BankApp.Client.ViewModels
                     return false;
                 }
 
-                bool? response = await _profileService.VerifyPasswordAsync(password);
-
-                bool result = response ?? false;
+                bool result = await _profileService.VerifyPasswordAsync(password);
 
                 if (!result)
                 {
