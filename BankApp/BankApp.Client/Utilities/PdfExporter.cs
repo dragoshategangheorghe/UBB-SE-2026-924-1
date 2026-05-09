@@ -1,12 +1,12 @@
 namespace BankApp.Client.Utilities
 {
-    using BankApp.Models.Features.Loans;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using BankApp.Models.Features.Loans;
 
     /// <summary>
     /// Provides utility methods to generate and export data to PDF documents.
@@ -55,7 +55,7 @@ namespace BankApp.Client.Utilities
         /// <returns>A byte array containing the generated PDF file.</returns>
         public byte[] ExportAmortization(IEnumerable<AmortizationRow> rows)
         {
-            var amortizationRows = rows?.ToList() ?? [];
+            var amortizationRows = rows?.ToList() ?? new List<AmortizationRow>();
             var pageContents = BuildAmortizationPages(amortizationRows);
 
             return BuildPdfDocument(pageContents);
@@ -74,7 +74,7 @@ namespace BankApp.Client.Utilities
 
         private static List<string> BuildAmortizationPages(IReadOnlyList<AmortizationRow> rows)
         {
-            List<string> pages = [];
+            List<string> pages = new List<string>();
             var currentPage = new StringBuilder();
 
             WriteTitle(currentPage, "Amortisation schedule", PageHeight - TopMargin);
@@ -149,7 +149,7 @@ namespace BankApp.Client.Utilities
 
         private static byte[] BuildPdfDocument(IReadOnlyList<string> pageContents)
         {
-            List<byte[]> objects = [];
+            List<byte[]> objects = new List<byte[]>();
             var pageCount = pageContents.Count;
             var fontObjectId = FirstPageObjectId + (pageCount * ObjectsPerPage);
             var pageReferences = new StringBuilder();
@@ -190,7 +190,7 @@ namespace BankApp.Client.Utilities
             writer.Write(PdfHeader);
             writer.Flush();
 
-            List<long> offsets = [ZeroStreamOffset];
+            List<long> offsets = new List<long> { ZeroStreamOffset };
 
             for (var index = ZeroBufferIndex; index < objects.Count; index++)
             {

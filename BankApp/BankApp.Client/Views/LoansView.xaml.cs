@@ -2,18 +2,18 @@ namespace BankApp.Client.Views
 {
     using System;
     using System.Diagnostics;
-    using Microsoft.UI.Xaml;
-    using Microsoft.UI.Xaml.Controls;
-    using Microsoft.UI.Xaml.Navigation;
-    using Microsoft.UI.Xaml.Media;
+    using BankApp.Client.View.Dialogs;
     using BankApp.Client.ViewModels;
     using BankApp.Client.Views.Dialogs;
     using BankApp.Models.Enums;
-    using BankApp.Client.View.Dialogs;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Media;
+    using Microsoft.UI.Xaml.Navigation;
 
     public sealed partial class LoansView : UserControl
     {
-        public LoansViewModel? viewModel => this.DataContext as LoansViewModel;
+        public LoansViewModel? ViewModel => this.DataContext as LoansViewModel;
 
         public LoansView()
         {
@@ -23,9 +23,9 @@ namespace BankApp.Client.Views
 
         private async void LoansView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (viewModel != null)
+            if (ViewModel != null)
             {
-                await this.viewModel.LoadLoansAsync();
+                await this.ViewModel.LoadLoansAsync();
             }
         }
 
@@ -33,7 +33,7 @@ namespace BankApp.Client.Views
         {
             try
             {
-                var dialog = new LoanApplicationDialog(this.viewModel)
+                var dialog = new LoanApplicationDialog(this.ViewModel)
                 {
                     XamlRoot = this.XamlRoot,
                 };
@@ -51,8 +51,8 @@ namespace BankApp.Client.Views
             {
                 if (sender is Button btn && btn.Tag is LoanViewModel loan)
                 {
-                    this.viewModel.SelectedLoan = loan;
-                    var dialog = new PayInstallmentDialog(this.viewModel)
+                    this.ViewModel.SelectedLoan = loan;
+                    var dialog = new PayInstallmentDialog(this.ViewModel)
                     {
                         XamlRoot = this.XamlRoot,
                     };
@@ -71,8 +71,8 @@ namespace BankApp.Client.Views
             {
                 if (sender is Button btn && btn.Tag is LoanViewModel loan)
                 {
-                    this.viewModel.SelectedLoan = loan;
-                    await this.viewModel.LoadAmortizationAsync();
+                    this.ViewModel.SelectedLoan = loan;
+                    await this.ViewModel.LoadAmortizationAsync();
 
                     Frame? mainFrame = GetParentFrame();
 
@@ -111,42 +111,42 @@ namespace BankApp.Client.Views
 
         private void OnFilterAll(object sender, RoutedEventArgs e)
         {
-            this.viewModel.StatusFilter = null;
+            this.ViewModel.StatusFilter = null;
         }
 
         private void OnFilterActive(object sender, RoutedEventArgs e)
         {
-            this.viewModel.StatusFilter = LoanStatus.Active;
+            this.ViewModel.StatusFilter = LoanStatus.Active;
         }
 
         private void OnFilterClosed(object sender, RoutedEventArgs e)
         {
-            this.viewModel.StatusFilter = LoanStatus.Passed;
+            this.ViewModel.StatusFilter = LoanStatus.Passed;
         }
 
         private void OnTypeFilterAll(object sender, RoutedEventArgs e)
         {
-            this.viewModel.TypeFilter = null;
+            this.ViewModel.TypeFilter = null;
         }
 
         private void OnTypeFilterPersonal(object sender, RoutedEventArgs e)
         {
-            this.viewModel.TypeFilter = LoanType.Personal;
+            this.ViewModel.TypeFilter = LoanType.Personal;
         }
 
         private void OnTypeFilterMortgage(object sender, RoutedEventArgs e)
         {
-            this.viewModel.TypeFilter = LoanType.Mortgage;
+            this.ViewModel.TypeFilter = LoanType.Mortgage;
         }
 
         private void OnTypeFilterStudent(object sender, RoutedEventArgs e)
         {
-            this.viewModel.TypeFilter = LoanType.Student;
+            this.ViewModel.TypeFilter = LoanType.Student;
         }
 
         private void OnTypeFilterAuto(object sender, RoutedEventArgs e)
         {
-            this.viewModel.TypeFilter = LoanType.Auto;
+            this.ViewModel.TypeFilter = LoanType.Auto;
         }
     }
 }

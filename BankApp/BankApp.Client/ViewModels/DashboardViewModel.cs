@@ -1,12 +1,10 @@
-using BankApp.Client.Utilities;
-
-using BankApp.Models.DTOs.Dashboard;
-using BankApp.Models.Entities;
-using BankApp.Models.Enums;
 using System;
 using System.Collections.Generic;
 using BankApp.Client.Services.Interfaces;
-
+using BankApp.Client.Utilities;
+using BankApp.Models.DTOs.Dashboard;
+using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 
 namespace BankApp.Client.ViewModels
 {
@@ -54,6 +52,9 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-        public override void Dispose() { }
+        /// <inheritdoc />
+        public override void Dispose()
+        {
+        }
     }
 }

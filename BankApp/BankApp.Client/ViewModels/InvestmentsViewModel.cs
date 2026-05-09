@@ -46,7 +46,11 @@ namespace BankApp.Client.ViewModels
             get => this.activeFilterType;
             set
             {
-                if (this.activeFilterType == value) return;
+                if (this.activeFilterType == value)
+                {
+                    return;
+                }
+
                 this.activeFilterType = value;
                 this.RefreshDisplayedHoldings();
                 this.OnPropertyChanged();
@@ -89,7 +93,11 @@ namespace BankApp.Client.ViewModels
 
         public void EnsureInitialized()
         {
-            if (this.hasLoaded) return;
+            if (this.hasLoaded)
+            {
+                return;
+            }
+
             this.hasLoaded = true;
             this.LoadUserPortfolio();
         }

@@ -30,7 +30,9 @@ namespace BankApp.Client.Master
         public void GoBack()
         {
             if (CanGoBack())
+            {
                 _frame?.GoBack();
+            }
         }
 
         public bool CanGoBack()

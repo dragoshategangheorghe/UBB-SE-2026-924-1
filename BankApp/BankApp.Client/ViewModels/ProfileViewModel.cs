@@ -1,11 +1,10 @@
-using BankApp.Models.DTOs.Profile;
-using BankApp.Models.Entities;
-using BankApp.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Windows.UI.Text.Core;
 using BankApp.Client.Services.Interfaces;
+using BankApp.Models.DTOs.Profile;
+using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 
 namespace BankApp.Client.ViewModels
 {
@@ -68,7 +67,7 @@ namespace BankApp.Client.ViewModels
             catch (Exception ex)
             {
                 State.SetValue(ProfileState.Error);
-                LogError(nameof(UpdatePersonalInfo), ex);
+                LogError(nameof(LoadProfile), ex);
                 return false;
             }
         }
@@ -89,7 +88,7 @@ namespace BankApp.Client.ViewModels
                 address = string.IsNullOrWhiteSpace(address) ? null : address.Trim();
 
                 UpdateProfileRequest request = new UpdateProfileRequest(ProfileInfo.UserId, phone, address);
-                
+
                 UpdateProfileResponse? response = await _profileService.UpdateProfileAsync(request);
 
                 if (response == null)
@@ -176,8 +175,6 @@ namespace BankApp.Client.ViewModels
                 LogError(nameof(EnableTwoFactor), ex);
                 return false;
             }
-            return false;
-
         }
 
         public async Task<bool> DisableTwoFactor()
@@ -212,13 +209,17 @@ namespace BankApp.Client.ViewModels
             try
             {
                 if (string.IsNullOrWhiteSpace(provider))
+                {
                     return Task.FromResult(false);
+                }
 
                 var alreadyLinked = OAuthLinks.Exists(o =>
                     string.Equals(o.Provider, provider, StringComparison.OrdinalIgnoreCase));
 
                 if (alreadyLinked)
+                {
                     return Task.FromResult(false);
+                }
 
                 State.SetValue(ProfileState.Loading);
 
@@ -316,7 +317,11 @@ namespace BankApp.Client.ViewModels
 
         public override void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
             GC.SuppressFinalize(this);
         }

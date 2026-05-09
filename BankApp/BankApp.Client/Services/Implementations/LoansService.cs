@@ -1,14 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Implementations
 {

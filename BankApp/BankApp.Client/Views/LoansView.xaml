@@ -21,13 +21,13 @@
             </Grid>
 
             <ProgressRing IsActive="{Binding IsLoading}"
-                          Visibility="{x:Bind viewModel.IsLoading, Mode=OneWay}"
+                          Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
                           HorizontalAlignment="Center"
                           Margin="0,0,0,10" />
 
 
             <InfoBar IsOpen="{Binding HasError}"
-                     Visibility="{x:Bind viewModel.IsLoading, Mode=OneWay}"
+                     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
                      Severity="Error"
                      Message="{Binding ErrorMessage}"
                      IsClosable="False"
