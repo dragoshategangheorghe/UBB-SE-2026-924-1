@@ -7,7 +7,7 @@ using BankApp.Models.Enums;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class TwoFactorView : Page, Observer<TwoFactorState>
+    public sealed partial class TwoFactorView : Page, IAppObserver<TwoFactorState>
     {
         private readonly TwoFactorViewModel _viewModel;
         private DispatcherTimer _countdownTimer;

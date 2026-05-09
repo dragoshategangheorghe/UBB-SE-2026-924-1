@@ -6,7 +6,7 @@ using BankApp.Models.Enums;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class RegisterView : Page, Observer<RegisterState>
+    public sealed partial class RegisterView : Page, IAppObserver<RegisterState>
     {
         private readonly RegisterViewModel _viewModel;
 
