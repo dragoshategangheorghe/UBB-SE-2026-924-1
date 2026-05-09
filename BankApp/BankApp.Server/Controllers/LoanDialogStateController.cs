@@ -9,10 +9,14 @@ namespace BankApp.Server.Controllers
     {
         private readonly LoanDialogStateService _loanDialogStateService = new();
 
-        [HttpGet]
+        private const int PositiveThreshold = 0;
+
+        [HttpGet] // query means api/loans/should-compute-estimate"?q1=aaa&hmm=wow& ... I hope that's clear
         public IActionResult GetShouldComputeEstimate([FromQuery] double desiredAmount, [FromQuery] int preferredTermMonths, [FromQuery] string purpose)
         {
-            bool result = _loanDialogStateService.ShouldComputeEstimate(desiredAmount, preferredTermMonths, purpose);
+            bool result = desiredAmount > PositiveThreshold &&
+                          preferredTermMonths > PositiveThreshold &&
+                          !string.IsNullOrWhiteSpace(purpose);
             return Ok(result);
         }
     }
