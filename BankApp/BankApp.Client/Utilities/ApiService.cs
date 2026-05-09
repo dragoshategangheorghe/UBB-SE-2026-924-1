@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -65,8 +66,13 @@ namespace BankApp.Client.Utilities
 
         public async Task<TResponse?> GetAsync<TResponse>(string endpoint)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(endpoint);
-            return await response.Content.ReadFromJsonAsync<TResponse>();
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(endpoint);
+            if (httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
+            {
+                return default; // default = null for reference types = classes
+            }
+
+            return await httpResponseMessage.Content.ReadFromJsonAsync<TResponse>();
         }
 
         public async Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest data)

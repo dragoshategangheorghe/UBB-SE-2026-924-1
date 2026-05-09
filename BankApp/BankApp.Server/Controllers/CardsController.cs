@@ -1,4 +1,6 @@
 using BankApp.Models.DTOs.Cards;
+using BankApp.Models.Entities;
+using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,11 +10,11 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class CardsController : ControllerBase
     {
-        private readonly ICardService cardService;
+        private readonly ICardRepository cardRepository;
 
-        public CardsController(ICardService cardService)
+        public CardsController(ICardRepository cardRepository)
         {
-            this.cardService = cardService;
+            this.cardRepository = cardRepository;
         }
 
         private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
@@ -20,49 +22,43 @@ namespace BankApp.Server.Controllers
         [HttpGet]
         public IActionResult GetCards()
         {
-            return Ok(cardService.GetCards(GetAuthenticatedUserId()));
+            return Ok(cardRepository.GetCardsByUserId(GetAuthenticatedUserId()));
         }
 
         [HttpGet("{cardId:int}")]
-        public IActionResult GetCard(int cardId)
+        public ActionResult<Card> GetCard(int cardId)
         {
-            CardDetailsResponse response = cardService.GetCard(GetAuthenticatedUserId(), cardId);
-            return response.Success ? Ok(response) : NotFound(response);
+            return cardRepository.GetCardById(cardId);
         }
 
-        [HttpPost("{cardId:int}/reveal")]
-        public IActionResult RevealCard(int cardId, [FromBody] RevealCardRequest request)
+        [HttpGet("account/{accountId:int}")]
+        public ActionResult<Account> GetAccount(int accountId)
         {
-            RevealCardResponse response = cardService.RevealSensitiveDetails(GetAuthenticatedUserId(), cardId, request);
-            return response.Success || response.RequiresOtp ? Ok(response) : BadRequest(response);
+            return cardRepository.GetAccountById(accountId);
         }
 
-        [HttpPut("{cardId:int}/freeze")]
-        public IActionResult FreezeCard(int cardId)
+        [HttpGet("/sortPreference")]
+        public ActionResult<UserCardPreference> GetSortPreference()
         {
-            CardCommandResponse response = cardService.FreezeCard(GetAuthenticatedUserId(), cardId);
-            return response.Success ? Ok(response) : BadRequest(response);
+            return cardRepository.GetSortPreference(GetAuthenticatedUserId());
         }
 
-        [HttpPut("{cardId:int}/unfreeze")]
-        public IActionResult UnfreezeCard(int cardId)
+        [HttpPut("/sortPreference/{sortOption}")]
+        public IActionResult SaveSortPreferences(string sortOption)
         {
-            CardCommandResponse response = cardService.UnfreezeCard(GetAuthenticatedUserId(), cardId);
-            return response.Success ? Ok(response) : BadRequest(response);
+            return Ok(cardRepository.SaveSortPreference(GetAuthenticatedUserId(), sortOption));
         }
 
-        [HttpPut("{cardId:int}/settings")]
-        public IActionResult UpdateSettings(int cardId, [FromBody] UpdateCardSettingsRequest request)
+        [HttpPut("{cardId: int}/updateStatus/{status}")]
+        public IActionResult UpdateStatus(int cardId, string status)
         {
-            CardCommandResponse response = cardService.UpdateSettings(GetAuthenticatedUserId(), cardId, request);
-            return response.Success ? Ok(response) : BadRequest(response);
+            return Ok(cardRepository.UpdateStatus(cardId, status));
         }
 
-        [HttpPut("preferences/sort")]
-        public IActionResult UpdateSortPreference([FromBody] UpdateCardSortPreferenceRequest request)
+        [HttpPost("{cardId: int}/updateSettings")]
+        public IActionResult UpdateStatus(int cardId, [FromBody] UpdateCardSettingsRequest request)
         {
-            CardCommandResponse response = cardService.UpdateSortPreference(GetAuthenticatedUserId(), request);
-            return response.Success ? Ok(response) : BadRequest(response);
+            return Ok(cardRepository.UpdateSettings(cardId, request.SpendingLimit, request.IsOnlinePaymentsEnabled, request.IsContactlessPaymentsEnabled));
         }
     }
 }
