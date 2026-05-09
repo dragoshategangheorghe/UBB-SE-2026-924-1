@@ -7,7 +7,7 @@
 //    {
 //        public AppDbContext() { }
 
-//        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+//        public AppDbContext(DbContextOptions<AppDbContext> _options) : base(_options) { }
 
 //        // Entity sets for the tables
 

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using BankApp.Models.DTOs;
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Investments;
@@ -33,7 +28,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="SavingsRepository"/> class.
         /// </summary>
-        /// <param name="dbContext">The application's EF Core database context.</param>
+        /// <param name="dbContext">The application's EF Core database _dbContext.</param>
         public SavingsRepository(AppDbContext dbContext)
         {
             _context = dbContext;
@@ -338,7 +333,7 @@ namespace BankApp.Server.Repositories.Implementations
         }
 
         /// <summary>
-        /// Gets available funding-source options for a user.
+        /// Gets available funding-source _options for a user.
         /// </summary>
         public Task<List<FundingSourceOption>> GetFundingSourcesAsync(int userId)
         {

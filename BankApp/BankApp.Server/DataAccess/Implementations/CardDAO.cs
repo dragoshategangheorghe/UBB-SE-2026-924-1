@@ -6,11 +6,11 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class CardDAO : ICardDAO
     {
-        private readonly AppDbContext dbContext;
+        private readonly AppDbContext _dbContext;
 
         public CardDAO(AppDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            this._dbContext = dbContext;
         }
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace BankApp.Server.DataAccess.Implementations
         /// </summary>
         public Card? FindById(int id)
         {
-            return dbContext.Cards
+            return _dbContext.Cards
                 .Include(c => c.Account)
                 .Include(c => c.User)
                 .FirstOrDefault(c => c.Id == id);
@@ -29,7 +29,7 @@ namespace BankApp.Server.DataAccess.Implementations
         /// </summary>
         public List<Card> FindByUserId(int userId)
         {
-            return dbContext.Cards
+            return _dbContext.Cards
                 .Include(c => c.Account)
                 .Include(c => c.User)
                 .Where(c => c.User.Id == userId)
@@ -40,7 +40,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public bool UpdateStatus(int cardId, string status)
         {
-            var rowsAffected = dbContext.Cards
+            var rowsAffected = _dbContext.Cards
                 .Where(c => c.Id == cardId)
                 .ExecuteUpdate(s => s.SetProperty(c => c.Status, status));
 
@@ -49,7 +49,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public bool UpdateSettings(int cardId, decimal? spendingLimit, bool isOnlinePaymentsEnabled, bool isContactlessPaymentsEnabled)
         {
-            var rowsAffected = dbContext.Cards
+            var rowsAffected = _dbContext.Cards
                 .Where(c => c.Id == cardId)
                 .ExecuteUpdate(s => s
                     .SetProperty(c => c.MonthlySpendingCap, spendingLimit)

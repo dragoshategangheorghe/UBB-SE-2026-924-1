@@ -12,12 +12,12 @@
 //    [Route("api/[controller]")]
 //    public class TestController : ControllerBase
 //    {
-//        [HttpGet("db")]
-//        public IActionResult TestDb([FromServices] AppDbContext db)
+//        [HttpGet("_dbContext")]
+//        public IActionResult TestDb([FromServices] AppDbContext _dbContext)
 //        {
 //            try
 //            {
-//                var reader = db.ExecuteQuery("SELECT COUNT(*) FROM [User]", Array.Empty<object>());
+//                var reader = _dbContext.ExecuteQuery("SELECT COUNT(*) FROM [User]", Array.Empty<object>());
 //                reader.Read();
 //                var count = reader.GetInt32(0);
 //                reader.Close();
@@ -30,11 +30,11 @@
 //        }
 
 //        [HttpGet("user/find/{email}")]
-//        public IActionResult FindUser([FromServices] IUserDAO userDao, string email)
+//        public IActionResult FindUser([FromServices] IUserDAO _userDao, string email)
 //        {
 //            try
 //            {
-//                var user = userDao.FindByEmail(email);
+//                var user = _userDao.FindByEmail(email);
 //                if (user == null)
 //                {
 //                    return NotFound(new { error = $"User with email '{email}' not found" });

@@ -6,19 +6,19 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class NotificationDAO : INotificationDAO
     {
-        private readonly AppDbContext appDbContext;
+        private readonly AppDbContext _dbContext;
 
         public NotificationDAO(AppDbContext appDbContext)
         {
-            this.appDbContext = appDbContext;
+            this._dbContext = appDbContext;
         }
 
         public bool Create(int userId, string title, string message, string type, string channel, string? relatedEntityType, int? relatedEntityId)
         {
-            var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
-            if (appDbContext.Entry(user).State == EntityState.Detached)
+            var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+            if (_dbContext.Entry(user).State == EntityState.Detached)
             {
-                appDbContext.Attach(user);
+                _dbContext.Attach(user);
             }
 
             var notification = new Notification
@@ -33,19 +33,19 @@ namespace BankApp.Server.DataAccess.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            appDbContext.Notifications.Add(notification);
-            return appDbContext.SaveChanges() > 0;
+            _dbContext.Notifications.Add(notification);
+            return _dbContext.SaveChanges() > 0;
         }
 
         public int CountUnreadByUserId(int userId)
         {
-            return appDbContext.Notifications
+            return _dbContext.Notifications
                     .Count(n => n.User.Id == userId && !n.IsRead);
         }
 
         public List<Notification> FindByUserId(int userId)
         {
-            return appDbContext.Notifications
+            return _dbContext.Notifications
                 .Include(n => n.User)
                 .Where(n => n.User.Id == userId)
                 .ToList();

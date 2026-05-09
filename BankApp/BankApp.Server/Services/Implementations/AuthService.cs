@@ -1,7 +1,6 @@
 ﻿using BankApp.Models.DTOs.Auth;
 using BankApp.Models.Entities;
 using BankApp.Server.Repositories.Interfaces;
-using BankApp.Server.Services.Infrastructure.Implementations;
 using BankApp.Server.Services.Infrastructure.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using BankApp.Server.Utilities;
@@ -11,22 +10,22 @@ namespace BankApp.Server.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository authRepository;
-        private readonly IHashService hashService;
-        private readonly IJWTService jwtService;
-        private readonly IOTPService otpService;
-        private readonly IEmailService emailService;
+        private readonly IAuthRepository _authRepository;
+        private readonly IHashService _hashService;
+        private readonly IJWTService _jwtService;
+        private readonly IOTPService _otpService;
+        private readonly IEmailService _emailService;
 
         private const int MaxFailedAttempts = 5;
         private const int LockoutMinutes = 30;
 
         public AuthService(IAuthRepository authRepository, IHashService hashService, IJWTService jwtService, IOTPService otpService, IEmailService emailService)
         {
-            this.authRepository = authRepository;
-            this.hashService = hashService;
-            this.jwtService = jwtService;
-            this.otpService = otpService;
-            this.emailService = emailService;
+            this._authRepository = authRepository;
+            this._hashService = hashService;
+            this._jwtService = jwtService;
+            this._otpService = otpService;
+            this._emailService = emailService;
         }
 
         public LoginResponse Login(LoginRequest request)
@@ -36,7 +35,7 @@ namespace BankApp.Server.Services.Implementations
                 return new LoginResponse { Success = false, Error = "Invalid mail format." };
             }
 
-            User? user = authRepository.FindUserByEmail(request.Email);
+            User? user = _authRepository.FindUserByEmail(request.Email);
             if (user == null)
             {
                 return new LoginResponse { Success = false, Error = "Invalid email or password." };
@@ -48,7 +47,7 @@ namespace BankApp.Server.Services.Implementations
                 return lockCheck;
             }
 
-            if (!hashService.Verify(request.Password, user.PasswordHash))
+            if (!_hashService.Verify(request.Password, user.PasswordHash))
             {
                 return HandleFailedPassword(user);
             }
@@ -69,14 +68,14 @@ namespace BankApp.Server.Services.Implementations
                 return new RegisterResponse { Success = false, Error = validationError };
             }
 
-            User? existingUser = authRepository.FindUserByEmail(request.Email);
+            User? existingUser = _authRepository.FindUserByEmail(request.Email);
             if (existingUser != null)
             {
                 return new RegisterResponse { Success = false, Error = "Email is already registered." };
             }
 
             User user = CreateUserFromRequest(request);
-            bool created = authRepository.CreateUser(user);
+            bool created = _authRepository.CreateUser(user);
 
             if (!created)
             {
@@ -104,24 +103,24 @@ namespace BankApp.Server.Services.Implementations
                 string email = payload.Email;
                 string fullName = payload.Name;
 
-                OAuthLink? link = authRepository.FindOAuthLink(request.Provider, providerUserId);
+                OAuthLink? link = _authRepository.FindOAuthLink(request.Provider, providerUserId);
                 User? user = null;
 
                 if (link != null)
                 {
-                    user = authRepository.FindUserById(link.UserId);
+                    user = _authRepository.FindUserById(link.UserId);
                 }
 
                 if (user == null)
                 {
-                    user = authRepository.FindUserByEmail(email);
+                    user = _authRepository.FindUserByEmail(email);
                     if (user == null)
                     {
                         string randomPassword = Guid.NewGuid().ToString() + "A1a!";
                         user = new User
                         {
                             Email = email,
-                            PasswordHash = hashService.GetHash(randomPassword),
+                            PasswordHash = _hashService.GetHash(randomPassword),
                             FullName = fullName,
                             PreferredLanguage = "en",
                             Is2FAEnabled = false,
@@ -129,12 +128,12 @@ namespace BankApp.Server.Services.Implementations
                             FailedLoginAttempts = 0
                         };
 
-                        if (!authRepository.CreateUser(user))
+                        if (!_authRepository.CreateUser(user))
                         {
                             return new LoginResponse { Success = false, Error = "Failed to create user account." };
                         }
 
-                        user = authRepository.FindUserByEmail(email);
+                        user = _authRepository.FindUserByEmail(email);
                     }
 
                     OAuthLink newLink = new OAuthLink
@@ -144,7 +143,7 @@ namespace BankApp.Server.Services.Implementations
                         ProviderUserId = providerUserId,
                         ProviderEmail = email
                     };
-                    authRepository.CreateOAuthLink(newLink);
+                    _authRepository.CreateOAuthLink(newLink);
                 }
 
                 LoginResponse? lockCheck = CheckAccountLock(user);
@@ -171,13 +170,13 @@ namespace BankApp.Server.Services.Implementations
                 return new RegisterResponse { Success = false, Error = "Invalid email format." };
             }
 
-            OAuthLink? existingLink = authRepository.FindOAuthLink(request.Provider, request.ProviderToken);
+            OAuthLink? existingLink = _authRepository.FindOAuthLink(request.Provider, request.ProviderToken);
             if (existingLink != null)
             {
                 return new RegisterResponse { Success = false, Error = "This OAuth account is already registered. Please login." };
             }
 
-            User? existingUser = authRepository.FindUserByEmail(request.Email);
+            User? existingUser = _authRepository.FindUserByEmail(request.Email);
             int targetUserId;
             if (existingUser != null)
             {
@@ -189,7 +188,7 @@ namespace BankApp.Server.Services.Implementations
                 User newUser = new User
                 {
                     Email = request.Email,
-                    PasswordHash = hashService.GetHash(randomPassword),
+                    PasswordHash = _hashService.GetHash(randomPassword),
                     FullName = request.FullName,
                     PreferredLanguage = "en",
                     Is2FAEnabled = false,
@@ -197,13 +196,13 @@ namespace BankApp.Server.Services.Implementations
                     FailedLoginAttempts = 0
                 };
 
-                bool created = authRepository.CreateUser(newUser);
+                bool created = _authRepository.CreateUser(newUser);
                 if (!created)
                 {
                     return new RegisterResponse { Success = false, Error = "Failed to create user account." };
                 }
 
-                User? savedUser = authRepository.FindUserByEmail(request.Email);
+                User? savedUser = _authRepository.FindUserByEmail(request.Email);
                 if (savedUser == null)
                 {
                     return new RegisterResponse { Success = false, Error = "Error retrieving created user." };
@@ -212,7 +211,7 @@ namespace BankApp.Server.Services.Implementations
                 targetUserId = savedUser.Id;
             }
 
-            User? linkedUser = existingUser ?? authRepository.FindUserByEmail(request.Email);
+            User? linkedUser = existingUser ?? _authRepository.FindUserByEmail(request.Email);
             if (linkedUser == null)
             {
                 return new RegisterResponse { Success = false, Error = "Error retrieving created user." };
@@ -226,7 +225,7 @@ namespace BankApp.Server.Services.Implementations
                 ProviderEmail = request.Email
             };
 
-            bool linkCreated = authRepository.CreateOAuthLink(newLink);
+            bool linkCreated = _authRepository.CreateOAuthLink(newLink);
             if (!linkCreated)
             {
                 return new RegisterResponse { Success = false, Error = "Failed to link OAuth account to user." };
@@ -237,38 +236,38 @@ namespace BankApp.Server.Services.Implementations
 
         public LoginResponse VerifyOTP(VerifyOTPRequest request)
         {
-            User? user = authRepository.FindUserById(request.UserId);
+            User? user = _authRepository.FindUserById(request.UserId);
             if (user == null)
             {
                 return new LoginResponse { Success = false, Error = "User not found." };
             }
-            bool isValid = otpService.VerifyTOTP(request.UserId, request.OTPCode);
+            bool isValid = _otpService.VerifyTOTP(request.UserId, request.OTPCode);
             if (!isValid)
             {
                 return new LoginResponse { Success = false, Error = "Invalid or expired OTP code." };
             }
-            otpService.InvalidateOTP(user.Id);
+            _otpService.InvalidateOTP(user.Id);
             return CompleteLogin(user);
         }
 
         public void ResendOTP(int userId, string method)
         {
-            User? user = authRepository.FindUserById(userId);
+            User? user = _authRepository.FindUserById(userId);
             if (user == null)
             {
                 return;
             }
 
-            string otp = otpService.GenerateTOTP(user.Id);
+            string otp = _otpService.GenerateTOTP(user.Id);
             if (method == "email" || user.Preferred2FAMethod == "email")
             {
-                emailService.SendOTPCode(user.Email, otp);
+                _emailService.SendOTPCode(user.Email, otp);
             }
         }
 
         public void RequestPasswordReset(string email)
         {
-            User? user = authRepository.FindUserByEmail(email);
+            User? user = _authRepository.FindUserByEmail(email);
             if (user == null)
             {
                 return;
@@ -283,21 +282,21 @@ namespace BankApp.Server.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            authRepository.SavePasswordResetToken(resetToken);
-            emailService.SendPasswordResetLink(user.Email, rawToken);
+            _authRepository.SavePasswordResetToken(resetToken);
+            _emailService.SendPasswordResetLink(user.Email, rawToken);
         }
 
         public bool ResetPassword(string token, string newPassword)
         {
-            PasswordResetToken? resetToken = authRepository.FindPasswordResetToken(token);
+            PasswordResetToken? resetToken = _authRepository.FindPasswordResetToken(token);
 
             if (resetToken == null || resetToken.UsedAt != null || resetToken.ExpiresAt < DateTime.UtcNow)
             {
                 return false;
             }
 
-            string finalPasswordHash = hashService.GetHash(newPassword);
-            bool updated = authRepository.UpdatePassword(resetToken.Id, finalPasswordHash);
+            string finalPasswordHash = _hashService.GetHash(newPassword);
+            bool updated = _authRepository.UpdatePassword(resetToken.Id, finalPasswordHash);
 
             if (!updated)
             {
@@ -305,8 +304,8 @@ namespace BankApp.Server.Services.Implementations
             }
 
             resetToken.UsedAt = DateTime.UtcNow;
-            authRepository.SavePasswordResetToken(resetToken);
-            authRepository.InvalidateAllSessions(resetToken.Id);
+            _authRepository.SavePasswordResetToken(resetToken);
+            _authRepository.InvalidateAllSessions(resetToken.Id);
 
             return true;
         }
@@ -325,18 +324,18 @@ namespace BankApp.Server.Services.Implementations
             }
 
             // Lockout expired, reset and allow login attempt
-            authRepository.ResetFailedAttempts(user.Id);
+            _authRepository.ResetFailedAttempts(user.Id);
             return null;
         }
 
         private LoginResponse HandleFailedPassword(User user)
         {
-            authRepository.IncrementFailedAttempts(user.Id);
+            _authRepository.IncrementFailedAttempts(user.Id);
 
             if (user.FailedLoginAttempts + 1 >= MaxFailedAttempts)
             {
-                authRepository.LockAccount(user.Id, DateTime.UtcNow.AddMinutes(LockoutMinutes));
-                emailService.SendLockNotification(user.Email);
+                _authRepository.LockAccount(user.Id, DateTime.UtcNow.AddMinutes(LockoutMinutes));
+                _emailService.SendLockNotification(user.Email);
                 return new LoginResponse { Success = false, Error = "Account locked due to too many failed attempts." };
             }
 
@@ -345,11 +344,11 @@ namespace BankApp.Server.Services.Implementations
 
         private LoginResponse Handle2FA(User user)
         {
-            string otp = otpService.GenerateTOTP(user.Id);
+            string otp = _otpService.GenerateTOTP(user.Id);
 
             if (user.Preferred2FAMethod == "email")
             {
-                emailService.SendOTPCode(user.Email, otp);
+                _emailService.SendOTPCode(user.Email, otp);
             }
 
             return new LoginResponse
@@ -363,10 +362,10 @@ namespace BankApp.Server.Services.Implementations
 
         private LoginResponse CompleteLogin(User user)
         {
-            authRepository.ResetFailedAttempts(user.Id);
-            string token = jwtService.GenerateToken(user.Id);
-            authRepository.CreateSession(user.Id, token, null, null, null);
-            emailService.SendLoginAlert(user.Email);
+            _authRepository.ResetFailedAttempts(user.Id);
+            string token = _jwtService.GenerateToken(user.Id);
+            _authRepository.CreateSession(user.Id, token, null, null, null);
+            _emailService.SendLoginAlert(user.Email);
             return new LoginResponse
             {
                 Success = true,
@@ -403,7 +402,7 @@ namespace BankApp.Server.Services.Implementations
             return new User
             {
                 Email = request.Email,
-                PasswordHash = hashService.GetHash(request.Password),
+                PasswordHash = _hashService.GetHash(request.Password),
                 FullName = request.FullName,
                 PreferredLanguage = "en",
                 Is2FAEnabled = false,
@@ -414,7 +413,7 @@ namespace BankApp.Server.Services.Implementations
 
         public bool VerifyResetToken(string token)
         {
-            PasswordResetToken? resetToken = authRepository.FindPasswordResetToken(token);
+            PasswordResetToken? resetToken = _authRepository.FindPasswordResetToken(token);
 
             if (resetToken == null || resetToken.UsedAt != null || resetToken.ExpiresAt < DateTime.UtcNow)
             {
@@ -426,12 +425,12 @@ namespace BankApp.Server.Services.Implementations
 
         public bool Logout(string token)
         {
-            Session? session = authRepository.FindSessionByToken(token);
+            Session? session = _authRepository.FindSessionByToken(token);
             if (session == null)
             {
                 return false;
             }
-            authRepository.UpdateSessionToken(session.Id);
+            _authRepository.UpdateSessionToken(session.Id);
             return true;
         }
     }

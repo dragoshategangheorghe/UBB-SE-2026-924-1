@@ -7,16 +7,16 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class TransactionDAO : ITransactionDAO
     {
-        private readonly AppDbContext dbContext;
+        private readonly AppDbContext _dbContext;
 
         public TransactionDAO(AppDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            this._dbContext = dbContext;
         }
 
         public List<Transaction> FindRecentByAccountId(int accountId, int limit = 10)
         {
-            return dbContext.Transactions
+            return _dbContext.Transactions
                 .Include(t => t.Account)
                 .Include(t => t.Card)
                 .Include(t => t.Category)
@@ -29,7 +29,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public List<TransactionHistoryItemDto> FindByUserId(int userId)
         {
-            return dbContext.Transactions
+            return _dbContext.Transactions
                 .Include(t => t.Account)
                 .Include(t => t.Card)
                 .Include(t => t.Category)
@@ -69,7 +69,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public TransactionHistoryItemDto? FindById(int userId, int transactionId)
         {
-            var row = dbContext.Transactions
+            var row = _dbContext.Transactions
                 .Include(t => t.Account)
                 .Include(t => t.Card)
                 .Include(t => t.Category)

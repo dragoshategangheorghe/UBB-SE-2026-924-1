@@ -1,10 +1,10 @@
 ﻿namespace BankApp.Server.Services.Implementations
 {
+    using BankApp.Server.Services.Interfaces;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
-    using BankApp.Server.Services.Interfaces;
 
     public class MarketDataService : IMarketDataService
     {
@@ -22,7 +22,7 @@
         private const int PriceRoundingDigits = 2;
         private const decimal MissingPrice = 0m;
 
-        private readonly Dictionary<string, decimal> currentPrices = new(StringComparer.OrdinalIgnoreCase)
+        private readonly Dictionary<string, decimal> _currentPrices = new(StringComparer.OrdinalIgnoreCase)
         {
             ["BTC"] = DefaultBtcPrice,
             ["ETH"] = DefaultEthPrice,
@@ -33,49 +33,49 @@
             ["SPY"] = DefaultSpyPrice
         };
 
-        private readonly Random randomNumberGenerator = new();
-        private readonly object synchronizationRoot = new();
+        private readonly Random _randomNumberGenerator = new();
+        private readonly object _synchronizationRoot = new();
 
-        private Timer? pollingTimer;
-        private Action? priceUpdateHandler;
-        private List<string> trackedTickerSymbols = new();
+        private Timer? _pollingTimer;
+        private Action? _priceUpdateHandler;
+        private List<string> _trackedTickerSymbols = new();
 
         public void StartPolling(List<string> tickerSymbols)
         {
-            lock (this.synchronizationRoot)
+            lock (this._synchronizationRoot)
             {
-                this.trackedTickerSymbols = tickerSymbols
+                this._trackedTickerSymbols = tickerSymbols
                     .Where(ticker => !string.IsNullOrWhiteSpace(ticker))
                     .Select(ticker => ticker.Trim().ToUpperInvariant())
                     .Distinct()
                     .ToList();
 
-                if (this.pollingTimer != null)
+                if (this._pollingTimer != null)
                 {
                     return;
                 }
 
-                this.pollingTimer = new Timer(
+                this._pollingTimer = new Timer(
                     timerState =>
                     {
-                        lock (this.synchronizationRoot)
+                        lock (this._synchronizationRoot)
                         {
-                            foreach (var ticker in this.trackedTickerSymbols)
+                            foreach (var ticker in this._trackedTickerSymbols)
                             {
-                                if (!this.currentPrices.TryGetValue(ticker, out var currentPrice))
+                                if (!this._currentPrices.TryGetValue(ticker, out var currentPrice))
                                 {
                                     continue;
                                 }
 
                                 var changePercentage =
-                                    (decimal)((this.randomNumberGenerator.NextDouble() *
+                                    (decimal)((this._randomNumberGenerator.NextDouble() *
                                                MaximumPriceFluctuationPercentage) - PriceFluctuationOffset);
                                 var updatedPrice = currentPrice * (PriceBaseMultiplier + changePercentage);
-                                this.currentPrices[ticker] = decimal.Round(updatedPrice, PriceRoundingDigits);
+                                this._currentPrices[ticker] = decimal.Round(updatedPrice, PriceRoundingDigits);
                             }
                         }
 
-                        this.priceUpdateHandler?.Invoke();
+                        this._priceUpdateHandler?.Invoke();
                     },
                     null,
                     DefaultPollingIntervalInMilliseconds,
@@ -85,10 +85,10 @@
 
         public void StopPolling()
         {
-            lock (this.synchronizationRoot)
+            lock (this._synchronizationRoot)
             {
-                this.pollingTimer?.Dispose();
-                this.pollingTimer = null;
+                this._pollingTimer?.Dispose();
+                this._pollingTimer = null;
             }
         }
 
@@ -99,15 +99,15 @@
                 return MissingPrice;
             }
 
-            lock (this.synchronizationRoot)
+            lock (this._synchronizationRoot)
             {
-                return this.currentPrices.TryGetValue(tickerSymbol.Trim().ToUpperInvariant(), out var price) ? price : MissingPrice;
+                return this._currentPrices.TryGetValue(tickerSymbol.Trim().ToUpperInvariant(), out var price) ? price : MissingPrice;
             }
         }
 
         public void RegisterPriceUpdateHandler(Action updateHandler)
         {
-            this.priceUpdateHandler = updateHandler;
+            this._priceUpdateHandler = updateHandler;
         }
     }
 }

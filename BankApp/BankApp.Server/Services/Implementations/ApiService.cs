@@ -7,23 +7,23 @@ namespace BankApp.Server.Services.Implementations;
 
 public class ApiService : IApiService
 {
-    private readonly IChatRepository chatRepository;
-    private readonly ChatMessageRepository chatMessageRepository;
+    private readonly IChatRepository _chatRepository;
+    private readonly ChatMessageRepository _chatMessageRepository;
 
     public ApiService(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
     {
-        this.chatRepository = chatRepository;
-        this.chatMessageRepository = chatMessageRepository;
+        this._chatRepository = chatRepository;
+        this._chatMessageRepository = chatMessageRepository;
     }
 
     public List<ChatSession> GetSessionsByUserId(int userId)
     {
-        return chatRepository.GetByUserId(userId);
+        return _chatRepository.GetByUserId(userId);
     }
 
     public ChatSession? GetSessionById(int sessionId)
     {
-        return chatRepository.GetById(sessionId);
+        return _chatRepository.GetById(sessionId);
     }
 
     public int CreateSession(int userId, string issueCategory)
@@ -35,22 +35,22 @@ public class ApiService : IApiService
             SessionStatus = "Open",
             StartedAt = DateTime.UtcNow
         };
-        return chatRepository.Create(session);
+        return _chatRepository.Create(session);
     }
 
     public bool UpdateSessionStatus(int sessionId, string status)
     {
-        return chatRepository.UpdateStatus(sessionId, status);
+        return _chatRepository.UpdateStatus(sessionId, status);
     }
 
     public bool SaveSessionFeedback(int sessionId, int rating, string feedback)
     {
-        return chatRepository.SaveFeedback(sessionId, rating, feedback);
+        return _chatRepository.SaveFeedback(sessionId, rating, feedback);
     }
 
     public List<ChatMessage> GetMessagesBySessionId(int sessionId)
     {
-        return chatMessageRepository.GetBySessionId(sessionId);
+        return _chatMessageRepository.GetBySessionId(sessionId);
     }
 
     public int CreateMessage(int sessionId, string senderType, string content)
@@ -62,12 +62,12 @@ public class ApiService : IApiService
             Content = content,
             SentAt = DateTime.UtcNow
         };
-        return chatMessageRepository.Create(message);
+        return _chatMessageRepository.Create(message);
     }
 
     public List<ChatAttachment> GetAttachmentsByMessageId(int messageId)
     {
-        return chatMessageRepository.GetAttachmentsByMessageId(messageId);
+        return _chatMessageRepository.GetAttachmentsByMessageId(messageId);
     }
 
     public int CreateAttachment(int messageId, string attachmentName, string fileType, int fileSizeBytes, string storageUrl)
@@ -80,6 +80,6 @@ public class ApiService : IApiService
             FileSizeBytes = fileSizeBytes,
             StorageUrl = storageUrl
         };
-        return chatMessageRepository.CreateAttachment(attachment);
+        return _chatMessageRepository.CreateAttachment(attachment);
     }
 }

@@ -1,14 +1,13 @@
-﻿using System;
+﻿using BankApp.Client.Utilities;
+using BankApp.Models.Features.Investments;
+using Microsoft.UI.Dispatching;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
-using BankApp.Models.Entities;
-using BankApp.Client.Utilities;
 
 namespace BankApp.Client.ViewModels
 {
@@ -33,7 +32,9 @@ namespace BankApp.Client.ViewModels
         }
 
         public ICommand SelectFilterCommand { get; }
+
         public bool IsEmptyStateVisible => !this.IsPortfolioLoading && !this.DisplayedHoldings.Any();
+
         public bool IsHoldingsVisible => !this.IsEmptyStateVisible;
 
         public string ActiveFilterType

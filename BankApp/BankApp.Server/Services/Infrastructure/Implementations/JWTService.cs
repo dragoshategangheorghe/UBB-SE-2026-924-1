@@ -1,22 +1,22 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using BankApp.Server.Services.Infrastructure.Interfaces;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BankApp.Server.Services.Infrastructure.Interfaces;
-using Microsoft.IdentityModel.Tokens;
 
 namespace BankApp.Server.Services.Infrastructure.Implementations
 {
     public class JWTService : IJWTService
     {
-        private readonly string secret;
+        private readonly string _secret;
         public JWTService(string secret)
         {
-            this.secret = secret;
+            this._secret = secret;
         }
 
         public string GenerateToken(int userId)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -33,7 +33,7 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
 
         public ClaimsPrincipal? ValidateToken(string token)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
             var handler = new JwtSecurityTokenHandler();
 
             try

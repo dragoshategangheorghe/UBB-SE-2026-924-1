@@ -1,6 +1,6 @@
 ﻿using BankApp.Models.DTOs.Dashboard;
-using Microsoft.AspNetCore.Mvc;
 using BankApp.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
 {
@@ -8,10 +8,10 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class DashboardController : ControllerBase
     {
-        private readonly IDashboardService dashService;
+        private readonly IDashboardService _dashService;
         public DashboardController(IDashboardService dashService)
         {
-            this.dashService = dashService;
+            this._dashService = dashService;
         }
 
         [HttpGet]
@@ -19,9 +19,9 @@ namespace BankApp.Server.Controllers
         {
             try
             {
-                int userId = (int)HttpContext.Items["UserId"] !;
+                int userId = (int)HttpContext.Items["UserId"]!;
 
-                DashboardResponse dashboardData = dashService.GetDashboardData(userId);
+                DashboardResponse dashboardData = _dashService.GetDashboardData(userId);
                 if (dashboardData == null)
                 {
                     return NotFound(new { message = "Dashboard data not found." });

@@ -9,8 +9,8 @@ namespace BankApp.Server.Services.Implementations
 
     public class StatisticsService : IStatisticsService
     {
-        private readonly ITransactionHistoryRepository transactionHistoryRepository;
-        private readonly TeamCOptions options;
+        private readonly ITransactionHistoryRepository _transactionHistoryRepository;
+        private readonly TeamCOptions _options;
 
         private static bool IsDebit(string? direction)
         {
@@ -30,8 +30,8 @@ namespace BankApp.Server.Services.Implementations
 
         public StatisticsService(ITransactionHistoryRepository transactionHistoryRepository, IOptions<TeamCOptions> options)
         {
-            this.transactionHistoryRepository = transactionHistoryRepository;
-            this.options = options.Value;
+            this._transactionHistoryRepository = transactionHistoryRepository;
+            this._options = options.Value;
         }
 
         public SpendingByCategoryResponse GetSpendingByCategory(int userId)
@@ -120,7 +120,7 @@ namespace BankApp.Server.Services.Implementations
                 })
                 .OrderByDescending(recipient => recipient.TotalAmount)
                 .ThenBy(recipient => recipient.Name, StringComparer.OrdinalIgnoreCase)
-                .Take(options.TopRecipientsCount)
+                .Take(_options.TopRecipientsCount)
                 .ToList();
 
             return new TopRecipientsResponse
@@ -133,7 +133,7 @@ namespace BankApp.Server.Services.Implementations
 
         private List<TransactionHistoryItemDto> GetAnalyticsTransactions(int userId)
         {
-            return this.transactionHistoryRepository.GetTransactionsByUserId(userId)
+            return this._transactionHistoryRepository.GetTransactionsByUserId(userId)
                 .Where(transaction => !IsFailed(transaction.Status))
                 .ToList();
         }

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BankApp.Server.Services.Interfaces;
-using BankApp.Models.DTOs.Profile;
+﻿using BankApp.Models.DTOs.Profile;
 using BankApp.Models.Entities;
+using BankApp.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
 {
@@ -9,12 +9,12 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class ProfileController : ControllerBase
     {
-        private readonly IProfileService profileService;
+        private readonly IProfileService _profileService;
         public ProfileController(IProfileService profileService)
         {
-            this.profileService = profileService;
+            this._profileService = profileService;
         }
-        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
+        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"]!;
 
         // GET: api/profile
         [HttpGet]
@@ -22,7 +22,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            User? user = profileService.GetUserById(userId);
+            User? user = _profileService.GetUserById(userId);
             if (user == null)
             {
                 return NotFound(new GetProfileResponse(false, "User not found."));
@@ -38,7 +38,7 @@ namespace BankApp.Server.Controllers
             int userId = GetAuthenticatedUserId();
             request.UserId = userId; // override whatever the client sent
 
-            UpdateProfileResponse response = profileService.UpdatePersonalInfo(request);
+            UpdateProfileResponse response = _profileService.UpdatePersonalInfo(request);
 
             if (!response.Success)
             {
@@ -55,7 +55,7 @@ namespace BankApp.Server.Controllers
             int userId = GetAuthenticatedUserId();
             request.UserId = userId; // override whatever the client sent
 
-            ChangePasswordResponse response = profileService.ChangePassword(request);
+            ChangePasswordResponse response = _profileService.ChangePassword(request);
 
             if (!response.Success)
             {
@@ -71,7 +71,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            List<OAuthLink> links = profileService.GetOAuthLinks(userId);
+            List<OAuthLink> links = _profileService.GetOAuthLinks(userId);
 
             if (links.Count == 0)
             {
@@ -87,7 +87,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            List<NotificationPreference> prefs = profileService.GetNotificationPreferences(userId);
+            List<NotificationPreference> prefs = _profileService.GetNotificationPreferences(userId);
 
             if (prefs.Count == 0)
             {
@@ -103,7 +103,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.UpdateNotificationPreferences(userId, prefs);
+            bool success = _profileService.UpdateNotificationPreferences(userId, prefs);
 
             if (!success)
             {
@@ -119,7 +119,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.VerifyPassword(userId, password);
+            bool success = _profileService.VerifyPassword(userId, password);
 
             if (!success)
             {
@@ -135,7 +135,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.Enable2FA(userId, request.Method);
+            bool success = _profileService.Enable2FA(userId, request.Method);
 
             if (!success)
             {
@@ -151,7 +151,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.Disable2FA(userId);
+            bool success = _profileService.Disable2FA(userId);
 
             if (!success)
             {

@@ -1,7 +1,7 @@
-using System.Text;
 using BankApp.Models.Features.Chat;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace BankApp.Server.Controllers
 {
@@ -9,20 +9,21 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class ChatController : ControllerBase
     {
-        private const int MaxAttachmentSizeBytes = 10 * 1024 * 1024;
-    protected static readonly Dictionary<string, string> DefaultChatbotResponses = new Dictionary<string, string>
-    {
-        ["How do I reset my password?"] =
+        protected static readonly Dictionary<string, string> DefaultChatbotResponses = new Dictionary<string, string>
+        {
+            ["How do I reset my password?"] =
             "You can reset your password from the login screen by choosing Forgot password and following the verification steps.",
-        ["Why was my card declined?"] =
+            ["Why was my card declined?"] =
             "A card can be declined because of insufficient funds, an expired card, a blocked card, or a merchant validation issue. Please check the card status in the app first.",
-        ["How long does a transfer take?"] =
+            ["How long does a transfer take?"] =
             "Internal transfers are usually immediate, while interbank transfers can take up to one business day depending on the destination bank.",
-        ["How do I upload documents for support?"] =
+            ["How do I upload documents for support?"] =
             "Use the Attach File button in this chat after contacting the team. Your selected file will be included with the support request summary.",
-        ["I found a technical problem in the app."] =
+            ["I found a technical problem in the app."] =
             "Please contact the team from this chat and include a short description of what happened. Screenshots or PDFs can help the team investigate faster.",
-    };
+        };
+        private const int MaxAttachmentSizeBytes = 10 * 1024 * 1024;
+
 
         private readonly IApiService apiService;
 
@@ -31,7 +32,7 @@ namespace BankApp.Server.Controllers
             this.apiService = apiService;
         }
 
-        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
+        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"]!;
 
         [HttpGet("sessions")]
         public IActionResult GetSessions()
@@ -248,14 +249,14 @@ namespace BankApp.Server.Controllers
 
         private static string BuildBotReply(string userMessage, out bool shouldEscalate)
         {
-        foreach (KeyValuePair<string, string> pair in DefaultChatbotResponses)
-        {
-            if (userMessage.Trim().Equals(pair.Key, StringComparison.OrdinalIgnoreCase))
+            foreach (KeyValuePair<string, string> pair in DefaultChatbotResponses)
             {
-                shouldEscalate = false;
-                return pair.Value;
+                if (userMessage.Trim().Equals(pair.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    shouldEscalate = false;
+                    return pair.Value;
+                }
             }
-        }
 
             string lower = userMessage.ToLowerInvariant();
             shouldEscalate = false;
