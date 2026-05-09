@@ -1,4 +1,4 @@
-﻿using BankApp.Client.Utilities;
+using BankApp.Client.Utilities;
 
 using BankApp.Models.Enums;
 using BankApp.Models.DTOs.Auth;

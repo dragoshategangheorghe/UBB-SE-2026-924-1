@@ -7,9 +7,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthApiService _authRepo;
+        private readonly IAuthRepoProxy _authRepo;
 
-        public AuthService(IAuthApiService authRepo)
+        public AuthService(IAuthRepoProxy authRepo)
         {
             _authRepo = authRepo;
         }

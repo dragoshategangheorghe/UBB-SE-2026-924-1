@@ -7,9 +7,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class DashboardService : IDashboardService
     {
-        private readonly IDashboardApiService _dashboardRepo;
+        private readonly IDashboardRepoProxy _dashboardRepo;
 
-        public DashboardService(IDashboardApiService dashboardRepo)
+        public DashboardService(IDashboardRepoProxy dashboardRepo)
         {
             _dashboardRepo = dashboardRepo;
         }

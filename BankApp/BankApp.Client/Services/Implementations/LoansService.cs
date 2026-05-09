@@ -24,16 +24,16 @@ namespace BankApp.Client.Services.Implementations
         private const decimal StudentLoanRate = 3.0m;
         private const decimal AutoLoanRate = 6.5m;
 
-        private readonly ILoansApiService _loanRepoProxy;
-        private readonly ILoanDialogStateApiService _loanDialogState;
-        private readonly ILoanApplicationPresentationApiService _loanApplicationPresentation;
+        private readonly ILoansRepoProxy _loanRepoProxy;
+        private readonly ILoanDialogStateRepoProxy _loanDialogState;
+        private readonly ILoanApplicationPresentationRepoProxy _loanApplicationPresentation;
         private readonly LoanApplicationValidator _validator;
         private readonly PaymentCalculationService _paymentCalculationService;
 
         public LoansService(
-            ILoansApiService loanRepoProxy,
-            ILoanDialogStateApiService loanDialogState,
-            ILoanApplicationPresentationApiService loanApplicationPresentation)
+            ILoansRepoProxy loanRepoProxy,
+            ILoanDialogStateRepoProxy loanDialogState,
+            ILoanApplicationPresentationRepoProxy loanApplicationPresentation)
         {
             _loanRepoProxy = loanRepoProxy ?? throw new ArgumentNullException(nameof(loanRepoProxy));
             _loanDialogState = loanDialogState ?? throw new ArgumentNullException(nameof(loanDialogState));

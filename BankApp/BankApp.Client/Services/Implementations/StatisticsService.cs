@@ -7,9 +7,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class StatisticsService : IStatisticsService
     {
-        private readonly IStatisticsApiService _repoProxy;
+        private readonly IStatisticsRepoProxy _repoProxy;
 
-        public StatisticsService(IStatisticsApiService repoProxy)
+        public StatisticsService(IStatisticsRepoProxy repoProxy)
         {
             _repoProxy = repoProxy;
         }

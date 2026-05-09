@@ -1,4 +1,4 @@
-﻿namespace BankApp.Client.Utilities
+namespace BankApp.Client.Utilities
 {
     public abstract class BaseView<T> : Observer<T>
     {

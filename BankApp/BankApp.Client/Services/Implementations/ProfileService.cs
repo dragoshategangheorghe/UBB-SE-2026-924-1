@@ -10,9 +10,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class ProfileService : IProfileService
     {
-        private readonly IProfileApiService _profileRepo;
+        private readonly IProfileRepoProxy _profileRepo;
 
-        public ProfileService(IProfileApiService profileRepo)
+        public ProfileService(IProfileRepoProxy profileRepo)
         {
             _profileRepo = profileRepo;
         }

@@ -1,4 +1,4 @@
-﻿namespace BankApp.Client.Utilities
+namespace BankApp.Client.Utilities
 {
     public interface Observer<T>
     {

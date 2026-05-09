@@ -7,9 +7,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class TransactionHistoryService : ITransactionHistoryService
     {
-        private readonly ITransactionApiService _repoProxy;
+        private readonly ITransactionRepoProxy _repoProxy;
 
-        public TransactionHistoryService(ITransactionApiService repoProxy)
+        public TransactionHistoryService(ITransactionRepoProxy repoProxy)
         {
             _repoProxy = repoProxy;
         }

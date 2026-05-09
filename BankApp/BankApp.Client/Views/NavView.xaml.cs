@@ -1,4 +1,4 @@
-﻿namespace BankApp.Client.Views
+namespace BankApp.Client.Views
 {
     using System;
     using System.Collections.Generic;

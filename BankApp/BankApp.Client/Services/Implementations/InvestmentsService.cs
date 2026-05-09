@@ -7,9 +7,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class InvestmentsService : IInvestmentsService
     {
-        private readonly IInvestmentsApiService _investmentsRepo;
+        private readonly IInvestmentsRepoProxy _investmentsRepo;
 
-        public InvestmentsService(IInvestmentsApiService investmentsRepo)
+        public InvestmentsService(IInvestmentsRepoProxy investmentsRepo)
         {
             _investmentsRepo = investmentsRepo;
         }

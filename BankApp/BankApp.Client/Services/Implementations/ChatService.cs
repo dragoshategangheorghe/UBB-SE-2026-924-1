@@ -9,9 +9,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class ChatService : IChatService
     {
-        private readonly IChatApiService _repoProxy;
+        private readonly IChatRepoProxy _repoProxy;
 
-        public ChatService(IChatApiService repoProxy)
+        public ChatService(IChatRepoProxy repoProxy)
         {
             _repoProxy = repoProxy;
         }

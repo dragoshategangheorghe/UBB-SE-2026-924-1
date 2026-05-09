@@ -1,4 +1,4 @@
-﻿using BankApp.Client.Utilities;
+using BankApp.Client.Utilities;
 
 using BankApp.Models.DTOs.Dashboard;
 using BankApp.Models.Entities;

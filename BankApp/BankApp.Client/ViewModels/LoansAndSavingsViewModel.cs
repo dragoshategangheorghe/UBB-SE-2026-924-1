@@ -1,4 +1,4 @@
-﻿using BankApp.Client.Utilities;
+using BankApp.Client.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;

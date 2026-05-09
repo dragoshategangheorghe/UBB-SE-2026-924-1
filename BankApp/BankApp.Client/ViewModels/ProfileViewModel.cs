@@ -1,4 +1,4 @@
-﻿using BankApp.Models.DTOs.Profile;
+using BankApp.Models.DTOs.Profile;
 using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace BankApp.Client.ViewModels
+namespace BankApp.Client.ViewModels
 {
     using BankApp.Models.Features.Loans;
     using CommunityToolkit.Mvvm.ComponentModel;

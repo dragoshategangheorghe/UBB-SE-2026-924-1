@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Auth;

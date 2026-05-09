@@ -7,9 +7,9 @@ namespace BankApp.Client.Services.Implementations
 {
     public class CardService : ICardService
     {
-        private readonly ICardApiService _repoProxy;
+        private readonly ICardRepoProxy _repoProxy;
 
-        public CardService(ICardApiService repoProxy)
+        public CardService(ICardRepoProxy repoProxy)
         {
             _repoProxy = repoProxy;
         }

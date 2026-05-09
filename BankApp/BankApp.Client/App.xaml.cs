@@ -16,25 +16,25 @@ namespace BankApp.Client
         /// </summary>
         private static readonly ApiService HttpApi = new ApiService();
 
-        private static readonly ILoansApiService LoansHttpRepo = new LoansApiService(HttpApi);
-        private static readonly ILoanDialogStateApiService LoanDialogHttp = new LoanDialogStateApiService(HttpApi);
-        private static readonly ILoanApplicationPresentationApiService LoanApplicationPresentationHttp =
-            new LoanApplicationPresentationApiService(HttpApi);
+        private static readonly ILoansRepoProxy LoansHttpRepo = new LoansRepoProxy(HttpApi);
+        private static readonly ILoanDialogStateRepoProxy LoanDialogHttp = new LoanDialogStateRepoProxy(HttpApi);
+        private static readonly ILoanApplicationPresentationRepoProxy LoanApplicationPresentationHttp =
+            new LoanApplicationPresentationRepoProxy(HttpApi);
 
-        private static readonly ISavingsApiService SavingsHttpRepo = new SavingsApiService(HttpApi);
-        private static readonly ISavingsUiRulesApiService SavingsUiRulesHttp = new SavingsUiRulesApiService(HttpApi);
-        private static readonly ISavingsPresentationApiService SavingsPresentationHttp = new SavingsPresentationApiService(HttpApi);
-        private static readonly ISavingsWorkflowApiService SavingsWorkflowHttp = new SavingsWorkflowApiService(HttpApi);
+        private static readonly ISavingsRepoProxy SavingsHttpRepo = new SavingsRepoProxy(HttpApi);
+        private static readonly ISavingsUiRulesRepoProxy SavingsUiRulesHttp = new SavingsUiRulesRepoProxy(HttpApi);
+        private static readonly ISavingsPresentationRepoProxy SavingsPresentationHttp = new SavingsPresentationRepoProxy(HttpApi);
+        private static readonly ISavingsWorkflowRepoProxy SavingsWorkflowHttp = new SavingsWorkflowRepoProxy(HttpApi);
 
-        private static readonly ICardApiService CardHttpRepo = new CardApiService(HttpApi);
-        private static readonly ITransactionApiService TransactionHttpRepo = new TransactionApiService(HttpApi);
-        private static readonly IStatisticsApiService StatisticsHttpRepo = new StatisticsApiService(HttpApi);
-        private static readonly IChatApiService ChatHttpRepo = new ChatApiService(HttpApi);
+        private static readonly ICardRepoProxy CardHttpRepo = new CardRepoProxy(HttpApi);
+        private static readonly ITransactionRepoProxy TransactionHttpRepo = new TransactionRepoProxy(HttpApi);
+        private static readonly IStatisticsRepoProxy StatisticsHttpRepo = new StatisticsRepoProxy(HttpApi);
+        private static readonly IChatRepoProxy ChatHttpRepo = new ChatRepoProxy(HttpApi);
 
-        private static readonly IAuthApiService AuthHttpRepo = new AuthApiService(HttpApi);
-        private static readonly IDashboardApiService DashboardHttpRepo = new DashboardApiService(HttpApi);
-        private static readonly IProfileApiService ProfileHttpRepo = new ProfileApiService(HttpApi);
-        private static readonly IInvestmentsApiService InvestmentsHttpRepo = new InvestmentsApiService(HttpApi);
+        private static readonly IAuthRepoProxy AuthHttpRepo = new AuthRepoProxy(HttpApi);
+        private static readonly IDashboardRepoProxy DashboardHttpRepo = new DashboardRepoProxy(HttpApi);
+        private static readonly IProfileRepoProxy ProfileHttpRepo = new ProfileRepoProxy(HttpApi);
+        private static readonly IInvestmentsRepoProxy InvestmentsHttpRepo = new InvestmentsRepoProxy(HttpApi);
 
         public static Window? MainAppWindow { get; private set; }
         public static NavigationService NavigationService { get; private set; } = new NavigationService();

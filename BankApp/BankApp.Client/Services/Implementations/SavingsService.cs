@@ -29,16 +29,16 @@ namespace BankApp.Client.Services.Implementations
         private const decimal DecimalEarlyClosurePenalty = 0.02m;
         private const decimal DecimalEarlyWithdrawalPenalty = 0.02m;
 
-        private readonly ISavingsApiService _savingsRepoProxy;
-        private readonly ISavingsUiRulesApiService _savingsUiRules;
-        private readonly ISavingsPresentationApiService _savingsPresentation;
-        private readonly ISavingsWorkflowApiService _savingsWorkflow;
+        private readonly ISavingsRepoProxy _savingsRepoProxy;
+        private readonly ISavingsUiRulesRepoProxy _savingsUiRules;
+        private readonly ISavingsPresentationRepoProxy _savingsPresentation;
+        private readonly ISavingsWorkflowRepoProxy _savingsWorkflow;
 
         public SavingsService(
-            ISavingsApiService savingsRepoProxy,
-            ISavingsUiRulesApiService savingsUiRules,
-            ISavingsPresentationApiService savingsPresentation,
-            ISavingsWorkflowApiService savingsWorkflow)
+            ISavingsRepoProxy savingsRepoProxy,
+            ISavingsUiRulesRepoProxy savingsUiRules,
+            ISavingsPresentationRepoProxy savingsPresentation,
+            ISavingsWorkflowRepoProxy savingsWorkflow)
         {
             _savingsRepoProxy = savingsRepoProxy ?? throw new ArgumentNullException(nameof(savingsRepoProxy));
             _savingsUiRules = savingsUiRules ?? throw new ArgumentNullException(nameof(savingsUiRules));
