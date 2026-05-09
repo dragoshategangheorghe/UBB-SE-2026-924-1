@@ -2,14 +2,14 @@
 
 namespace BankApp.Server.Services.Infrastructure.Implementations
 {
-    public class HashService : IHashService
+    public static class HashService
     {
-        public string GetHash(string input)
+        static public string GetHash(string input)
         {
             return BCrypt.Net.BCrypt.HashPassword(input);
         }
 
-        public bool Verify(string input, string hash)
+        static public bool Verify(string input, string hash)
         {
             return BCrypt.Net.BCrypt.Verify(input, hash);
         }
