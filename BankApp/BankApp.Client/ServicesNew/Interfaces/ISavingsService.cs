@@ -10,7 +10,7 @@ namespace BankApp.Server.Services.Interfaces
     {
         Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto dto);
 
-        Task<List<SavingsAccount>> GetAccountsAsync(int userId, bool includesClosed = false);
+        Task<List<SavingsAccount>> GetAccounts(int userId, bool includesClosed = false);
 
         Task<DepositResponseDto> DepositAsync(int accountId, decimal amount, string source, int userId);
 

@@ -34,35 +34,36 @@ namespace BankApp.Server.Services.Implementations
             this.savingsRepository = savingsRepository;
         }
 
-        public async Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto dataTransferObject)
+        public async Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto createSavingsAccountDto)
         {
             // Business rule: enforce max active accounts per user.
-            var activeAccountsList = await this.savingsRepository.GetSavingsAccountsByUserIdAsync(dataTransferObject.UserIdentificationNumber, false);
+            //TODO i think this DTO shouldnt hold user ID, it cannot, its in the client now
+            var activeAccountsList = await this.savingsRepository.GetSavingsAccountsByUserId(createSavingsAccountDto.UserIdentificationNumber, false);
             if (activeAccountsList.Count >= MAX_ACTIVE_ACCOUNTS)
             {
                 throw new InvalidOperationException($"You cannot have more than {MAX_ACTIVE_ACCOUNTS} active savings accounts.");
             }
 
             // Business rule: goal savings requires a future target date.
-            if (dataTransferObject.SavingsType == "GoalSavings")
+            if (createSavingsAccountDto.SavingsType == "GoalSavings")
             {
-                if (!dataTransferObject.TargetDate.HasValue)
+                if (!createSavingsAccountDto.TargetDate.HasValue)
                 {
                     throw new ArgumentException("GoalSavings accounts require a target date.");
                 }
 
-                if (dataTransferObject.TargetDate.Value <= DateTime.Today)
+                if (createSavingsAccountDto.TargetDate.Value <= DateTime.Today)
                 {
                     throw new ArgumentException("Target date must be in the future.");
                 }
 
-                if (!dataTransferObject.TargetAmount.HasValue || dataTransferObject.TargetAmount.Value <= MIN_POSITIVE_AMOUNT)
+                if (!createSavingsAccountDto.TargetAmount.HasValue || createSavingsAccountDto.TargetAmount.Value <= MIN_POSITIVE_AMOUNT)
                 {
                     throw new ArgumentException("GoalSavings accounts require a positive target amount.");
                 }
             }
 
-            var annualPercentageYield = dataTransferObject.SavingsType switch
+            var annualPercentageYield = createSavingsAccountDto.SavingsType switch
             {
                 "FixedDeposit" => FIXED_DEPOSIT_APY,
                 "GoalSavings" => GOAL_SAVINGS_APY,
@@ -70,10 +71,10 @@ namespace BankApp.Server.Services.Implementations
                 _ => DEFAULT_APY,
             };
 
-            return await this.savingsRepository.CreateSavingsAccountAsync(dataTransferObject, annualPercentageYield);
+            return await this.savingsRepository.CreateSavingsAccount(createSavingsAccountDto, annualPercentageYield);
         }
 
-        public Task<List<SavingsAccount>> GetAccountsAsync(int userId, bool includesClosed = false)
+        public Task<List<SavingsAccount>> GetAccounts(int userId, bool includesClosed = false)
         {
             if (userId < MIN_USER_ID)
             {
