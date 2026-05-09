@@ -96,7 +96,7 @@ builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();
 builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
-builder.Services.AddScoped<IApiService, ApiService>();
+builder.Services.AddScoped<IApiService, ChatService>();
 
 var app = builder.Build();
 

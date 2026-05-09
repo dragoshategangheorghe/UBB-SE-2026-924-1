@@ -1,7 +1,11 @@
-using System.Text;
 using BankApp.Models.Features.Chat;
+using BankApp.Server.Repositories.Implementations;
+using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic.FileIO;
+using System.Net.Mail;
+using System.Text;
 
 namespace BankApp.Server.Controllers
 {
@@ -10,45 +14,41 @@ namespace BankApp.Server.Controllers
     public class ChatController : ControllerBase
     {
         private const int MaxAttachmentSizeBytes = 10 * 1024 * 1024;
-    protected static readonly Dictionary<string, string> DefaultChatbotResponses = new Dictionary<string, string>
-    {
-        ["How do I reset my password?"] =
-            "You can reset your password from the login screen by choosing Forgot password and following the verification steps.",
-        ["Why was my card declined?"] =
-            "A card can be declined because of insufficient funds, an expired card, a blocked card, or a merchant validation issue. Please check the card status in the app first.",
-        ["How long does a transfer take?"] =
-            "Internal transfers are usually immediate, while interbank transfers can take up to one business day depending on the destination bank.",
-        ["How do I upload documents for support?"] =
-            "Use the Attach File button in this chat after contacting the team. Your selected file will be included with the support request summary.",
-        ["I found a technical problem in the app."] =
-            "Please contact the team from this chat and include a short description of what happened. Screenshots or PDFs can help the team investigate faster.",
-    };
-
-        private readonly IApiService apiService;
-
-        public ChatController(IApiService apiService)
+        protected static readonly Dictionary<string, string> DefaultChatbotResponses = new Dictionary<string, string>
         {
-            this.apiService = apiService;
+            ["How do I reset my password?"] =
+                "You can reset your password from the login screen by choosing Forgot password and following the verification steps.",
+            ["Why was my card declined?"] =
+                "A card can be declined because of insufficient funds, an expired card, a blocked card, or a merchant validation issue. Please check the card status in the app first.",
+            ["How long does a transfer take?"] =
+                "Internal transfers are usually immediate, while interbank transfers can take up to one business day depending on the destination bank.",
+            ["How do I upload documents for support?"] =
+                "Use the Attach File button in this chat after contacting the team. Your selected file will be included with the support request summary.",
+            ["I found a technical problem in the app."] =
+                "Please contact the team from this chat and include a short description of what happened. Screenshots or PDFs can help the team investigate faster.",
+        };
+
+        private readonly IChatRepository _chatRepository;
+        private readonly ChatMessageRepository _chatMessageRepository;
+
+        public ChatController(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
+        {
+            this._chatRepository = chatRepository;
+            this._chatMessageRepository = chatMessageRepository;
         }
 
-        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
+        private int GetAuthenticatedUserId() => (int)this.HttpContext.Items["UserId"] !;
 
         [HttpGet("sessions")]
         public IActionResult GetSessions()
         {
-            return Ok(apiService.GetSessionsByUserId(GetAuthenticatedUserId()));
+            return Ok(_chatRepository.GetByUserId(GetAuthenticatedUserId()));
         }
 
         [HttpGet("sessions/{sessionId:int}")]
-        public IActionResult GetSession(int sessionId)
+        public ActionResult<ChatSession> GetSession(int sessionId)
         {
-            ChatSession? session = apiService.GetSessionById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
-            {
-                return NotFound();
-            }
-
-            return Ok(session);
+            return _chatRepository.GetById(sessionId);
         }
 
         [HttpPost("sessions")]
@@ -59,52 +59,58 @@ namespace BankApp.Server.Controllers
                 return BadRequest(new { message = "Issue category is required." });
             }
 
-            int sessionId = apiService.CreateSession(GetAuthenticatedUserId(), request.IssueCategory);
+            int sessionId = _chatRepository.Create(new ChatSession
+            {
+                IssueCategory = request.IssueCategory,
+                SessionStatus = "Open",
+                StartedAt = DateTime.UtcNow,
+                Id = GetAuthenticatedUserId()
+            });
             return sessionId > 0 ? Ok(new { success = true, sessionId }) : BadRequest(new { success = false });
         }
 
         [HttpPut("sessions/{sessionId:int}/status")]
         public IActionResult UpdateStatus(int sessionId, [FromBody] UpdateChatSessionStatusRequest request)
         {
-            ChatSession? session = apiService.GetSessionById(sessionId);
+            ChatSession? session = _chatRepository.GetById(sessionId);
             if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
 
-            bool success = apiService.UpdateSessionStatus(sessionId, request.Status);
+            bool success = _chatRepository.UpdateStatus(sessionId, request.Status);
             return success ? Ok(new { success = true }) : BadRequest(new { success = false });
         }
 
         [HttpPost("sessions/{sessionId:int}/feedback")]
         public IActionResult SaveFeedback(int sessionId, [FromBody] SaveChatFeedbackRequest request)
         {
-            ChatSession? session = apiService.GetSessionById(sessionId);
+            ChatSession? session = _chatRepository.GetById(sessionId);
             if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
 
-            bool success = apiService.SaveSessionFeedback(sessionId, request.Rating, request.Feedback ?? string.Empty);
+            bool success = _chatRepository.SaveFeedback(sessionId, request.Rating, request.Feedback ?? string.Empty);
             return success ? Ok(new { success = true }) : BadRequest(new { success = false });
         }
 
         [HttpGet("sessions/{sessionId:int}/messages")]
         public IActionResult GetMessages(int sessionId)
         {
-            ChatSession? session = apiService.GetSessionById(sessionId);
+            ChatSession? session = _chatRepository.GetById(sessionId);
             if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
             }
 
-            return Ok(apiService.GetMessagesBySessionId(sessionId));
+            return Ok(_chatMessageRepository.GetBySessionId(sessionId));
         }
 
         [HttpPost("sessions/{sessionId:int}/messages")]
         public IActionResult CreateMessage(int sessionId, [FromBody] CreateChatMessageRequest request)
         {
-            ChatSession? session = apiService.GetSessionById(sessionId);
+            ChatSession? session = _chatRepository.GetById(sessionId);
             if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
@@ -129,7 +135,15 @@ namespace BankApp.Server.Controllers
                 }
             }
 
-            int messageId = apiService.CreateMessage(sessionId, senderType, request.Content);
+            var message = new ChatMessage
+            {
+                Id = sessionId,
+                SenderType = senderType,
+                Content = request.Content,
+                SentAt = DateTime.UtcNow
+            };
+
+            int messageId = _chatMessageRepository.Create(message);
             if (messageId <= 0)
             {
                 return BadRequest(new { success = false });
@@ -141,15 +155,28 @@ namespace BankApp.Server.Controllers
                 !session.SessionStatus.Equals("Closed", StringComparison.OrdinalIgnoreCase))
             {
                 string botReply = BuildBotReply(request.Content, out bool shouldEscalate);
-                apiService.CreateMessage(sessionId, "Bot", botReply);
+
+                message = new ChatMessage
+                {
+                    Id = sessionId,
+                    SenderType = "Bot",
+                    Content = botReply,
+                    SentAt = DateTime.UtcNow
+                };
+
+                _chatMessageRepository.Create(message);
 
                 if (shouldEscalate)
                 {
-                    apiService.UpdateSessionStatus(sessionId, "Escalated");
-                    apiService.CreateMessage(
-                        sessionId,
-                        "System",
-                        "I could not fully resolve this request. You have been escalated to a support agent and your chat context is preserved.");
+                    _chatRepository.UpdateStatus(sessionId, "Escalated");
+                    message = new ChatMessage
+                    {
+                        Id = sessionId,
+                        SenderType = "System",
+                        Content = request.Content,
+                        SentAt = DateTime.UtcNow
+                    };
+                    _chatMessageRepository.Create(message);
                 }
             }
 
@@ -169,12 +196,16 @@ namespace BankApp.Server.Controllers
                 return BadRequest(new { message = "Only image and PDF attachments are supported." });
             }
 
-            int attachmentId = apiService.CreateAttachment(
-                messageId,
-                request.AttachmentName,
-                request.FileType,
-                request.FileSizeBytes,
-                request.StorageUrl ?? string.Empty);
+            var chatAttachment = new ChatAttachment
+            {
+                Id = messageId,
+                AttachmentName = request.AttachmentName,
+                FileType = request.FileType,
+                FileSizeBytes = request.FileSizeBytes,
+                StorageUrl = request.StorageUrl
+            };
+
+            int attachmentId = _chatMessageRepository.CreateAttachment(chatAttachment);
 
             return attachmentId > 0 ? Ok(new { success = true, attachmentId }) : BadRequest(new { success = false });
         }
@@ -182,7 +213,7 @@ namespace BankApp.Server.Controllers
         [HttpPost("sessions/{sessionId:int}/transcript/email")]
         public IActionResult EmailTranscript(int sessionId, [FromBody] EmailTranscriptRequest request)
         {
-            ChatSession? session = apiService.GetSessionById(sessionId);
+            ChatSession? session = _chatRepository.GetById(sessionId);
             if (session == null || session.Id != GetAuthenticatedUserId())
             {
                 return NotFound();
@@ -193,7 +224,7 @@ namespace BankApp.Server.Controllers
                 return BadRequest(new { message = "A destination email is required." });
             }
 
-            List<ChatMessage> messages = apiService.GetMessagesBySessionId(sessionId);
+            List<ChatMessage> messages = _chatMessageRepository.GetBySessionId(sessionId);
             string transcript = BuildTranscript(session, messages);
             // In this implementation the transcript is prepared and ready for outbound email integration.
             return Ok(new { success = true, message = "Transcript prepared for email delivery.", transcriptLength = transcript.Length });

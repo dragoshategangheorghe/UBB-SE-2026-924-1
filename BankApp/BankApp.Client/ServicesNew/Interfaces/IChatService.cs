@@ -1,12 +1,13 @@
+using System.Collections.Generic;
 using BankApp.Models.Features.Chat;
 
 namespace BankApp.Server.Services.Interfaces;
 
-public interface IApiService
+public interface IChatService
 {
     List<ChatSession> GetSessionsByUserId(int userId);
     ChatSession? GetSessionById(int sessionId);
-    int CreateSession(int userId, string issueCategory);
+    int CreateSession(string issueCategory);
     bool UpdateSessionStatus(int sessionId, string status);
     bool SaveSessionFeedback(int sessionId, int rating, string feedback);
     List<ChatMessage> GetMessagesBySessionId(int sessionId);

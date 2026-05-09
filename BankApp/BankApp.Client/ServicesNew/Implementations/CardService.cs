@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using BankApp.Models.DTOs.Cards;
 using BankApp.Models.Entities;
 using BankApp.Server.Configuration;

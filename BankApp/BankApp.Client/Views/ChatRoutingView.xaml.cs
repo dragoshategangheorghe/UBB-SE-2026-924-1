@@ -35,7 +35,7 @@ namespace BankApp.Client.Views
         private async void StartNewChat_Click(object sender, RoutedEventArgs e)
         {
             string issueCategory = IssueCategoryComboBox.SelectedItem?.ToString() ?? "General";
-            CreateChatSessionResponse? response = await chatApiService.CreateSessionAsync(issueCategory);
+            CreateChatSessionResponse? response = await chatApiService.CreateSessionAsync(TODO);
             if (response == null || !response.Success || response.SessionId <= 0)
             {
                 return;

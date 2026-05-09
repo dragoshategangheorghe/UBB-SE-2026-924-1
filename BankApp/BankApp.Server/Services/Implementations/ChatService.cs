@@ -5,12 +5,12 @@ using BankApp.Server.Services.Interfaces;
 
 namespace BankApp.Server.Services.Implementations;
 
-public class ApiService : IApiService
+public class ChatService : IApiService
 {
     private readonly IChatRepository chatRepository;
     private readonly ChatMessageRepository chatMessageRepository;
 
-    public ApiService(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
+    public ChatService(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
     {
         this.chatRepository = chatRepository;
         this.chatMessageRepository = chatMessageRepository;

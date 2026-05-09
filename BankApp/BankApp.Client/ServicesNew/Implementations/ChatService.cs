@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using BankApp.Models.Features.Chat;
 using BankApp.Server.Repositories.Implementations;
 using BankApp.Server.Repositories.Interfaces;
@@ -5,12 +7,12 @@ using BankApp.Server.Services.Interfaces;
 
 namespace BankApp.Server.Services.Implementations;
 
-public class ApiService : IApiService
+public class ChatService : IChatService
 {
     private readonly IChatRepository chatRepository;
     private readonly ChatMessageRepository chatMessageRepository;
 
-    public ApiService(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
+    public ChatService(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
     {
         this.chatRepository = chatRepository;
         this.chatMessageRepository = chatMessageRepository;
@@ -26,16 +28,9 @@ public class ApiService : IApiService
         return chatRepository.GetById(sessionId);
     }
 
-    public int CreateSession(int userId, string issueCategory)
+    public int CreateSession(string issueCategory)
     {
-        var session = new ChatSession
-        {
-            Id = userId,
-            IssueCategory = issueCategory,
-            SessionStatus = "Open",
-            StartedAt = DateTime.UtcNow
-        };
-        return chatRepository.Create(session);
+        return chatRepository.Create(issueCategory);
     }
 
     public bool UpdateSessionStatus(int sessionId, string status)

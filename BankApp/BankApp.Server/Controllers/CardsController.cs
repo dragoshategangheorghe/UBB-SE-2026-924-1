@@ -56,9 +56,9 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("{cardId: int}/updateSettings")]
-        public IActionResult UpdateStatus(int cardId, [FromBody] UpdateCardSettingsRequest request)
+        public IActionResult UpdateSettings(int cardId, [FromBody] UpdateCardSettingsRequest request)
         {
-            return Ok(cardRepository.UpdateSettings(cardId, request.SpendingLimit, request.IsOnlinePaymentsEnabled, request.IsContactlessPaymentsEnabled));
+            return Ok(cardRepository.UpdateSettings(cardId, request.SpendingLimit, request.IsOnlinePaymentsEnabled ?? false, request.IsContactlessPaymentsEnabled ?? false));
         }
     }
 }

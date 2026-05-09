@@ -27,7 +27,7 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<CreateChatSessionResponse?> CreateSessionAsync(string issueCategory)
         {
-            return apiService.PostAsync<object, CreateChatSessionResponse>("/api/chat/sessions", new { issueCategory });
+            return apiService.PostAsync<object, CreateChatSessionResponse>("/api/chat/sessions", new { IssueCategory= issueCategory });
         }
 
         public Task<List<ChatMessage>?> GetMessagesAsync(int sessionId)
