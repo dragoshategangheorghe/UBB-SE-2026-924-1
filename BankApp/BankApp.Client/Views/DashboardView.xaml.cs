@@ -39,11 +39,13 @@ namespace BankApp.Client.Views
                 switch (state)
                 {
                     case DashboardState.Loading:
+                        DashboardErrorInfoBar.IsOpen = false;
                         ShowLoading();
                         break;
 
                     case DashboardState.Success:
                         HideLoading();
+                        DashboardErrorInfoBar.IsOpen = false;
                         RefreshUI();
                         break;
 
@@ -154,7 +156,8 @@ namespace BankApp.Client.Views
 
         private void ShowError(string msg)
         {
-            // TODO: add an ErrorInfoBar to the XAML like LoginView has - for later
+            DashboardErrorInfoBar.Message = msg;
+            DashboardErrorInfoBar.IsOpen = true;
         }
 
         private async System.Threading.Tasks.Task ShowAlertAsync(string title, string message)

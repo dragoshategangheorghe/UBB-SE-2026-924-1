@@ -27,6 +27,19 @@ namespace BankApp.Server.DataAccess.Implementations
                 .ToList();
         }
 
+        public List<Transaction> FindRecentByUserId(int userId, int limit = 10)
+        {
+            return dbContext.Transactions
+                .Include(t => t.Account)
+                .Include(t => t.Card)
+                .Include(t => t.Category)
+                .Where(t => t.Account.User.Id == userId)
+                .OrderByDescending(t => t.CreatedAt)
+                .ThenByDescending(t => t.Id)
+                .Take(limit)
+                .ToList();
+        }
+
         public List<TransactionHistoryItemDto> FindByUserId(int userId)
         {
             return dbContext.Transactions

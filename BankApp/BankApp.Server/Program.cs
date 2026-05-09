@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using BankApp.Server.Configuration;
 using BankApp.Server.DataAccess;
 using Microsoft.AspNetCore.Diagnostics;
@@ -21,7 +22,11 @@ builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
 // builder.Services.AddScoped<IInvestmentService, InvestmentService>();
 builder.Services.AddSingleton<IMarketDataService, MarketDataService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<TeamCOptions>(builder.Configuration.GetSection(TeamCOptions.SectionName));
 
