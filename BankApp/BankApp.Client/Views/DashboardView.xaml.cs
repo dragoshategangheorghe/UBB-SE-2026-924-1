@@ -126,14 +126,18 @@ namespace BankApp.Client.Views
         private void PrevCardButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentCardIndex > 0)
+            {
                 ShowCard(_currentCardIndex - 1);
+            }
         }
 
         private void NextCardButton_Click(object sender, RoutedEventArgs e)
         {
             var count = _viewModel.Cards?.Count ?? 0;
             if (_currentCardIndex < count - 1)
+            {
                 ShowCard(_currentCardIndex + 1);
+            }
         }
 
         private async void TransferButton_Click(object sender, RoutedEventArgs e)

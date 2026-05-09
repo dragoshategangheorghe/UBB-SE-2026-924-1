@@ -232,7 +232,7 @@ namespace BankApp.Client.Views
 
         private async Task<string?> PromptForOtpAsync()
         {
-            TextBox otpBox = new()
+            TextBox otpBox = new TextBox()
             {
                 PlaceholderText = "Enter OTP"
             };

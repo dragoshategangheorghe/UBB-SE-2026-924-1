@@ -126,7 +126,7 @@ namespace BankApp.Client.ViewModels
         private string totalSavedAmount = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<SavingsTransaction> transactions = new();
+        private ObservableCollection<SavingsTransaction> transactions = new ObservableCollection<SavingsTransaction>();
 
         // ── Withdraw Panel ──────────────────────────────────────────────--───
         [ObservableProperty]
