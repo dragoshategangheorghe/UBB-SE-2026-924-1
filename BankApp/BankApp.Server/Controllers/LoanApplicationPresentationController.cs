@@ -1,4 +1,6 @@
-﻿using BankApp.Server.Services.Implementations;
+﻿using BankApp.Server.Repositories.Implementations;
+using BankApp.Server.Repositories.Interfaces;
+using BankApp.Server.Services.Implementations;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
@@ -9,13 +11,13 @@ namespace BankApp.Server.Controllers
     {
         // this service doesn't have an interface and doesn't have any dependency,
         // so it can be instantiated directly here (it's like a utility class)
-        private readonly LoanApplicationPresentationService _loanApplicationPresentationService = new();
-
         [HttpGet]
         public IActionResult GetBuildApplicationOutcome([FromQuery] string? rejectionReason)
         {
-            var result = _loanApplicationPresentationService.BuildApplicationOutcome(rejectionReason);
-            return Ok(result);
+            var rejectionResult = rejectionReason == null
+                ? (true, "Your loan application has been approved!")
+                : (false, $"Application rejected: {rejectionReason}");
+            return Ok(rejectionResult);
         }
     }
 }
