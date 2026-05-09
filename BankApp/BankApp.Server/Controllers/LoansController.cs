@@ -1,6 +1,7 @@
 ﻿using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
+using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,35 +11,37 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class LoansController : ControllerBase
     {
-        private readonly ILoanService _loanService;
+        private readonly ILoanRepository loanRepository;
 
-        public LoansController(ILoanService loanService)
+        public LoansController(ILoanRepository loanRepository)
         {
-            _loanService = loanService;
+            this.loanRepository = loanRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<Loan>>> GetAllLoansAsync()
         {
-            var result = await _loanService.GetAllLoansAsync();
+            var result = await loanRepository.GetAllLoansAsync();
             return Ok(result);
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Loan>> GetLoanByIdAsync([FromRoute] int id)
         {
-            var loan = await _loanService.GetLoanByIdAsync(id);
+            var loan = await loanRepository.GetLoanByIdAsync(id);
             return Ok(loan);
         }
 
         [HttpGet("by-user/{userId:int}")]
         public async Task<ActionResult<List<Loan>>> GetLoansByUserAsync([FromRoute] int userId)
         {
-            var result = await _loanService.GetLoansByUserAsync(userId);
+            var result = await loanRepository.GetLoansByUserAsync(userId);
+            /* I feel like it's better to return an empty list - Alex
             if (result == null || !result.Any())
             {
                 return BadRequest();
             }
+            */
 
             return Ok(result);
         }
@@ -46,51 +49,65 @@ namespace BankApp.Server.Controllers
         [HttpGet("by-status/{loanStatus}")]
         public async Task<ActionResult<List<Loan>>> GetLoansByStatusAsync([FromRoute] LoanStatus loanStatus)
         {
-            var result = await _loanService.GetLoansByStatusAsync(loanStatus);
+            var result = await loanRepository.GetLoansByStatusAsync(loanStatus);
             return Ok(result);
         }
 
         [HttpGet("by-type/{loanType}")]
         public async Task<ActionResult<List<Loan>>> GetLoansByTypeAsync([FromRoute] LoanType loanType)
         {
-            var result = await _loanService.GetLoansByTypeAsync(loanType);
+            var result = await loanRepository.GetLoansByTypeAsync(loanType);
             return Ok(result);
         }
 
+        [HttpPut("saveAmortization")]
+        public async Task<ActionResult<List<Loan>>> SaveAmortizationAsync([FromBody] List<AmortizationRow> amortizationRows)
+        {
+            await loanRepository.SaveAmortizationAsync(amortizationRows);
+            return Ok();
+        }
+
+        [HttpPut("{loanId:int}/updateLoanApplicationStatus")]
+        public async Task<ActionResult<List<Loan>>> UpdateLoanApplicationStatus([FromRoute] int loanId, [FromQuery] LoanApplicationStatus loanApplicationStatus, [FromQuery] string? reason)
+        {
+            await loanRepository.UpdateLoanApplicationStatusAsync(loanId, loanApplicationStatus, reason);
+            return Ok();
+        }
+
         [HttpPost("apply")]
-        public async Task<ActionResult<(LoanApplicationStatus Status, string? RejectionReason)>> SubmitLoanApplicationAsync([FromBody] LoanApplicationRequest request)
+        public async Task<ActionResult<(LoanApplicationStatus Status, string? RejectionReason)>> SubmitLoanApplicationAsync([FromBody] LoanApplicationRequest loanApplicationRequest)
         {
             try
             {
-                var result = await _loanService.SubmitLoanApplicationAsync(request);
+                var result = await loanRepository.CreateLoanApplicationAsync(loanApplicationRequest);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception ex) // this is sus
             {
                 return BadRequest(ex.Message);
             }
         }
 
-        [HttpPost("estimate")]
-        public ActionResult<LoanEstimate> GetLoanEstimate([FromBody] LoanApplicationRequest request)
+        [HttpPost("apply")]
+        public async Task<ActionResult<int>> CreateLoan([FromBody] Loan loan)
         {
             try
             {
-                var estimate = _loanService.GetLoanEstimate(request);
-                return Ok(estimate);
+                var loanId = await loanRepository.CreateLoanAsync(loan);
+                return Ok(loanId);
             }
-            catch (Exception ex)
+            catch (Exception ex) // this is sus
             {
                 return BadRequest(ex.Message);
             }
         }
 
-        [HttpGet("{loanId:int}/pay-installment")]
-        public async Task<IActionResult> PayInstallmentAsync([FromRoute] int loanId, [FromQuery] decimal? customAmount)
+        [HttpPut("{loanId:int}/pay-installment")]
+        public async Task<IActionResult> UpdateLoanAfterPayment([FromRoute] int loanId, [FromQuery] decimal newBalance, [FromQuery] int newRemainingMonths, [FromQuery] LoanStatus newLoanStatus)
         {
             try
             {
-                await _loanService.PayInstallmentAsync(loanId, customAmount);
+                await loanRepository.UpdateLoanAfterPaymentAsync(loanId, newBalance, newRemainingMonths, newLoanStatus);
                 return Ok();
             }
             catch (InvalidOperationException ex)
@@ -103,36 +120,10 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpGet("payment-amount/{input}")]
-        public ActionResult<decimal?> GetParsedCustomPaymentAmount([FromRoute] string input)
-        {
-            var result = _loanService.ParseCustomPaymentAmount(input);
-            if (result == null)
-            {
-                return BadRequest("Invalid input format. Please provide a valid amount or percentage.");
-            }
-
-            return Ok(result);
-        }
-
-        [HttpPost("normalize-payment-amount")]
-        public ActionResult<decimal> NormalizeCustomPaymentAmount([FromBody] Loan loan, [FromQuery] decimal? currentCustomAmount)
-        {
-            var result = _loanService.NormalizeCustomPaymentAmount(loan, currentCustomAmount);
-            return Ok(result);
-        }
-
-        [HttpPost("repayment-progress")]
-        public ActionResult<double> GetRepaymentProgress([FromBody] Loan loan)
-        {
-            var result = _loanService.GetRepaymentProgress(loan);
-            return Ok(result);
-        }
-
-        [HttpGet("{loanId:int}/amortization-schedule")]
+        [HttpGet("{loanId:int}/amortization")]
         public async Task<ActionResult<List<AmortizationRow>>> GetAmortizationAsync(int loanId)
         {
-            var rows = _loanService.GetAmortizationAsync(loanId);
+            var rows = loanRepository.GetAmortizationAsync(loanId);
             return Ok(rows);
         }
     }
