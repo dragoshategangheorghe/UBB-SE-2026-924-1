@@ -129,7 +129,7 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         private ObservableCollection<SavingsTransaction> transactions = new();
 
-        // ── Withdraw Panel ───────────────────────────────────────────────────
+        // ── Withdraw Panel ──────────────────────────────────────────────--───
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(WithdrawEstimatedPenalty))]
         [NotifyPropertyChangedFor(nameof(WithdrawNetAmount))]
@@ -153,7 +153,7 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         internal bool hasError;
 
-        // ── Constructor ──────────────────────────────────────────────────────
+        // ── Constructor ──────────────────────────────────-───────────────────
         public SavingsViewModel(ISavingsService savingsService)
         {
             this.savingsService = savingsService ?? throw new ArgumentNullException(nameof(savingsService));

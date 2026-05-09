@@ -62,7 +62,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Account", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.Card", b =>
@@ -138,7 +138,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Cards");
+                    b.ToTable("Card", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.Category", b =>
@@ -161,7 +161,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.Notification", b =>
@@ -207,7 +207,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.NotificationPreference", b =>
@@ -218,8 +218,9 @@ namespace BankApp.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Category")
-                        .HasColumnType("int");
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("EmailEnabled")
                         .HasColumnType("bit");
@@ -240,7 +241,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("NotificationPreferences");
+                    b.ToTable("NotificationPreference", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.OAuthLink", b =>
@@ -272,7 +273,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OAuthLinks");
+                    b.ToTable("OAuthLink", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.PasswordResetToken", b =>
@@ -303,7 +304,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetTokens");
+                    b.ToTable("PasswordResetToken", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.Session", b =>
@@ -346,7 +347,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Sessions");
+                    b.ToTable("Session", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.Transaction", b =>
@@ -427,7 +428,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transaction", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.TransactionCategoryOverride", b =>
@@ -455,7 +456,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TransactionCategoriesOverride");
+                    b.ToTable("TransactionCategoryOverride", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.User", b =>
@@ -517,7 +518,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.UserCardPreference", b =>
@@ -537,7 +538,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserCardPreferences");
+                    b.ToTable("UserCardPreference", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Chat.AttachmentUploadResponse", b =>
@@ -601,7 +602,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("ChatAttachments");
+                    b.ToTable("ChatAttachment", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Chat.ChatMessage", b =>
@@ -630,7 +631,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("ChatMessages");
+                    b.ToTable("ChatMessage", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Chat.ChatSession", b =>
@@ -692,7 +693,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ChatSessions");
+                    b.ToTable("ChatSession", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Chat.SelectedAttachment", b =>
@@ -778,7 +779,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("PortfolioId");
 
-                    b.ToTable("InvestmentHoldings");
+                    b.ToTable("InvestmentHolding", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Investments.InvestmentTransaction", b =>
@@ -820,7 +821,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("HoldingId");
 
-                    b.ToTable("InvestmentTransaction");
+                    b.ToTable("InvestmentTransaction", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Investments.Portfolio", b =>
@@ -847,7 +848,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Portfolios");
+                    b.ToTable("Portfolio", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Loans.AmortizationRow", b =>
@@ -883,7 +884,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("LoanId");
 
-                    b.ToTable("AmortizationRows");
+                    b.ToTable("AmortizationRow", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Loans.Loan", b =>
@@ -928,7 +929,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Loans");
+                    b.ToTable("Loan", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Loans.LoanApplication", b =>
@@ -965,7 +966,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LoanApplications");
+                    b.ToTable("LoanApplication", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Loans.LoanEstimate", b =>
@@ -1017,7 +1018,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("SavingsAccountId");
 
-                    b.ToTable("AutoDeposits");
+                    b.ToTable("AutoDeposit", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Savings.SavingsAccount", b =>
@@ -1078,7 +1079,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SavingsAccounts");
+                    b.ToTable("SavingsAccount", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Features.Savings.SavingsTransaction", b =>
@@ -1119,7 +1120,7 @@ namespace BankApp.Server.Migrations
 
                     b.HasIndex("SavingsAccountId");
 
-                    b.ToTable("SavingsTransactions");
+                    b.ToTable("SavingsTransaction", (string)null);
                 });
 
             modelBuilder.Entity("BankApp.Models.Entities.Account", b =>
