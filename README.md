@@ -239,3 +239,14 @@ dotnet ef database update
 ```text
 Update-Database
 ```
+
+
+### NEW SETUP RULES
+Delete old BankAppDb
+Run the creation script from Database Schema.
+Run the server and client, I suggest you create user: test1@example.com
+Run scripts: 
+-insert_account.sql
+-insert_card.sql
+-InsertSampleTransactions_Account1_Card1.sql
+
