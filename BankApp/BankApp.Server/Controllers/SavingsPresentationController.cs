@@ -9,7 +9,7 @@ namespace BankApp.Server.Controllers
     [Route("api/savings-presentation")]
     public class SavingsPresentationController : ControllerBase
     {
-        private readonly SavingsPresentationService _savingsService = new();
+        private readonly SavingsPresentationService _savingsService = new ();
 
         [HttpPost("total-saved")]
         public ActionResult<string> GetTotalSavedAmount([FromBody] IEnumerable<SavingsAccount> accounts)

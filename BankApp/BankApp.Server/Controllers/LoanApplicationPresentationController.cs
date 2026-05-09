@@ -9,7 +9,7 @@ namespace BankApp.Server.Controllers
     {
         // this service doesn't have an interface and doesn't have any dependency,
         // so it can be instantiated directly here (it's like a utility class)
-        private readonly LoanApplicationPresentationService _loanApplicationPresentationService = new();
+        private readonly LoanApplicationPresentationService _loanApplicationPresentationService = new ();
 
         [HttpGet]
         public IActionResult GetBuildApplicationOutcome([FromQuery] string? rejectionReason)

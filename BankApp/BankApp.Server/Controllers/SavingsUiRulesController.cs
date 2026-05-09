@@ -10,7 +10,7 @@ namespace BankApp.Server.Controllers
     [Route("api/savings-ui-rules")]
     public class SavingsUiRulesController : ControllerBase
     {
-        private readonly SavingsUiRulesService _uiRulesService = new();
+        private readonly SavingsUiRulesService _uiRulesService = new ();
 
         [HttpGet("parse-positive-amount")]
         public ActionResult<decimal> ParsePositiveAmount([FromQuery] string text)
@@ -66,8 +66,7 @@ namespace BankApp.Server.Controllers
                 request.SelectedFrequency,
                 request.TargetAmount,
                 request.TargetDate,
-                request.IsGoalSavings
-            );
+                request.IsGoalSavings);
 
             return Ok(errors);
         }

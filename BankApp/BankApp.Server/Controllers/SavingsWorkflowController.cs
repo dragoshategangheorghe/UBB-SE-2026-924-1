@@ -10,12 +10,15 @@ namespace BankApp.Server.Controllers
     [Route("api/savings-workflow")]
     public class SavingsWorkflowController : ControllerBase
     {
-        private readonly SavingsWorkflowService _workflowService = new();
+        private readonly SavingsWorkflowService _workflowService = new ();
 
         [HttpPost("default-funding-source")]
         public ActionResult<FundingSourceOption> GetDefaultFundingSource([FromBody] IEnumerable<FundingSourceOption> fundingSources)
         {
-            if (fundingSources == null) return BadRequest("List of funding sources cannot be null.");
+            if (fundingSources == null)
+            {
+                return BadRequest("List of funding sources cannot be null.");
+            }
 
             var result = _workflowService.GetDefaultFundingSource(fundingSources);
 
@@ -30,7 +33,10 @@ namespace BankApp.Server.Controllers
         [HttpPost("default-close-destination")]
         public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<SavingsAccount> destinationAccounts)
         {
-            if (destinationAccounts == null) return BadRequest("List of accounts cannot be null.");
+            if (destinationAccounts == null)
+            {
+                return BadRequest("List of accounts cannot be null.");
+            }
 
             var destinationId = _workflowService.GetDefaultCloseDestinationId(destinationAccounts);
             return Ok(destinationId);

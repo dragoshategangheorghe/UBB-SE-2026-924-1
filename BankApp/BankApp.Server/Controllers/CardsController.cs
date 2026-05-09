@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using BankApp.Models.DTOs.Cards;
 using BankApp.Models.Entities;
 using BankApp.Server.Configuration;
 using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Infrastructure.Interfaces;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Extensions.Options;
 
 namespace BankApp.Server.Controllers
 {
@@ -175,7 +175,8 @@ namespace BankApp.Server.Controllers
                 return BadRequest(CreateCommandFailure("Failed to update card settings."));
             }
 
-            Card refreshedCard = cardRepository.GetCardById(cardId)!;
+            Card refreshedCard = cardRepository.GetCardById(cardId) ??
+                                 throw new InvalidOperationException("Card was not found after update.");
             CardCommandResponse response = new CardCommandResponse
             {
                 Success = true,
@@ -233,7 +234,8 @@ namespace BankApp.Server.Controllers
                 return CreateCommandFailure("Failed to update card status.");
             }
 
-            Card refreshedCard = cardRepository.GetCardById(cardId)!;
+            Card refreshedCard = cardRepository.GetCardById(cardId) ??
+                                 throw new InvalidOperationException("Card was not found after update.");
             return new CardCommandResponse
             {
                 Success = true,

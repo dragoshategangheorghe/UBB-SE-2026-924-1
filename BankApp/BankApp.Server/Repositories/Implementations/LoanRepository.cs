@@ -1,11 +1,11 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
 using BankApp.Server.DataAccess;
 using BankApp.Server.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BankApp.Server.Repositories.Implementations
 {

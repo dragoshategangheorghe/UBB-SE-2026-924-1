@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
 using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using BankApp.Server.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BankApp.Server.Services.Implementations
 {
@@ -53,7 +53,7 @@ namespace BankApp.Server.Services.Implementations
         {
             if (userId <= MinimumIdExclusive)
             {
-                return [];
+                return new List<Loan>();
             }
 
             return await this.loanRepository.GetLoansByUserAsync(userId);

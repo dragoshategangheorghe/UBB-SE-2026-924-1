@@ -1,8 +1,8 @@
 namespace BankApp.Server.Utilities
 {
-    using BankApp.Models.Features.Loans;
     using System;
     using System.Collections.Generic;
+    using BankApp.Models.Features.Loans;
 
     /// <summary>
     /// Provides utility methods for calculating loan amortization schedules and estimates.

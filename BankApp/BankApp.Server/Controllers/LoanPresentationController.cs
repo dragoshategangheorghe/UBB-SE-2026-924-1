@@ -8,7 +8,7 @@ namespace BankApp.Server.Controllers
     [Route("api/loans/repayment-progress")]
     public class LoanPresentationController : ControllerBase
     {
-        private readonly LoanPresentationService _loanPresentationService = new();
+        private readonly LoanPresentationService _loanPresentationService = new ();
 
         [HttpPost]
         public IActionResult GetRepaymentProgress([FromBody] Loan loan)

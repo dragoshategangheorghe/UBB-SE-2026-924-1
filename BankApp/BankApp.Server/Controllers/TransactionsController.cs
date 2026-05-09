@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using BankApp.Models.DTOs.Transactions;
 using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace BankApp.Server.Controllers
 {
@@ -12,13 +12,13 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class TransactionsController : ControllerBase
     {
-        private readonly ITransactionHistoryRepository transactionHistoryRepository;
-        private readonly ITransactionExportService transactionExportService;
+        private readonly ITransactionHistoryRepository _transactionHistoryRepository;
+        private readonly ITransactionExportService _transactionExportService;
 
         public TransactionsController(ITransactionHistoryRepository transactionHistoryRepository, ITransactionExportService transactionExportService)
         {
-            this.transactionHistoryRepository = transactionHistoryRepository;
-            this.transactionExportService = transactionExportService;
+            _transactionHistoryRepository = transactionHistoryRepository;
+            _transactionExportService = transactionExportService;
         }
 
         private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
@@ -27,13 +27,13 @@ namespace BankApp.Server.Controllers
         public IActionResult GetFilterMetadata()
         {
             int userId = GetAuthenticatedUserId();
-            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
+            List<TransactionHistoryItemDto> transactions = _transactionHistoryRepository.GetTransactionsByUserId(userId);
 
             return Ok(new TransactionFilterMetadataResponse
             {
                 Success = true,
                 Message = "Transaction filters loaded successfully.",
-                Accounts = transactionHistoryRepository.GetAccountsByUserId(userId)
+                Accounts = _transactionHistoryRepository.GetAccountsByUserId(userId)
                     .Select(account => new AccountFilterOptionDto
                     {
                         Id = account.Id,
@@ -42,7 +42,7 @@ namespace BankApp.Server.Controllers
                     })
                     .OrderBy(account => account.Name, StringComparer.OrdinalIgnoreCase)
                     .ToList(),
-                Cards = transactionHistoryRepository.GetCardsByUserId(userId)
+                Cards = _transactionHistoryRepository.GetCardsByUserId(userId)
                     .Select(card => new CardFilterOptionDto
                     {
                         Id = card.Id,
@@ -76,7 +76,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
             TransactionHistoryRequest normalizedRequest = NormalizeRequest(request);
-            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
+            List<TransactionHistoryItemDto> transactions = _transactionHistoryRepository.GetTransactionsByUserId(userId);
             List<TransactionHistoryItemDto> filteredTransactions = ApplyFiltersAndSort(transactions, normalizedRequest);
 
             return Ok(new TransactionHistoryResponse
@@ -92,7 +92,7 @@ namespace BankApp.Server.Controllers
         public IActionResult GetTransaction(int transactionId)
         {
             int userId = GetAuthenticatedUserId();
-            TransactionHistoryItemDto? transaction = transactionHistoryRepository.GetTransactionById(userId, transactionId);
+            TransactionHistoryItemDto? transaction = _transactionHistoryRepository.GetTransactionById(userId, transactionId);
             TransactionDetailsResponse response = transaction == null
                 ? new TransactionDetailsResponse { Success = false, Message = "Transaction not found." }
                 : new TransactionDetailsResponse { Success = true, Message = "Transaction details loaded successfully.", Transaction = transaction };
@@ -104,9 +104,9 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
             TransactionHistoryRequest normalizedRequest = NormalizeRequest(request);
-            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
+            List<TransactionHistoryItemDto> transactions = _transactionHistoryRepository.GetTransactionsByUserId(userId);
             List<TransactionHistoryItemDto> filteredTransactions = ApplyFiltersAndSort(transactions, normalizedRequest);
-            TransactionExportResult exportResult = transactionExportService.ExportStatement(filteredTransactions, normalizedRequest, request.Format);
+            TransactionExportResult exportResult = _transactionExportService.ExportStatement(filteredTransactions, normalizedRequest, request.Format);
             return File(exportResult.Content, exportResult.ContentType, exportResult.FileName);
         }
 
@@ -114,8 +114,8 @@ namespace BankApp.Server.Controllers
         public IActionResult ExportReceipt(int transactionId)
         {
             int userId = GetAuthenticatedUserId();
-            TransactionHistoryItemDto? transaction = transactionHistoryRepository.GetTransactionById(userId, transactionId);
-            TransactionExportResult exportResult = transaction == null ? new TransactionExportResult() : transactionExportService.ExportReceipt(transaction);
+            TransactionHistoryItemDto? transaction = _transactionHistoryRepository.GetTransactionById(userId, transactionId);
+            TransactionExportResult exportResult = transaction == null ? new TransactionExportResult() : _transactionExportService.ExportReceipt(transaction);
             if (exportResult.Content.Length == 0)
             {
                 return NotFound();

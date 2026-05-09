@@ -7,7 +7,7 @@ namespace BankApp.Server.Controllers
     [Route("api/loans/should-compute-estimate")]
     public class LoanDialogStateController : ControllerBase
     {
-        private readonly LoanDialogStateService _loanDialogStateService = new();
+        private readonly LoanDialogStateService _loanDialogStateService = new ();
 
         [HttpGet]
         public IActionResult GetShouldComputeEstimate([FromQuery] double desiredAmount, [FromQuery] int preferredTermMonths, [FromQuery] string purpose)

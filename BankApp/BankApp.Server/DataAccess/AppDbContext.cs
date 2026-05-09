@@ -9,12 +9,16 @@ namespace BankApp.Server.DataAccess
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext() { }
+        public AppDbContext()
+        {
+        }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+        }
 
         // Entity sets for the tables
-
         public DbSet<Account> Accounts { get; set; }
 
         public DbSet<Card> Cards { get; set; }
@@ -38,8 +42,6 @@ namespace BankApp.Server.DataAccess
         public DbSet<User> Users { get; set; }
 
         public DbSet<UserCardPreference> UserCardPreferences { get; set; }
-
-
         // FEATURES: Chat
         public DbSet<AttachmentUploadResponse> AttachmentUploadResponses { get; set; }
 
@@ -48,8 +50,6 @@ namespace BankApp.Server.DataAccess
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public DbSet<ChatSession> ChatSessions { get; set; }
-
-
         // FEATURES: Investments
         public DbSet<FundingSourceOption> FundingSourceOptions { get; set; }
 
@@ -67,8 +67,6 @@ namespace BankApp.Server.DataAccess
         public DbSet<LoanApplication> LoanApplications { get; set; }
 
         public DbSet<LoanEstimate> LoanEstimates { get; set; }
-
-
         // FEATURE: Savings
         public DbSet<AutoDeposit> AutoDeposits { get; set; }
 

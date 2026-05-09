@@ -6,19 +6,19 @@ namespace BankApp.Server.Services.Implementations
 {
     public class TransactionHistoryService : ITransactionHistoryService
     {
-        private readonly ITransactionHistoryRepository transactionHistoryRepository;
-        private readonly ITransactionExportService transactionExportService;
+        private readonly ITransactionHistoryRepository _transactionHistoryRepository;
+        private readonly ITransactionExportService _transactionExportService;
 
         public TransactionHistoryService(ITransactionHistoryRepository transactionHistoryRepository, ITransactionExportService transactionExportService)
         {
-            this.transactionHistoryRepository = transactionHistoryRepository;
-            this.transactionExportService = transactionExportService;
+            _transactionHistoryRepository = transactionHistoryRepository;
+            _transactionExportService = transactionExportService;
         }
 
         public TransactionHistoryResponse GetHistory(int userId, TransactionHistoryRequest request)
         {
             TransactionHistoryRequest normalizedRequest = NormalizeRequest(request);
-            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
+            List<TransactionHistoryItemDto> transactions = _transactionHistoryRepository.GetTransactionsByUserId(userId);
             List<TransactionHistoryItemDto> filteredTransactions = ApplyFiltersAndSort(transactions, normalizedRequest);
 
             return new TransactionHistoryResponse
@@ -32,7 +32,7 @@ namespace BankApp.Server.Services.Implementations
 
         public TransactionDetailsResponse GetTransaction(int userId, int transactionId)
         {
-            TransactionHistoryItemDto? transaction = transactionHistoryRepository.GetTransactionById(userId, transactionId);
+            TransactionHistoryItemDto? transaction = _transactionHistoryRepository.GetTransactionById(userId, transactionId);
             if (transaction == null)
             {
                 return new TransactionDetailsResponse
@@ -52,13 +52,13 @@ namespace BankApp.Server.Services.Implementations
 
         public TransactionFilterMetadataResponse GetFilterMetadata(int userId)
         {
-            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
+            List<TransactionHistoryItemDto> transactions = _transactionHistoryRepository.GetTransactionsByUserId(userId);
 
             return new TransactionFilterMetadataResponse
             {
                 Success = true,
                 Message = "Transaction filters loaded successfully.",
-                Accounts = transactionHistoryRepository.GetAccountsByUserId(userId)
+                Accounts = _transactionHistoryRepository.GetAccountsByUserId(userId)
                     .Select(account => new AccountFilterOptionDto
                     {
                         Id = account.Id,
@@ -67,7 +67,7 @@ namespace BankApp.Server.Services.Implementations
                     })
                     .OrderBy(account => account.Name, StringComparer.OrdinalIgnoreCase)
                     .ToList(),
-                Cards = transactionHistoryRepository.GetCardsByUserId(userId)
+                Cards = _transactionHistoryRepository.GetCardsByUserId(userId)
                     .Select(card => new CardFilterOptionDto
                     {
                         Id = card.Id,
@@ -99,7 +99,7 @@ namespace BankApp.Server.Services.Implementations
         public TransactionExportResult ExportTransactions(int userId, TransactionExportRequest request)
         {
             TransactionHistoryResponse history = GetHistory(userId, request);
-            return transactionExportService.ExportStatement(history.Transactions, history.AppliedFilters, request.Format);
+            return _transactionExportService.ExportStatement(history.Transactions, history.AppliedFilters, request.Format);
         }
 
         public TransactionExportResult ExportReceipt(int userId, int transactionId)
@@ -110,7 +110,7 @@ namespace BankApp.Server.Services.Implementations
                 return new TransactionExportResult();
             }
 
-            return transactionExportService.ExportReceipt(response.Transaction);
+            return _transactionExportService.ExportReceipt(response.Transaction);
         }
 
         internal List<TransactionHistoryItemDto> ApplyFiltersAndSort(IEnumerable<TransactionHistoryItemDto> transactions, TransactionHistoryRequest request)

@@ -1,9 +1,9 @@
-﻿using BankApp.Models.DTOs.Savings;
+﻿using System.Linq;
+using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
 using BankApp.Server.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace BankApp.Server.Controllers
 {

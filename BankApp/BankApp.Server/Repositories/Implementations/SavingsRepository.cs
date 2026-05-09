@@ -345,8 +345,8 @@ namespace BankApp.Server.Repositories.Implementations
             return Task.FromResult(
                 new List<FundingSourceOption>
                 {
-                    new() { Id = PrimaryFundingSourceId, DisplayName = PrimaryFundingSourceName },
-                    new() { Id = SecondaryFundingSourceId, DisplayName = SecondaryFundingSourceName },
+                    new () { Id = PrimaryFundingSourceId, DisplayName = PrimaryFundingSourceName },
+                    new () { Id = SecondaryFundingSourceId, DisplayName = SecondaryFundingSourceName },
                 });
         }
 

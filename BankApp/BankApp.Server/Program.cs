@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- INVESTMENTS & TRADING REGISTRATION ---
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
-//builder.Services.AddScoped<IInvestmentService, InvestmentService>();
+// builder.Services.AddScoped<IInvestmentService, InvestmentService>();
 builder.Services.AddSingleton<IMarketDataService, MarketDataService>();
 
 builder.Services.AddControllers();
@@ -54,9 +54,9 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-//string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-//builder.Services.AddDbContext<AppDbContext>(_ => new AppDbContext(connectionString!));
-//builder.Services.AddDbContext<BankAppContext>(options => options.UseSqlServer(connectionString!));
+// string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// builder.Services.AddDbContext<AppDbContext>(_ => new AppDbContext(connectionString!));
+// builder.Services.AddDbContext<BankAppContext>(options => options.UseSqlServer(connectionString!));
 
 // --- DATA ACCESS OBJECTS ---
 builder.Services.AddScoped<IUserDAO, UserDAO>();

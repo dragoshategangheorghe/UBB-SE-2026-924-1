@@ -1,9 +1,9 @@
 ﻿namespace BankApp.Server.Controllers
 {
-    using Microsoft.AspNetCore.Mvc;
-    using BankApp.Server.Repositories.Interfaces;
-    using BankApp.Models.Entities;
     using System.Threading.Tasks;
+    using BankApp.Models.Entities;
+    using BankApp.Server.Repositories.Interfaces;
+    using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/[controller]")]

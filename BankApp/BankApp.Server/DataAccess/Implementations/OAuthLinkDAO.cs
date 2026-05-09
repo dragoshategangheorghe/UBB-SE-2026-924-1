@@ -37,11 +37,12 @@ namespace BankApp.Server.DataAccess.Implementations
             var entity = context.OAuthLinks.FirstOrDefault(x => x.Id == id);
 
             if (entity == null)
+            {
                 return;
+            }
 
             context.OAuthLinks.Remove(entity);
             context.SaveChanges();
-
         }
 
         public OAuthLink? FindByProvider(string provider, string providerUserId)

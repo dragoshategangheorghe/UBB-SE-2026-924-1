@@ -22,7 +22,7 @@
         private const int PriceRoundingDigits = 2;
         private const decimal MissingPrice = 0m;
 
-        private readonly Dictionary<string, decimal> currentPrices = new(StringComparer.OrdinalIgnoreCase)
+        private readonly Dictionary<string, decimal> currentPrices = new (StringComparer.OrdinalIgnoreCase)
         {
             ["BTC"] = DefaultBtcPrice,
             ["ETH"] = DefaultEthPrice,
@@ -33,12 +33,12 @@
             ["SPY"] = DefaultSpyPrice
         };
 
-        private readonly Random randomNumberGenerator = new();
-        private readonly object synchronizationRoot = new();
+        private readonly Random randomNumberGenerator = new ();
+        private readonly object synchronizationRoot = new ();
 
         private Timer? pollingTimer;
         private Action? priceUpdateHandler;
-        private List<string> trackedTickerSymbols = new();
+        private List<string> trackedTickerSymbols = new ();
 
         public void StartPolling(List<string> tickerSymbols)
         {
