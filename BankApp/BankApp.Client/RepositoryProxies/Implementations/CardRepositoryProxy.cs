@@ -44,12 +44,12 @@ namespace BankApp.Client.RepositoryProxies.Implementations
             return this.apiService.PutAsync<UpdateCardSortPreferenceRequest, bool>($"/api/cards/sortPreference/${sortOption}", new UpdateCardSortPreferenceRequest { });
         }
 
-        public Task<bool> UpdateStatus(int cardId, string status)
+        public Task<bool> UpdateStatusAsync(int cardId, string status)
         {
             return this.apiService.PutAsync<UpdateCardSettingsRequest, bool>($"/api/cards/{cardId}/updateStatus/{status}", new UpdateCardSettingsRequest { });
         }
 
-        public Task<bool> UpdateStatus(int cardId, UpdateCardSettingsRequest request)
+        public Task<bool> UpdateSettingsAsync(int cardId, UpdateCardSettingsRequest request)
         {
             return this.apiService.PostAsync<UpdateCardSettingsRequest, bool>($"/api/cards/{cardId}/updateSettings", request);
         }

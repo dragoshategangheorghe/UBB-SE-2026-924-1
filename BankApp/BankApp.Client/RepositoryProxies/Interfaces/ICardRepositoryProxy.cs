@@ -12,7 +12,7 @@ namespace BankApp.Client.RepositoryProxies.Interfaces
         Task<Account?> GetAccountAsync(int accountId);
         Task<UserCardPreference?> GetSortPreferenceAsync();
         Task<bool> SaveSortPreferencesAsync(string sortOption);
-        Task<bool> UpdateStatus(int cardId, string status);
-        Task<bool> UpdateStatus(int cardId, UpdateCardSettingsRequest request);
+        Task<bool> UpdateStatusAsync(int cardId, string status);
+        Task<bool> UpdateSettingsAsync(int cardId, UpdateCardSettingsRequest request);
     }
 }
