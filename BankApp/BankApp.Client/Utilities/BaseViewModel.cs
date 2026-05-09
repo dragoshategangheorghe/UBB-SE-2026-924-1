@@ -1,7 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BankApp.Client.Utilities
 {

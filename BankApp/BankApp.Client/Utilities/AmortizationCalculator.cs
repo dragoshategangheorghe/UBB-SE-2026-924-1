@@ -1,7 +1,7 @@
-using BankApp.Models.DTOs.Loans;
-using BankApp.Models.Features.Loans;
 using System;
 using System.Collections.Generic;
+using BankApp.Models.DTOs.Loans;
+using BankApp.Models.Features.Loans;
 
 namespace BankApp.Client.Utilities
 {

@@ -418,17 +418,4 @@ namespace BankApp.Client.ViewModels
             _autoHideCancellation?.Dispose();
         }
     }
-
-    public class SelectableOption
-    {
-        public SelectableOption(string value, string label)
-        {
-            Value = value;
-            Label = label;
-        }
-
-        public string Value { get; }
-
-        public string Label { get; }
-    }
 }

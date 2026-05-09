@@ -98,7 +98,7 @@ namespace BankApp.Client.Views
 
         private async void NavCurrencyExchange_Click(object sender, RoutedEventArgs e) =>
             await this.ShowComingSoonAsync("Currency Exchange");
-        
+
         private void NavSupport_Click(object sender, RoutedEventArgs e)
         {
             this.SetActiveNav(NavSupport);

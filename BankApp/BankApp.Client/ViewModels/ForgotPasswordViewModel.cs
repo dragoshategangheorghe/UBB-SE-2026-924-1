@@ -101,7 +101,6 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
         public override void Dispose()
         {
             State = null;

@@ -33,7 +33,7 @@ namespace BankApp.Client.ViewModels
         private readonly PdfExporter pdfExporter;
 
         [ObservableProperty]
-        private ObservableCollection<AmortizationRow> amortizationRows = [];
+        private ObservableCollection<AmortizationRow> amortizationRows = new ObservableCollection<AmortizationRow>();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ApplicationWasApproved))]
@@ -75,7 +75,7 @@ namespace BankApp.Client.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(FilteredLoans))]
-        private ObservableCollection<LoanViewModel> loans = [];
+        private ObservableCollection<LoanViewModel> loans = new ObservableCollection<LoanViewModel>();
 
         [ObservableProperty]
         private decimal paymentPreviewBalance;

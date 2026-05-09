@@ -1,15 +1,15 @@
+using System;
+using System.Threading.Tasks;
+using Windows.UI;
 using BankApp.Client.Utilities;
 using BankApp.Client.ViewModels;
-using BankApp.Models.Enums;
 using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using System;
-using Windows.UI;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Views
 {
@@ -57,7 +57,6 @@ namespace BankApp.Client.Views
             });
         }
 
-
         private void RefreshUI()
         {
             UserNameText.Text = _viewModel.CurrentUser?.FullName ?? string.Empty;
@@ -69,7 +68,10 @@ namespace BankApp.Client.Views
         private void ShowCard(int index)
         {
             var cards = _viewModel.Cards;
-            if (cards == null || cards.Count == 0) return;
+            if (cards == null || cards.Count == 0)
+            {
+                return;
+            }
 
             index = Math.Clamp(index, 0, cards.Count - 1);
             _currentCardIndex = index;
@@ -171,10 +173,14 @@ namespace BankApp.Client.Views
             };
             await dialog.ShowAsync();
         }
+
         private async void CardVisual_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var cards = _viewModel.Cards;
-            if (cards == null || cards.Count == 0) return;
+            if (cards == null || cards.Count == 0)
+            {
+                return;
+            }
 
             var card = cards[_currentCardIndex];
 

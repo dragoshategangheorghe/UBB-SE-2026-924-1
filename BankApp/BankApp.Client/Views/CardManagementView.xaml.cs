@@ -216,8 +216,8 @@ namespace BankApp.Client.Views
 
         private async Task<string?> PromptForPasswordAsync()
         {
-            PasswordBox passwordBox = new();
-            ContentDialog dialog = new()
+            PasswordBox passwordBox = new PasswordBox();
+            ContentDialog dialog = new ContentDialog()
             {
                 Title = "Confirm Password",
                 Content = passwordBox,
@@ -237,7 +237,7 @@ namespace BankApp.Client.Views
                 PlaceholderText = "Enter OTP"
             };
 
-            ContentDialog dialog = new()
+            ContentDialog dialog = new ContentDialog()
             {
                 Title = "OTP Verification",
                 Content = otpBox,
@@ -252,7 +252,7 @@ namespace BankApp.Client.Views
 
         private static Task<ContentDialogResult> ShowDialogAsync(ContentDialog dialog)
         {
-            TaskCompletionSource<ContentDialogResult> taskCompletionSource = new();
+            TaskCompletionSource<ContentDialogResult> taskCompletionSource = new TaskCompletionSource<ContentDialogResult>();
             IAsyncOperation<ContentDialogResult> operation = dialog.ShowAsync();
             operation.Completed = (asyncInfo, status) =>
             {
@@ -275,7 +275,7 @@ namespace BankApp.Client.Views
 
         private async Task ShowMessageAsync(string title, string message)
         {
-            ContentDialog dialog = new()
+            ContentDialog dialog = new ContentDialog()
             {
                 Title = title,
                 Content = message,
