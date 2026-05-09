@@ -1,4 +1,6 @@
-﻿namespace BankApp.Server.Controllers
+﻿using BankApp.Server.Repositories.Interfaces;
+
+namespace BankApp.Server.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
     using BankApp.Server.Services.Interfaces;
@@ -9,12 +11,14 @@
     [Route("api/[controller]")]
     public class InvestmentsController : ControllerBase
     {
-        private readonly IInvestmentService _investmentService;
+        private readonly IInvestmentRepository investmentRepository;
 
-        public InvestmentsController(IInvestmentService investmentService)
+        public InvestmentsController(IInvestmentRepository investmentRepository)
         {
-            _investmentService = investmentService;
+            this.investmentRepository = investmentRepository;
         }
+
+        // TODO THERE IS NO INVESTMENT SERVICE AND THE OTHER REPO METHODS ARE NOT IMPLEMENTED
 
         /// <summary>
         /// Retrieves the portfolio for a specific user.
@@ -22,7 +26,7 @@
         [HttpGet("portfolio/{userId}")]
         public IActionResult GetPortfolio(int userId)
         {
-            var portfolio = _investmentService.GetPortfolio(userId);
+            var portfolio = investmentRepository.GetPortfolio(userId);
             return Ok(portfolio);
         }
 
@@ -33,6 +37,7 @@
         public async Task<IActionResult> Trade([FromBody] dynamic tradeData)
         {
             // Note: Your teammates can expand the DTO/Logic here for Assignment 4
+            // Note from Alex: Wasn't this mandatory for A3 ? Send help, I'm too busy rewriting all controllers :sob:
             return await Task.FromResult(Ok(new { message = "Trade received" }));
         }
     }
