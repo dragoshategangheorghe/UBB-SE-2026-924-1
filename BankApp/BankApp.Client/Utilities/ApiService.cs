@@ -1,7 +1,10 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BankApp.Client.Utilities
@@ -53,7 +56,8 @@ namespace BankApp.Client.Utilities
             try
             {
                 HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data);
-                return await response.Content.ReadFromJsonAsync<TResponse>();
+                await EnsureSuccessAsync(response, endpoint);
+                return await ReadJsonAsync<TResponse>(response);
             }
             catch (Exception ex)
             {
@@ -66,13 +70,15 @@ namespace BankApp.Client.Utilities
         public async Task<TResponse?> GetAsync<TResponse>(string endpoint)
         {
             HttpResponseMessage response = await _httpClient.GetAsync(endpoint);
-            return await response.Content.ReadFromJsonAsync<TResponse>();
+            await EnsureSuccessAsync(response, endpoint);
+            return await ReadJsonAsync<TResponse>(response);
         }
 
         public async Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest data)
         {
             HttpResponseMessage response = await _httpClient.PutAsJsonAsync(endpoint, data);
-            return await response.Content.ReadFromJsonAsync<TResponse>();
+            await EnsureSuccessAsync(response, endpoint);
+            return await ReadJsonAsync<TResponse>(response);
         }
 
         public async Task<DownloadResponse?> PostDownloadAsync<TRequest>(string endpoint, TRequest data)
@@ -95,6 +101,46 @@ namespace BankApp.Client.Utilities
             }
 
             return await CreateDownloadResponseAsync(response);
+        }
+
+        private static async Task EnsureSuccessAsync(HttpResponseMessage response, string endpoint)
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            string contentType = response.Content.Headers.ContentType?.MediaType ?? "(none)";
+            string body = await response.Content.ReadAsStringAsync();
+            if (body.Length > 2000)
+            {
+                body = body[..2000] + "…";
+            }
+
+            throw new HttpRequestException(
+                $"Request to '{endpoint}' failed: {(int)response.StatusCode} {response.StatusCode}. Content-Type: {contentType}. Body: {body}",
+                null,
+                response.StatusCode);
+        }
+
+        private static async Task<T?> ReadJsonAsync<T>(HttpResponseMessage response)
+        {
+            try
+            {
+                return await response.Content.ReadFromJsonAsync<T>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            }
+            catch (Exception jsonEx)
+            {
+                string body = await response.Content.ReadAsStringAsync();
+                if (body.Length > 2000)
+                {
+                    body = body[..2000] + "…";
+                }
+
+                throw new InvalidOperationException(
+                    $"Failed to parse JSON response as {typeof(T).Name}. Raw body: {body}",
+                    jsonEx);
+            }
         }
 
         private static async Task<DownloadResponse> CreateDownloadResponseAsync(HttpResponseMessage response)

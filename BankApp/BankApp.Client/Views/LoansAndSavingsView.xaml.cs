@@ -1,11 +1,11 @@
-﻿using BankApp.Client.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using BankApp.Client.ViewModels;
+using BankApp.Client.Services.Implementations;
 
 namespace BankApp.Client.Views
 {
@@ -14,6 +14,9 @@ namespace BankApp.Client.Views
         public LoansAndSavingsView()
         {
             this.InitializeComponent();
+            ViewModel = new LoansAndSavingsViewModel(
+                new SavingsViewModel(App.SavingsService),
+                new LoansViewModel(App.LoansService));
         }
 
         public LoansAndSavingsViewModel ViewModel

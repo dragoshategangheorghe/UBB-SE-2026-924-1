@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Interfaces
 {
+    /// <summary>
+    /// RepoProxy for Loans (desktop -> HTTP API).
+    /// This is intentionally low-level (CRUD-ish) so business rules can live in desktop services.
+    /// </summary>
     public interface ILoansApiService
     {
         Task<List<Loan>> GetAllLoansAsync();
@@ -21,24 +25,16 @@ namespace BankApp.Client.Services.Interfaces
 
         Task<List<Loan>> GetLoansByTypeAsync(LoanType loanType);
 
-        Task<LoanApplicationResult> SubmitLoanApplicationAsync(LoanApplicationRequest request);
+        Task<int> CreateLoanApplicationAsync(LoanApplicationRequest request);
 
-        Task<LoanEstimate> GetLoanEstimateAsync(LoanApplicationRequest request);
+        Task UpdateLoanApplicationStatusAsync(int applicationId, LoanApplicationStatus status, string? reason);
 
-        Task PayInstallmentAsync(int loanId, decimal? customAmount);
+        Task<int> CreateLoanAsync(Loan loan);
 
-        Task<decimal?> GetParsedCustomPaymentAmountAsync(string input);
-
-        Task<decimal> NormalizeCustomPaymentAmountAsync(Loan loan, decimal? currentCustomAmount);
-
-        Task<double> GetRepaymentProgressAsync(Loan loan);
+        Task UpdateLoanAfterPaymentAsync(int loanId, decimal newBalance, int newRemainingMonths, LoanStatus newStatus);
 
         Task<List<AmortizationRow>> GetAmortizationAsync(int loanId);
-    }
 
-    public class LoanApplicationResult
-    {
-        public LoanApplicationStatus Status { get; set; }
-        public string? RejectionReason { get; set; }
+        Task SaveAmortizationAsync(int loanId, List<AmortizationRow> rows);
     }
 }

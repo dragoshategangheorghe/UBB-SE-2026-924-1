@@ -14,7 +14,7 @@ namespace BankApp.Client.Views
         public TransactionHistoryView()
         {
             InitializeComponent();
-            ViewModel = new TransactionHistoryViewModel(App.TransactionApiService, App.TransactionHistorySessionState);
+            ViewModel = new TransactionHistoryViewModel(App.TransactionHistoryService, App.TransactionHistorySessionState);
             DataContext = ViewModel;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Loaded += TransactionHistoryView_Loaded;

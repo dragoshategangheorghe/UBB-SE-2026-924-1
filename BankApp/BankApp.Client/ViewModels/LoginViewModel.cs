@@ -10,12 +10,12 @@ namespace BankApp.Client.ViewModels
     public class LoginViewModel : BaseViewModel
     {
         public Observable<LoginState> State { get; private set; }
-        private readonly ApiService _apiService;
+        private readonly BankApp.Client.Services.Interfaces.IAuthService _authService;
 
-        public LoginViewModel(ApiService apiService)
+        public LoginViewModel(BankApp.Client.Services.Interfaces.IAuthService authService)
         {
             State = new Observable<LoginState>(LoginState.Idle);
-            _apiService = apiService;
+            _authService = authService;
         }
 
         public async void Login(string email, string password)
@@ -30,8 +30,7 @@ namespace BankApp.Client.ViewModels
                     Password = password
                 };
 
-                LoginResponse? response = await _apiService.PostAsync<BankApp.Models.DTOs.Auth.LoginRequest, LoginResponse>(
-                    "/api/auth/login", request);
+                LoginResponse? response = await _authService.LoginAsync(request);
 
                 if (response == null)
                 {
@@ -47,16 +46,10 @@ namespace BankApp.Client.ViewModels
 
                 if (response.Requires2FA)
                 {
-                    _apiService.SetCurrentUserId(response.UserId!.Value);
-
                     SetState(State, LoginState.Require2FA);
                     return;
                 }
 
-                // Login successful
-                // Store the token and userId for future requests
-                _apiService.SetToken(response.Token!);
-                _apiService.SetCurrentUserId(response.UserId!.Value);
                 SetState(State, LoginState.Success);
             }
             catch (Exception)
@@ -101,8 +94,7 @@ namespace BankApp.Client.ViewModels
                         ProviderToken = loginResult.IdentityToken
                     };
 
-                    LoginResponse? response = await _apiService.PostAsync<OAuthLoginRequest, LoginResponse>(
-                        "/api/auth/oauth-login", apiRequest);
+                    LoginResponse? response = await _authService.OAuthLoginAsync(apiRequest);
 
                     if (response == null || !response.Success)
                     {
@@ -112,13 +104,10 @@ namespace BankApp.Client.ViewModels
 
                     if (response.Requires2FA)
                     {
-                        _apiService.SetCurrentUserId(response.UserId!.Value);
                         SetState(State, LoginState.Require2FA);
                         return;
                     }
 
-                    _apiService.SetToken(response.Token!);
-                    _apiService.SetCurrentUserId(response.UserId!.Value);
                     SetState(State, LoginState.Success);
                 }
             }

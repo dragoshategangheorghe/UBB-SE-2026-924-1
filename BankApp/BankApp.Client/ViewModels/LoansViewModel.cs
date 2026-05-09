@@ -30,7 +30,7 @@ namespace BankApp.Client.ViewModels
         private const int FirstPage = 1;
         private const int DefaultPageSize = 10;
 
-        private readonly ILoansApiService loanService;
+        private readonly ILoansService loanService;
         private readonly LoanApplicationPresentationApiService loanApplicationPresentationService;
         private readonly ILoanDialogStateApiService loanDialogStateService;
         private readonly PdfExporter pdfExporter;
@@ -109,7 +109,7 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         private User currentUser;
 
-        public LoansViewModel(ILoansApiService loanService)
+        public LoansViewModel(ILoansService loanService)
         {
             this.loanService = loanService;
             this.pdfExporter = new PdfExporter();
@@ -138,7 +138,7 @@ namespace BankApp.Client.ViewModels
                 var loanViewModels = new List<LoanViewModel>();
                 foreach (var loan in result)
                 {
-                    var repaymentProgress = await this.loanService.GetRepaymentProgressAsync(loan);
+                    var repaymentProgress = this.loanService.GetRepaymentProgress(loan);
                     loanViewModels.Add(new LoanViewModel(loan, repaymentProgress));
                 }
 
@@ -206,7 +206,7 @@ namespace BankApp.Client.ViewModels
                     PreferredTermMonths = this.PreferredTermMonths,
                     Purpose = this.Purpose,
                 };
-                this.CurrentEstimate = await this.loanService.GetLoanEstimateAsync(request);
+                this.CurrentEstimate = this.loanService.GetLoanEstimate(request);
             }
             catch (Exception exception)
             {
@@ -251,7 +251,7 @@ namespace BankApp.Client.ViewModels
             decimal? customAmount = null;
             if (!isStandardPayment)
             {
-                customAmount = this.loanService.GetParsedCustomPaymentAmountAsync(customAmountText).GetAwaiter().GetResult();
+                customAmount = this.loanService.ParseCustomPaymentAmount(customAmountText);
             }
 
             var (balance, months) = CalculatePaymentPreview(this.SelectedLoan.Loan, customAmount);
@@ -274,9 +274,9 @@ namespace BankApp.Client.ViewModels
                 return string.Empty;
             }
 
-            var normalizedCustomAmount = this.loanService.NormalizeCustomPaymentAmountAsync(
+            var normalizedCustomAmount = this.loanService.NormalizeCustomPaymentAmount(
                 this.SelectedLoan.Loan,
-                this.CustomAmount.HasValue ? (decimal?)this.CustomAmount.Value : null).GetAwaiter().GetResult();
+                this.CustomAmount.HasValue ? (decimal?)this.CustomAmount.Value : null);
 
             this.CustomAmount = (double)normalizedCustomAmount;
 
@@ -287,7 +287,7 @@ namespace BankApp.Client.ViewModels
 
         public void UpdateCustomPayment(string customAmountText)
         {
-            var parsedAmount = this.loanService.GetParsedCustomPaymentAmountAsync(customAmountText).GetAwaiter().GetResult();
+            var parsedAmount = this.loanService.ParseCustomPaymentAmount(customAmountText);
             this.CustomAmount = parsedAmount.HasValue ? (double)parsedAmount.Value : null;
             this.UpdatePaymentPreview(false, customAmountText);
         }

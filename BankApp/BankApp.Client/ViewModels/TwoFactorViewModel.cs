@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using BankApp.Client.Utilities;
+using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Auth;
 using BankApp.Models.Enums;
 
@@ -8,12 +8,12 @@ namespace BankApp.Client.ViewModels
 {
     public class TwoFactorViewModel : BaseViewModel
     {
-        private readonly ApiService _apiService;
+        private readonly IAuthService _authService;
         public Observable<TwoFactorState> State { get; private set; }
 
-        public TwoFactorViewModel(ApiService apiService)
+        public TwoFactorViewModel(IAuthService authService)
         {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             State = new Observable<TwoFactorState>(TwoFactorState.Idle);
         }
 
@@ -29,7 +29,7 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-                int? userId = _apiService.GetCurrentUserId();
+                int? userId = App.ApiService.GetCurrentUserId();
                 if (userId == null)
                 {
                     SetState(State, TwoFactorState.InvalidOTP);
@@ -42,11 +42,10 @@ namespace BankApp.Client.ViewModels
                     OTPCode = otp
                 };
 
-                var response = await _apiService.PostAsync<VerifyOTPRequest, LoginResponse>("/api/auth/verify-otp", request);
+                var response = await _authService.VerifyOtpAsync(request);
 
                 if (response != null && response.Success)
                 {
-                    _apiService.SetToken(response.Token!);
                     SetState(State, TwoFactorState.Success);
                 }
                 else
@@ -65,9 +64,9 @@ namespace BankApp.Client.ViewModels
             SetState(State, TwoFactorState.Idle);
             try
             {
-                int? userId = _apiService.GetCurrentUserId();
+                int? userId = App.ApiService.GetCurrentUserId();
                 if (userId == null) return;
-                await _apiService.PostAsync<object, object>($"/api/auth/resend-otp?userId={userId.Value}", null);
+                await _authService.ResendOtpAsync(userId.Value);
             }
             catch (Exception)
             {

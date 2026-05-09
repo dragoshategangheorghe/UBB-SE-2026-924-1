@@ -27,7 +27,7 @@ namespace BankApp.Client.ViewModels
         private const decimal ZeroAmount = 0m;
 
         private readonly ISavingsPresentationApiService savingsPresentationService;
-        private readonly ISavingsApiService savingsService;
+        private readonly ISavingsService savingsService;
         private readonly ISavingsUiRulesApiService savingsUiRulesService;
         private readonly ISavingsWorkflowApiService savingsWorkflowService;
 
@@ -158,7 +158,7 @@ namespace BankApp.Client.ViewModels
         internal bool hasError;
 
         // ── Constructor ──────────────────────────────────────────────────────
-        public SavingsViewModel(ISavingsApiService savingsService)
+        public SavingsViewModel(ISavingsService savingsService)
         {
             this.savingsService = savingsService;
             this.savingsUiRulesService = new SavingsUiRulesApiService(App.ApiService);

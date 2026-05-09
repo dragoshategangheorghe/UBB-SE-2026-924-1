@@ -20,27 +20,26 @@ namespace BankApp.Client.Services.Implementations
             _apiService = apiService;
         }
 
-        public async Task<ClosureResultDto> CloseAccountAsync(int accountId, int destinationAccountId, int userId)
+        public async Task<ClosureResultDto> CloseSavingsAccountAsync(int accountId, int destinationAccountId, decimal transferAmount, decimal earlyClosurePenalty)
         {
-            return await _apiService.GetAsync<ClosureResultDto>($"/api/savings/{accountId}/close?destinationAccountId={destinationAccountId}&userId={userId}");
+            return await _apiService.PostAsync<object, ClosureResultDto>(
+                $"/api/savings/{accountId}/close?destinationAccountId={destinationAccountId}&transferAmount={transferAmount}&earlyClosurePenalty={earlyClosurePenalty}",
+                new { });
         }
 
-        public async Task<decimal> ComputeWithdrawalPenalty(decimal amount)
+        public async Task<SavingsAccount> CreateSavingsAccountAsync(CreateSavingsAccountDto account, decimal apy)
         {
-            return await _apiService.GetAsync<decimal>($"/api/savings/withdrawal/compute-penalty?amount={amount}");
+            return await _apiService.PostAsync<CreateSavingsAccountDto, SavingsAccount>($"/api/savings/create-account?apy={apy}", account);
         }
 
-        public async Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto account)
+        public async Task<DepositResponseDto> DepositAsync(int accountId, decimal amount, string source)
         {
-            return await _apiService.PostAsync<CreateSavingsAccountDto, SavingsAccount>("/api/savings/create-account", account);
+            return await _apiService.PostAsync<object, DepositResponseDto>(
+                $"/api/savings/{accountId}/deposit?amount={amount}&source={Uri.EscapeDataString(source)}",
+                new { });
         }
 
-        public async Task<DepositResponseDto> DepositAsync(int accountId, decimal amount, string source, int userId)
-        {
-            return await _apiService.GetAsync<DepositResponseDto>($"/api/savings/{accountId}/deposit?amount={amount}&source={source}&userId={userId}");
-        }
-
-        public async Task<List<SavingsAccount>> GetAccountsAsync(int userId, bool includesClosed = false)
+        public async Task<List<SavingsAccount>> GetSavingsAccountsByUserIdAsync(int userId, bool includesClosed = false)
         {
             return await _apiService.GetAsync<List<SavingsAccount>>($"/api/savings/user/{userId}?includesClosed={includesClosed}");
         }
@@ -65,14 +64,9 @@ namespace BankApp.Client.Services.Implementations
             return await _apiService.GetAsync<GetTransactionsResponse>($"/api/savings/{accountId}/transactions?filter={filter}&page={page}&pageSize={pageSize}");
         }
 
-        public async Task<List<SavingsAccount>> GetValidTransferDestinationsAsync(int currentAccountId)
+        public async Task<List<SavingsAccount>> GetValidTransferDestinationsAsync(int currentAccountId, int userId)
         {
-            return await _apiService.GetAsync<List<SavingsAccount>>($"/api/savings/{currentAccountId}/valid-destinations");
-        }
-
-        public async Task<bool> HasRiskEarlyWithdrawal(SavingsAccount savingsAccount)
-        {
-            return await _apiService.PostAsync<SavingsAccount, bool>("/api/savings/risk-early-withdrawal", savingsAccount);
+            return await _apiService.GetAsync<List<SavingsAccount>>($"/api/savings/{currentAccountId}/valid-destinations?userId={userId}");
         }
 
         public async Task SaveAutoDepositAsync(AutoDeposit autoDeposit)
@@ -80,9 +74,11 @@ namespace BankApp.Client.Services.Implementations
             await _apiService.PostAsync<AutoDeposit, Task>("/api/savings/auto-deposit", autoDeposit);
         }
 
-        public async Task<WithdrawResponseDto> WithdrawAsync(int accountId, decimal amount, string destinationLabel, int userId)
+        public async Task<WithdrawResponseDto> WithdrawAsync(int accountId, decimal amount, string destinationLabel, decimal earlyWithdrawalPenalty)
         {
-            return await _apiService.GetAsync<WithdrawResponseDto>($"/api/savings/{accountId}/withdraw?amount={amount}&destinationLabel={destinationLabel}&userId={userId}");
-        }
+            return await _apiService.PostAsync<object, WithdrawResponseDto>(
+                $"/api/savings/{accountId}/withdraw?amount={amount}&destinationLabel={Uri.EscapeDataString(destinationLabel)}&earlyWithdrawalPenalty={earlyWithdrawalPenalty}",
+                new { });
+        }        
     }
 }

@@ -5,8 +5,6 @@ using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Implementations
@@ -45,39 +43,41 @@ namespace BankApp.Client.Services.Implementations
             return _apiService.GetAsync<List<Loan>>($"/api/loans/by-type/{loanType}");
         }
 
-        public Task<LoanApplicationResult> SubmitLoanApplicationAsync(LoanApplicationRequest request)
+        public async Task<int> CreateLoanApplicationAsync(LoanApplicationRequest request)
         {
-            return _apiService.PostAsync<LoanApplicationRequest, LoanApplicationResult>("/api/loans/apply", request);
+            var result = await _apiService.PostAsync<LoanApplicationRequest, int>("/api/loans/applications", request);
+            return result ?? 0;
         }
 
-        public Task<LoanEstimate> GetLoanEstimateAsync(LoanApplicationRequest request)
+        public async Task UpdateLoanApplicationStatusAsync(int applicationId, LoanApplicationStatus status, string? reason)
         {
-            return _apiService.PostAsync<LoanApplicationRequest, LoanEstimate>("/api/loans/estimate", request);
+            string reasonParam = reason == null ? string.Empty : $"&reason={Uri.EscapeDataString(reason)}";
+            await _apiService.PutAsync<object, object>(
+                $"/api/loans/applications/{applicationId}/status?status={status}{reasonParam}",
+                new { });
         }
 
-        public Task PayInstallmentAsync(int loanId, decimal? customAmount)
+        public async Task<int> CreateLoanAsync(Loan loan)
         {
-            return _apiService.GetAsync<decimal>($"/api/loans/{loanId}/pay-installment?customAmount={customAmount}");
+            var result = await _apiService.PostAsync<Loan, int>("/api/loans", loan);
+            return result ?? 0;
         }
 
-        public Task<decimal?> GetParsedCustomPaymentAmountAsync(string input)
+        public async Task UpdateLoanAfterPaymentAsync(int loanId, decimal newBalance, int newRemainingMonths, LoanStatus newStatus)
         {
-            return _apiService.GetAsync<decimal?>($"/api/loans/payment-amount/{Uri.EscapeDataString(input)}");
-        }
-        
-        public Task<decimal> NormalizeCustomPaymentAmountAsync(Loan loan, decimal? currentCustomAmount)
-        {
-            return _apiService.PostAsync<Loan, decimal>($"/api/loans/normalize-payment-amount?currentCustomAmount={currentCustomAmount}", loan);
-        }
-
-        public Task<double> GetRepaymentProgressAsync(Loan loan)
-        {
-            return _apiService.PostAsync<Loan, double>("/api/loans/repayment-progress", loan);
+            await _apiService.PutAsync<object, object>(
+                $"/api/loans/{loanId}/after-payment?newBalance={newBalance}&newRemainingMonths={newRemainingMonths}&newStatus={newStatus}",
+                new { });
         }
 
         public Task<List<AmortizationRow>> GetAmortizationAsync(int loanId)
         {
             return _apiService.GetAsync<List<AmortizationRow>>($"/api/loans/{loanId}/amortization-schedule");
+        }
+
+        public async Task SaveAmortizationAsync(int loanId, List<AmortizationRow> rows)
+        {
+            await _apiService.PostAsync<List<AmortizationRow>, object>($"/api/loans/{loanId}/amortization-schedule", rows);
         }
     }
 }

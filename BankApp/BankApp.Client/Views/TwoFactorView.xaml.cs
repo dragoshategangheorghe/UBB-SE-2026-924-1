@@ -17,7 +17,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new TwoFactorViewModel(App.ApiService);
+            _viewModel = new TwoFactorViewModel(App.AuthService);
             _viewModel.State.AddObserver(this);
 
             _countdownTimer = new DispatcherTimer();

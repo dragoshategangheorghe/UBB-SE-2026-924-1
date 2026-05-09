@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using BankApp.Models.Entities;
 using BankApp.Client.Utilities;
+using BankApp.Client.Services.Interfaces;
+using BankApp.Models.Features.Investments;
 
 namespace BankApp.Client.ViewModels
 {
@@ -23,11 +25,14 @@ namespace BankApp.Client.ViewModels
         private bool isPortfolioLoading;
         private Portfolio userPortfolio;
 
-        public InvestmentsViewModel()
+        private readonly IInvestmentsService investmentsService;
+
+        public InvestmentsViewModel(IInvestmentsService investmentsService)
         {
             this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             this.SelectFilterCommand = new RelayCommand<string>(this.ApplyFilter);
 
+            this.investmentsService = investmentsService;
             this.userPortfolio = new Portfolio();
             this.displayedHoldings = new ObservableCollection<InvestmentHolding>();
         }
@@ -95,8 +100,8 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-
-                var portfolio = await App.ApiService.GetAsync<Portfolio>($"/api/investments/portfolio/1");
+                int userId = App.ApiService.GetCurrentUserId() ?? 1;
+                var portfolio = await investmentsService.GetPortfolioAsync(userId);
 
                 if (portfolio != null)
                 {

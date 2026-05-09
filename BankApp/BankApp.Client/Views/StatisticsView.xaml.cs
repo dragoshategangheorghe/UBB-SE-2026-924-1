@@ -11,7 +11,7 @@ namespace BankApp.Client.Views
         public StatisticsView()
         {
             InitializeComponent();
-            ViewModel = new StatisticsViewModel(App.StatisticsApiService);
+            ViewModel = new StatisticsViewModel(App.StatisticsService);
             DataContext = ViewModel;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Loaded += StatisticsView_Loaded;

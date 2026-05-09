@@ -14,7 +14,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new RegisterViewModel(App.ApiService);
+            _viewModel = new RegisterViewModel(App.AuthService);
             _viewModel.State.AddObserver(this);
         }
 

@@ -17,7 +17,7 @@ namespace BankApp.Client.Views
         public CardManagementView()
         {
             InitializeComponent();
-            ViewModel = new CardManagementViewModel(App.CardApiService);
+            ViewModel = new CardManagementViewModel(App.CardService);
             DataContext = ViewModel;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Loaded += CardManagementView_Loaded;

@@ -31,7 +31,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new ProfileViewModel(App.ApiService);
+            _viewModel = new ProfileViewModel(App.ProfileService);
             _viewModel.State.AddObserver(this);
         }
 

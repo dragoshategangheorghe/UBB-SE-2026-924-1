@@ -15,7 +15,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new ForgotPasswordViewModel(App.ApiService);
+            _viewModel = new ForgotPasswordViewModel(App.AuthService);
             _viewModel.State.AddObserver(this);
         }
 

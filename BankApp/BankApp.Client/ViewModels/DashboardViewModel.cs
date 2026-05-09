@@ -5,6 +5,7 @@ using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 using System;
 using System.Collections.Generic;
+using BankApp.Client.Services.Interfaces;
 
 
 namespace BankApp.Client.ViewModels
@@ -17,11 +18,11 @@ namespace BankApp.Client.ViewModels
         public List<Transaction> RecentTransactions { get; private set; }
         public int UnreadNotificationCount { get; private set; }
 
-        private readonly ApiService _apiService;
+        private readonly IDashboardService _dashboardService;
 
-        public DashboardViewModel(ApiService apiService)
+        public DashboardViewModel(IDashboardService dashboardService)
         {
-            _apiService = apiService;
+            _dashboardService = dashboardService;
             State = new Observable<DashboardState>(DashboardState.Loading);
             Cards = new List<Card>();
             RecentTransactions = new List<Transaction>();
@@ -33,15 +34,7 @@ namespace BankApp.Client.ViewModels
             SetState(State, DashboardState.Loading);
             try
             {
-                int? userId = _apiService.GetCurrentUserId();
-                if (userId == null)
-                {
-                    SetState(State, DashboardState.Error);
-                    return;
-                }
-
-                DashboardResponse? response = await _apiService.GetAsync<DashboardResponse>(
-                    $"/api/dashboard");
+                DashboardResponse? response = await _dashboardService.GetDashboardAsync();
 
                 if (response == null)
                 {

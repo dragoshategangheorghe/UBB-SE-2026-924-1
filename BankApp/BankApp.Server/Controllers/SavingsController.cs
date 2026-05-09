@@ -1,8 +1,9 @@
 ﻿using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
-using BankApp.Server.Services.Interfaces;
+using BankApp.Server.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BankApp.Server.Controllers
 {
@@ -10,19 +11,21 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class SavingsController : ControllerBase
     {
-        private readonly ISavingsService _savingsService;
+        private readonly ISavingsRepository _savingsRepository;
 
-        public SavingsController(ISavingsService savingsService)
+        public SavingsController(ISavingsRepository savingsRepository)
         {
-            _savingsService = savingsService;
+            _savingsRepository = savingsRepository;
         }
 
         [HttpPost("create-account")]
-        public async Task<ActionResult<SavingsAccount>> CreateAccountAsync([FromBody] CreateSavingsAccountDto account)
+        public async Task<ActionResult<SavingsAccount>> CreateAccountAsync(
+            [FromBody] CreateSavingsAccountDto account,
+            [FromQuery] decimal apy)
         {
             try
             {
-                var newSavingsAccount = _savingsService.CreateAccountAsync(account);
+                var newSavingsAccount = await _savingsRepository.CreateSavingsAccountAsync(account, apy);
                 return Ok(newSavingsAccount);
             }
             catch (InvalidOperationException ex)
@@ -40,7 +43,7 @@ namespace BankApp.Server.Controllers
         {
             try
             {
-                var accounts = await _savingsService.GetAccountsAsync(userId, includesClosed);
+                var accounts = await _savingsRepository.GetSavingsAccountsByUserIdAsync(userId, includesClosed);
                 return Ok(accounts);
             }
             catch (ArgumentException ex)
@@ -49,13 +52,13 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpGet("{accountId:int}/deposit")]
-        public async Task<ActionResult<DepositResponseDto>> DepositAsync([FromRoute] int accountId, [FromQuery] decimal amount, [FromQuery] string source, [FromQuery] int userId)
+        [HttpPost("{accountId:int}/deposit")]
+        public async Task<ActionResult<DepositResponseDto>> DepositAsync([FromRoute] int accountId, [FromQuery] decimal amount, [FromQuery] string source)
         {
             try
             {
-                var response = await _savingsService.DepositAsync(accountId, amount, source, userId);
-                return response;
+                var response = await _savingsRepository.DepositAsync(accountId, amount, source);
+                return Ok(response);
             }
             catch (ArgumentException ex)
             {
@@ -67,12 +70,16 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpGet("{accountId}/withdraw")]
-        public async Task<ActionResult<WithdrawResponseDto>> WithdrawAsync(int accountId, [FromQuery] decimal amount, [FromQuery] string destinationLabel, [FromQuery] int userId)
+        [HttpPost("{accountId:int}/withdraw")]
+        public async Task<ActionResult<WithdrawResponseDto>> WithdrawAsync(
+            [FromRoute] int accountId,
+            [FromQuery] decimal amount,
+            [FromQuery] string destinationLabel,
+            [FromQuery] decimal earlyWithdrawalPenalty)
         {
             try
             {
-                var response = await _savingsService.WithdrawAsync(accountId, amount, destinationLabel, userId);
+                var response = await _savingsRepository.WithdrawAsync(accountId, amount, destinationLabel, earlyWithdrawalPenalty);
                 return Ok(response);
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
@@ -81,12 +88,16 @@ namespace BankApp.Server.Controllers
             }
         }
 
-        [HttpGet("{accountId}/close")]
-        public async Task<ActionResult<ClosureResultDto>> CloseAccountAsync([FromRoute] int accountId, [FromQuery] int destinationAccountId, [FromQuery] int userId)
+        [HttpPost("{accountId:int}/close")]
+        public async Task<ActionResult<ClosureResultDto>> CloseAccountAsync(
+            [FromRoute] int accountId,
+            [FromQuery] int destinationAccountId,
+            [FromQuery] decimal transferAmount,
+            [FromQuery] decimal earlyClosurePenalty)
         {
             try
             {
-                var response = await _savingsService.CloseAccountAsync(accountId, destinationAccountId, userId);
+                var response = await _savingsRepository.CloseSavingsAccountAsync(accountId, destinationAccountId, transferAmount, earlyClosurePenalty);
                 return Ok(response);
             }
             catch (InvalidOperationException ex)
@@ -98,7 +109,7 @@ namespace BankApp.Server.Controllers
         [HttpGet("{accountId}/auto-deposit")]
         public async Task<ActionResult<AutoDeposit>> GetAutoDepositAsync(int accountId)
         {
-            var autoDeposit = await _savingsService.GetAutoDepositAsync(accountId);
+            var autoDeposit = await _savingsRepository.GetAutoDepositAsync(accountId);
             if (autoDeposit == null)
             {
                 return NotFound("Auto-deposit not found.");
@@ -110,14 +121,14 @@ namespace BankApp.Server.Controllers
         [HttpPost("auto-deposit")]
         public async Task<IActionResult> SaveAutoDepositAsync([FromBody] AutoDeposit autoDeposit)
         {
-            await _savingsService.SaveAutoDepositAsync(autoDeposit);
+            await _savingsRepository.SaveAutoDepositAsync(autoDeposit);
             return Ok();
         }
 
         [HttpGet("user/{userId}/funding-sources")]
         public async Task<ActionResult<List<FundingSourceOption>>> GetFundingSourcesAsync(int userId)
         {
-            var sources = await _savingsService.GetFundingSourcesAsync(userId);
+            var sources = await _savingsRepository.GetFundingSourcesAsync(userId);
             return Ok(sources);
         }
 
@@ -126,7 +137,7 @@ namespace BankApp.Server.Controllers
         {
             try
             {
-                var result = await _savingsService.GetTransactionsAsync(accountId, filter, page, pageSize);
+                var result = await _savingsRepository.GetTransactionsPagedAsync(accountId, filter, page, pageSize);
                 return Ok(new
                 {
                     Items = result.Items,
@@ -142,38 +153,12 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpGet("{currentAccountId}/valid-destinations")]
-        public async Task<ActionResult<List<SavingsAccount>>> GetValidTransferDestinationsAsync(int currentAccountId)
+        public async Task<ActionResult<List<SavingsAccount>>> GetValidTransferDestinationsAsync(
+            int currentAccountId,
+            [FromQuery] int userId)
         {
-            var destinations = await _savingsService.GetValidTransferDestinationsAsync(currentAccountId);
-            return Ok(destinations);
-        }
-
-        [HttpGet("withdrawal/compute-penalty")]
-        public ActionResult<decimal> ComputeWithdrawalPenalty([FromQuery] decimal amount)
-        {
-            var penalty = _savingsService.ComputeWithdrawalPenalty(amount);
-            return Ok(penalty);
-        }
-
-        [HttpPost("risk-early-withdrawal")]
-        public ActionResult<bool> HasRiskEarlyWithdrawal([FromBody] SavingsAccount savingsAccount)
-        {
-            var hasRisk = _savingsService.HasRiskEarlyWithdrawal(savingsAccount);
-            return Ok(hasRisk);
-        }
-
-        [HttpGet("penalty/rate/{penaltyCase}")]
-        public ActionResult<decimal> GetPenaltyDecimalFor(string penaltyCase)
-        {
-            try
-            {
-                var penaltyRate = _savingsService.GetPenaltyDecimalFor(penaltyCase);
-                return Ok(penaltyRate);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var accounts = await _savingsRepository.GetSavingsAccountsByUserIdAsync(userId, false);
+            return Ok(accounts.Where(a => a.IdentificationNumber != currentAccountId).ToList());
         }
     }
 }

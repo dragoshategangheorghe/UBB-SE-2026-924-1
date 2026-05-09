@@ -12,12 +12,12 @@ namespace BankApp.Client.ViewModels
     {
         public Observable<RegisterState> State { get; private set; }
 
-        private readonly ApiService _apiService;
+        private readonly BankApp.Client.Services.Interfaces.IAuthService _authService;
 
-        public RegisterViewModel(ApiService apiService)
+        public RegisterViewModel(BankApp.Client.Services.Interfaces.IAuthService authService)
         {
             State = new Observable<RegisterState>(RegisterState.Idle);
-            _apiService = apiService;
+            _authService = authService;
         }
 
         public async void Register(string email, string password, string confirmPassword, string fullName)
@@ -41,8 +41,7 @@ namespace BankApp.Client.ViewModels
                     FullName = fullName
                 };
 
-                RegisterResponse? response = await _apiService.PostAsync<RegisterRequest, RegisterResponse>(
-                    "/api/auth/register", request);
+                RegisterResponse? response = await _authService.RegisterAsync(request);
 
                 if (response == null)
                 {
@@ -98,17 +97,13 @@ namespace BankApp.Client.ViewModels
                         ProviderToken = loginResult.IdentityToken
                     };
 
-                    LoginResponse? response = await _apiService.PostAsync<OAuthLoginRequest, LoginResponse>(
-                        "/api/auth/oauth-login", apiRequest);
+                    LoginResponse? response = await _authService.OAuthLoginAsync(apiRequest);
 
                     if (response == null || !response.Success)
                     {
                         SetState(State, RegisterState.Error);
                         return;
                     }
-
-                    _apiService.SetToken(response.Token!);
-                    _apiService.SetCurrentUserId(response.UserId!.Value);
 
                     SetState(State, RegisterState.AutoLoggedIn);
                 }

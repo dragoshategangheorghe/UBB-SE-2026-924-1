@@ -22,7 +22,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new DashboardViewModel(App.ApiService);
+            _viewModel = new DashboardViewModel(App.DashboardService);
             _viewModel.State.AddObserver(this);
             _viewModel.LoadDashboard();
         }

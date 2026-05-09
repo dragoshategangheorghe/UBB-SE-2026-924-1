@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using BankApp.Server.Services.Interfaces;
 using BankApp.Models.DTOs.Profile;
 using BankApp.Models.Entities;
+using BankApp.Server.Repositories.Interfaces;
+using BankApp.Server.Services.Infrastructure.Interfaces;
+using BankApp.Server.Utilities;
 
 namespace BankApp.Server.Controllers
 {
@@ -9,10 +11,13 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class ProfileController : ControllerBase
     {
-        private readonly IProfileService profileService;
-        public ProfileController(IProfileService profileService)
+        private readonly IUserRepository userRepository;
+        private readonly IHashService hashService;
+
+        public ProfileController(IUserRepository userRepository, IHashService hashService)
         {
-            this.profileService = profileService;
+            this.userRepository = userRepository;
+            this.hashService = hashService;
         }
         private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
 
@@ -22,7 +27,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            User? user = profileService.GetUserById(userId);
+            User? user = userRepository.FindById(userId);
             if (user == null)
             {
                 return NotFound(new GetProfileResponse(false, "User not found."));
@@ -38,14 +43,38 @@ namespace BankApp.Server.Controllers
             int userId = GetAuthenticatedUserId();
             request.UserId = userId; // override whatever the client sent
 
-            UpdateProfileResponse response = profileService.UpdatePersonalInfo(request);
-
-            if (!response.Success)
+            if (request.UserId == null)
             {
-                return BadRequest(response);
+                return BadRequest(new UpdateProfileResponse(false, "Something went wrong. Please try again."));
             }
 
-            return Ok(response);
+            User? user = userRepository.FindById(userId);
+            if (user == null)
+            {
+                return BadRequest(new UpdateProfileResponse(false, "User not found."));
+            }
+
+            if (request.PhoneNumber != null)
+            {
+                if (!ValidationUtil.IsValidPhoneNumber(request.PhoneNumber))
+                {
+                    return BadRequest(new UpdateProfileResponse(false, "Invalid phone number."));
+                }
+
+                user.PhoneNumber = request.PhoneNumber;
+            }
+
+            if (request.Address != null)
+            {
+                user.Address = request.Address;
+            }
+
+            if (!userRepository.UpdateUser(user))
+            {
+                return BadRequest(new UpdateProfileResponse(false, "Could not update user."));
+            }
+
+            return Ok(new UpdateProfileResponse(true, "User profile updated successfully."));
         }
 
         // PUT: api/profile/password
@@ -55,14 +84,20 @@ namespace BankApp.Server.Controllers
             int userId = GetAuthenticatedUserId();
             request.UserId = userId; // override whatever the client sent
 
-            ChangePasswordResponse response = profileService.ChangePassword(request);
-
-            if (!response.Success)
+            User? user = userRepository.FindById(request.UserId);
+            if (user == null)
             {
-                return BadRequest(response);
+                return BadRequest(new ChangePasswordResponse(false, "User not found."));
             }
 
-            return Ok(response);
+            if (!hashService.Verify(request.CurrentPassword, user.PasswordHash))
+            {
+                return BadRequest(new ChangePasswordResponse(false, "Current password is incorrect. Please try again."));
+            }
+
+            user.PasswordHash = hashService.GetHash(request.NewPassword);
+            userRepository.UpdatePassword(user.Id, user.PasswordHash);
+            return Ok(new ChangePasswordResponse(true, "Password changed successfully."));
         }
 
         // GET: api/profile/oauthlinks
@@ -71,7 +106,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            List<OAuthLink> links = profileService.GetOAuthLinks(userId);
+            List<OAuthLink> links = userRepository.GetLinkedProviders(userId);
 
             if (links.Count == 0)
             {
@@ -87,7 +122,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            List<NotificationPreference> prefs = profileService.GetNotificationPreferences(userId);
+            List<NotificationPreference> prefs = userRepository.GetNotificationPreferences(userId);
 
             if (prefs.Count == 0)
             {
@@ -103,7 +138,7 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.UpdateNotificationPreferences(userId, prefs);
+            bool success = userRepository.UpdateNotificationPreferences(userId, prefs);
 
             if (!success)
             {
@@ -119,7 +154,13 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.VerifyPassword(userId, password);
+            User? user = userRepository.FindById(userId);
+            if (user == null)
+            {
+                return BadRequest(false);
+            }
+
+            bool success = hashService.Verify(password, user.PasswordHash);
 
             if (!success)
             {
@@ -135,7 +176,15 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.Enable2FA(userId, request.Method);
+            User? user = userRepository.FindById(userId);
+            if (user == null)
+            {
+                return BadRequest(new Toggle2FAResponse { Success = false });
+            }
+
+            user.Is2FAEnabled = true;
+            user.Preferred2FAMethod = request.Method.ToString();
+            bool success = userRepository.UpdateUser(user);
 
             if (!success)
             {
@@ -151,7 +200,15 @@ namespace BankApp.Server.Controllers
         {
             int userId = GetAuthenticatedUserId();
 
-            bool success = profileService.Disable2FA(userId);
+            User? user = userRepository.FindById(userId);
+            if (user == null)
+            {
+                return BadRequest(new Toggle2FAResponse { Success = false });
+            }
+
+            user.Is2FAEnabled = false;
+            user.Preferred2FAMethod = null;
+            bool success = userRepository.UpdateUser(user);
 
             if (!success)
             {
