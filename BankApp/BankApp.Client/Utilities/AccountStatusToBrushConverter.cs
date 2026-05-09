@@ -17,10 +17,10 @@ public class AccountStatusToBrushConverter : IValueConverter
     private static readonly Color ClosedColor = Color.FromArgb(FullAlpha, 229, 57, 53);
     private static readonly Color MaturedColor = Color.FromArgb(FullAlpha, 30, 136, 229);
 
-    private static readonly SolidColorBrush ActiveBrush = new(ActiveColor);
-    private static readonly SolidColorBrush ClosedBrush = new(ClosedColor);
-    private static readonly SolidColorBrush MaturedBrush = new(MaturedColor);
-    private static readonly SolidColorBrush DefaultBrush = new(Colors.Gray);
+    private static readonly SolidColorBrush ActiveBrush = new SolidColorBrush(ActiveColor);
+    private static readonly SolidColorBrush ClosedBrush = new SolidColorBrush(ClosedColor);
+    private static readonly SolidColorBrush MaturedBrush = new SolidColorBrush(MaturedColor);
+    private static readonly SolidColorBrush DefaultBrush = new SolidColorBrush(Colors.Gray);
 
     /// <summary>
     /// Converts an account status value to a <see cref="SolidColorBrush"/>.

@@ -96,10 +96,10 @@ namespace BankApp.Client.Views
 
         private void ClearForm()
         {
-            FullNameBox.Text = "";
-            EmailBox.Text = "";
-            PasswordBox.Password = "";
-            ConfirmPasswordBox.Password = "";
+            FullNameBox.Text = string.Empty;
+            EmailBox.Text = string.Empty;
+            PasswordBox.Password = string.Empty;
+            ConfirmPasswordBox.Password = string.Empty;
         }
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)

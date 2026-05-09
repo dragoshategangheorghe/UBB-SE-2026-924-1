@@ -86,24 +86,20 @@ namespace BankApp.Client.Views
 
         private void SetEditingEnabled(bool enabled)
         {
-            // FullNameBox.IsEnabled = enabled;
             PhoneBox.IsEnabled = enabled;
             AddressBox.IsEnabled = enabled;
             SaveButton.IsEnabled = enabled;
 
             PhoneBox.IsReadOnly = !enabled;
             AddressBox.IsReadOnly = !enabled;
-            // FullNameBox.IsReadOnly = !enabled;
 
             PhoneBox.Opacity = enabled ? 1.0 : 0.6;
             AddressBox.Opacity = enabled ? 1.0 : 0.6;
-            // FullNameBox.Opacity = !enabled ? 1.0 : 0.6;
 
             if (enabled)
             {
                 PhoneBox.Focus(FocusState.Programmatic);
                 AddressBox.Focus(FocusState.Programmatic);
-                // FullNameBox.Focus(FocusState.Programmatic);
             }
         }
 
@@ -448,8 +444,6 @@ namespace BankApp.Client.Views
                     // Ignore Loading and UpdateSuccess so the screen doesn't wipe and redraw!
                     return;
                 }
-
-                // ----------------------------------------------------------------------------
 
                 switch (state)
                 {

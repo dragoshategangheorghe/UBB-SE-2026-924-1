@@ -12,7 +12,7 @@ namespace BankApp.Client.ViewModels
     {
         private readonly IProfileService _profileService;
         private bool _disposed;
-        
+
         public Observable<ProfileState> State { get; private set; }
         public ProfileInfo ProfileInfo { get; private set; }
         public List<OAuthLink> OAuthLinks { get; private set; }
@@ -118,7 +118,6 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
         public async Task<bool> ChangePassword(string currentPassword, string newPassword)
         {
             try
@@ -203,7 +202,6 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
         public Task<bool> LinkOAuth(string provider)
         {
             try
@@ -236,7 +234,6 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
         public Task<bool> UnlinkOAuth(string provider)
         {
             try
@@ -252,13 +249,14 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
         public async Task<bool> UpdateNotificationPreferences(List<NotificationPreference> preferences)
         {
             try
             {
                 if (preferences == null || preferences.Count == 0)
+                {
                     return false;
+                }
 
                 State.SetValue(ProfileState.Loading);
 
