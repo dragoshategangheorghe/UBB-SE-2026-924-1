@@ -1,5 +1,8 @@
 using BankApp.Server.Configuration;
 using BankApp.Server.DataAccess;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using BankApp.Server.DataAccess.Implementations;
 using BankApp.Server.DataAccess.Interfaces;
 using BankApp.Server.Middleware;
@@ -106,7 +109,17 @@ app.UseExceptionHandler(applicationBuilder => applicationBuilder.Run(async conte
 {
     context.Response.StatusCode = 500;
     context.Response.ContentType = "application/json";
-    await context.Response.WriteAsJsonAsync(new { error = "Something went wrong." });
+    IHostEnvironment env = context.RequestServices.GetRequiredService<IHostEnvironment>();
+    IExceptionHandlerFeature? feature = context.Features.Get<IExceptionHandlerFeature>();
+    Exception? ex = feature?.Error;
+    if (env.IsDevelopment() && ex != null)
+    {
+        await context.Response.WriteAsJsonAsync(new { error = "Something went wrong.", detail = ex.Message });
+    }
+    else
+    {
+        await context.Response.WriteAsJsonAsync(new { error = "Something went wrong." });
+    }
 }));
 
 if (app.Environment.IsDevelopment())

@@ -329,4 +329,3 @@ CREATE TABLE UserCardPreference
     UpdatedAt DATETIME2 NOT NULL CONSTRAINT DF_UserCardPreference_UpdatedAt DEFAULT GETUTCDATE(),
     CONSTRAINT FK_UserCardPreference_User FOREIGN KEY (UserId) REFERENCES [User](Id)
 );
-

@@ -67,6 +67,51 @@ namespace BankApp.Client.Utilities
             }
         }
 
+        /// <summary>
+        /// For endpoints that return HTTP 400 with a typed JSON body on validation/business failure (e.g. auth login/register).
+        /// </summary>
+        public async Task<TResponse?> PostAllowBadRequestAsync<TRequest, TResponse>(string endpoint, TRequest data)
+        {
+            using HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data);
+            string json = await response.Content.ReadAsStringAsync();
+            TResponse? parsed = DeserializeWebJson<TResponse>(json);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return parsed;
+            }
+
+            if (response.StatusCode == HttpStatusCode.BadRequest && parsed != null)
+            {
+                return parsed;
+            }
+
+            string truncated = json.Length > 2000 ? json[..2000] + "…" : json;
+            throw new HttpRequestException(
+                $"Request to '{endpoint}' failed: {(int)response.StatusCode} {response.StatusCode}. Body: {truncated}",
+                null,
+                response.StatusCode);
+        }
+
+        private static T? DeserializeWebJson<T>(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return default;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<T>(
+                    json,
+                    new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            }
+            catch (JsonException)
+            {
+                return default;
+            }
+        }
+
         public async Task<TResponse?> GetAsync<TResponse>(string endpoint)
         {
             HttpResponseMessage response = await _httpClient.GetAsync(endpoint);

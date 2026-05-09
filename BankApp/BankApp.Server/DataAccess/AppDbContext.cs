@@ -78,6 +78,32 @@ namespace BankApp.Server.DataAccess
         {
             base.OnModelCreating(modelBuilder);
 
+            // Names match DatabaseSchema/BankAppDb_creation.sql. EF defaults would use Users, Sessions, etc.
+            modelBuilder.Entity<User>().ToTable("User");
+            modelBuilder.Entity<Session>().ToTable("Session");
+            modelBuilder.Entity<OAuthLink>().ToTable("OAuthLink");
+            modelBuilder.Entity<Account>().ToTable("Account");
+            modelBuilder.Entity<Card>().ToTable("Card");
+            modelBuilder.Entity<Category>().ToTable("Category");
+            modelBuilder.Entity<Transaction>().ToTable("Transaction");
+            modelBuilder.Entity<Notification>().ToTable("Notification");
+            modelBuilder.Entity<NotificationPreference>().ToTable("NotificationPreference");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetToken");
+            modelBuilder.Entity<TransactionCategoryOverride>().ToTable("TransactionCategoryOverride");
+            modelBuilder.Entity<UserCardPreference>().ToTable("UserCardPreference");
+            modelBuilder.Entity<Loan>().ToTable("Loan");
+            modelBuilder.Entity<LoanApplication>().ToTable("LoanApplication");
+            modelBuilder.Entity<AmortizationRow>().ToTable("AmortizationRow");
+            modelBuilder.Entity<SavingsAccount>().ToTable("SavingsAccount");
+            modelBuilder.Entity<SavingsTransaction>().ToTable("SavingsTransaction");
+            modelBuilder.Entity<AutoDeposit>().ToTable("AutoDeposit");
+            modelBuilder.Entity<Portfolio>().ToTable("Portfolio");
+            modelBuilder.Entity<InvestmentHolding>().ToTable("InvestmentHolding");
+            modelBuilder.Entity<InvestmentTransaction>().ToTable("InvestmentTransaction");
+            modelBuilder.Entity<ChatSession>().ToTable("ChatSession");
+            modelBuilder.Entity<ChatMessage>().ToTable("ChatMessage");
+            modelBuilder.Entity<ChatAttachment>().ToTable("ChatAttachment");
+
             modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasOne(a => a.User)
