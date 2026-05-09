@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
+    <ProjectReference Include="..\BankApp.Server\BankApp.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\AmortizationScheduleView.xaml">

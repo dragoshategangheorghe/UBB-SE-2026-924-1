@@ -1,5 +1,6 @@
 ﻿using BankApp.Models.Features.Loans;
 using BankApp.Server.Services.Implementations;
+using BankApp.Server.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
@@ -8,12 +9,14 @@ namespace BankApp.Server.Controllers
     [Route("api/loans/repayment-progress")]
     public class LoanPresentationController : ControllerBase
     {
-        private readonly LoanPresentationService _loanPresentationService = new();
+        private readonly LoanPresentationService loanPresentationService = new();
 
         [HttpPost]
         public IActionResult GetRepaymentProgress([FromBody] Loan loan)
         {
-            double progress = _loanPresentationService.GetRepaymentProgress(loan);
+            double progress = (double)AmortizationCalculator.ComputeRepaymentProgress(
+                loan.Principal,
+                loan.OutstandingBalance);
             return Ok(progress);
         }
     }

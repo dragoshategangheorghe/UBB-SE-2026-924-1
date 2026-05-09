@@ -7,9 +7,7 @@ namespace BankApp.Server.Services.Implementations
     {
         public double GetRepaymentProgress(Loan loan)
         {
-            return (double)AmortizationCalculator.ComputeRepaymentProgress(
-                loan.Principal,
-                loan.OutstandingBalance);
+            return proxyLoanPresentationRepository.GetRepaymentProgress(loan);
         }
     }
 }
