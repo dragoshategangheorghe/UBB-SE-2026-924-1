@@ -1,4 +1,8 @@
-﻿using BankApp.Models.DTOs.Savings;
+﻿/*
+NOTE: Same as statistics controller, this has no dependencies on any other repo that's not there (no repo at all from what I see)
+So just work with the service in the client, getting the Funding things directly from the VM, right?
+
+using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
 using BankApp.Server.Services.Implementations;
@@ -81,3 +85,5 @@ namespace BankApp.Server.Controllers
         }
     }
 }
+
+*/
