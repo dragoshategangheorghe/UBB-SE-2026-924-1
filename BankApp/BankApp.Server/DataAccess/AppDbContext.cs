@@ -139,6 +139,9 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<NotificationPreference>(entity =>
             {
+                entity.Property(p => p.Category)
+                    .HasConversion<string>();
+
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.NotificationPreferences)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);

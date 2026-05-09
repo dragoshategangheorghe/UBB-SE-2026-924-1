@@ -66,7 +66,9 @@ namespace BankApp.Client.Views
                         break;
 
                     case RegisterState.Error:
-                        ShowError("Something went wrong. Please try again.");
+                        ShowError(string.IsNullOrWhiteSpace(_viewModel.RegistrationErrorDetail)
+                            ? "Something went wrong. Please try again."
+                            : _viewModel.RegistrationErrorDetail);
                         break;
                 }
             });

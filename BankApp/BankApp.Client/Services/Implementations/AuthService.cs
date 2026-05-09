@@ -1,7 +1,8 @@
+using System.Threading.Tasks;
+
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Auth;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Implementations
 {
@@ -22,7 +23,7 @@ namespace BankApp.Client.Services.Implementations
 
         public async Task<LoginResponse?> LoginAsync(LoginRequest request)
         {
-            LoginResponse? response = await _apiService.PostAsync<LoginRequest, LoginResponse>("/api/auth/login", request);
+            LoginResponse? response = await _apiService.PostAllowBadRequestAsync<LoginRequest, LoginResponse>("/api/auth/login", request);
             if (response?.Success != true)
             {
                 return response;
@@ -45,7 +46,7 @@ namespace BankApp.Client.Services.Implementations
 
         public async Task<LoginResponse?> OAuthLoginAsync(OAuthLoginRequest request)
         {
-            LoginResponse? response = await _apiService.PostAsync<OAuthLoginRequest, LoginResponse>("/api/auth/oauth-login", request);
+            LoginResponse? response = await _apiService.PostAllowBadRequestAsync<OAuthLoginRequest, LoginResponse>("/api/auth/oauth-login", request);
             if (response?.Success != true)
             {
                 return response;
@@ -68,12 +69,12 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<RegisterResponse?> RegisterAsync(RegisterRequest request)
         {
-            return _apiService.PostAsync<RegisterRequest, RegisterResponse>("/api/auth/register", request);
+            return _apiService.PostAllowBadRequestAsync<RegisterRequest, RegisterResponse>("/api/auth/register", request);
         }
 
         public async Task<LoginResponse?> VerifyOtpAsync(VerifyOTPRequest request)
         {
-            LoginResponse? response = await _apiService.PostAsync<VerifyOTPRequest, LoginResponse>("/api/auth/verify-otp", request);
+            LoginResponse? response = await _apiService.PostAllowBadRequestAsync<VerifyOTPRequest, LoginResponse>("/api/auth/verify-otp", request);
             if (response?.Success == true && !string.IsNullOrWhiteSpace(response.Token))
             {
                 _apiService.SetToken(response.Token);

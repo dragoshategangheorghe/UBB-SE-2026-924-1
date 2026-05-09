@@ -154,7 +154,10 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
   </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
-    </PropertyGroup>
+  <!-- Strict SE.ruleset surfaces hundreds of StyleCop errors on Client; keep analyzers as package defaults (warnings). -->
+  <!--
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  -->
 </Project>

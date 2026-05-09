@@ -14,6 +14,11 @@ namespace BankApp.Client.ViewModels
 
         private readonly BankApp.Client.Services.Interfaces.IAuthService _authService;
 
+        /// <summary>
+        /// Server or network message for <see cref="RegisterState.Error"/> (shown in the UI when set).
+        /// </summary>
+        public string? RegistrationErrorDetail { get; private set; }
+
         public RegisterViewModel(BankApp.Client.Services.Interfaces.IAuthService authService)
         {
             State = new Observable<RegisterState>(RegisterState.Idle);
@@ -30,6 +35,7 @@ namespace BankApp.Client.ViewModels
                 return;
             }
 
+            RegistrationErrorDetail = null;
             SetState(State, RegisterState.Loading);
 
             try
@@ -45,6 +51,7 @@ namespace BankApp.Client.ViewModels
 
                 if (response == null)
                 {
+                    RegistrationErrorDetail = "No response from server. Is the API running (e.g. http://localhost:5024)?";
                     SetState(State, RegisterState.Error);
                     return;
                 }
@@ -57,8 +64,9 @@ namespace BankApp.Client.ViewModels
 
                 SetState(State, RegisterState.Success);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                RegistrationErrorDetail = ex.Message;
                 SetState(State, RegisterState.Error);
             }
         }
@@ -139,7 +147,10 @@ namespace BankApp.Client.ViewModels
             else if (response.Error != null && response.Error.Contains("Password"))
                 SetState(State, RegisterState.WeakPassword);
             else
+            {
+                RegistrationErrorDetail = response.Error;
                 SetState(State, RegisterState.Error);
+            }
         }
 
         public override void Dispose()

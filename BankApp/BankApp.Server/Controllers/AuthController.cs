@@ -227,7 +227,9 @@ namespace BankApp.Server.Controllers
                 PreferredLanguage = "en",
                 Is2FAEnabled = false,
                 IsLocked = false,
-                FailedLoginAttempts = 0
+                FailedLoginAttempts = 0,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             bool created = authRepository.CreateUser(user);

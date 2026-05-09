@@ -1,5 +1,5 @@
 ﻿using BankApp.Models.Entities;
-using BankApp.Models.Enums;
+using BankApp.Models.Extensions;
 using BankApp.Server.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +27,7 @@ namespace BankApp.Server.DataAccess
                 var preference = new NotificationPreference
                 {
                     User = user,
-                    Category = (NotificationType)Enum.Parse(typeof(NotificationType), category),
+                    Category = NotificationTypeExtensions.FromString(category),
                     PushEnabled = false,
                     EmailEnabled = false,
                     SmsEnabled = false
