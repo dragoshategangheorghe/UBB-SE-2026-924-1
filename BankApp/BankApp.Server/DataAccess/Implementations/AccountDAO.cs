@@ -6,11 +6,11 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class AccountDAO : IAccountDAO
     {
-        private readonly AppDbContext dbContext;
+        private readonly AppDbContext _dbContext;
 
         public AccountDAO(AppDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            this._dbContext = dbContext;
         }
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace BankApp.Server.DataAccess.Implementations
         /// </summary>
         public Account? FindById(int id)
         {
-            return dbContext.Accounts
+            return _dbContext.Accounts
                 .Include(a => a.User)
                 .Include(a => a.Cards)
                 .Include(a => a.Transactions)
@@ -30,7 +30,7 @@ namespace BankApp.Server.DataAccess.Implementations
         /// </summary>
         public List<Account> FindByUserId(int userId)
         {
-            return dbContext.Accounts
+            return _dbContext.Accounts
                 .Include(a => a.User)
                 .Where(a => a.User.Id == userId)
                 .ToList();

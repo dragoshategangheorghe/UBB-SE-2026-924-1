@@ -56,7 +56,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 //string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 //builder.Services.AddDbContext<AppDbContext>(_ => new AppDbContext(connectionString!));
-//builder.Services.AddDbContext<BankAppContext>(options => options.UseSqlServer(connectionString!));
+//builder.Services.AddDbContext<BankAppContext>(_options => _options.UseSqlServer(connectionString!));
 
 // --- DATA ACCESS OBJECTS ---
 builder.Services.AddScoped<IUserDAO, UserDAO>();

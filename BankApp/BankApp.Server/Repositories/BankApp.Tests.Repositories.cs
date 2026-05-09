@@ -15,7 +15,7 @@ public class UserRepositoryTests
     private readonly Mock<IOAuthLinkDAO> oauthDaoMock;
     private readonly Mock<INotificationPreferenceDAO> notifDaoMock;
 
-    private readonly UserRepository userRepository;
+    private readonly UserRepository _userRepository;
 
     public UserRepositoryTests()
     {
@@ -24,7 +24,7 @@ public class UserRepositoryTests
         oauthDaoMock = new Mock<IOAuthLinkDAO>();
         notifDaoMock = new Mock<INotificationPreferenceDAO>();
 
-        userRepository = new UserRepository(
+        _userRepository = new UserRepository(
             userDaoMock.Object,
             sessionDaoMock.Object,
             oauthDaoMock.Object,
@@ -37,7 +37,7 @@ public class UserRepositoryTests
         var user = new User { Id = 1 };
         userDaoMock.Setup(d => d.Update(user)).Returns(true);
 
-        var result = userRepository.UpdateUser(user);
+        var result = _userRepository.UpdateUser(user);
 
         Assert.True(result);
     }
@@ -48,7 +48,7 @@ public class UserRepositoryTests
         var user = new User { Id = 1 };
         userDaoMock.Setup(d => d.Update(user)).Returns(true);
 
-        var result = userRepository.UpdateUser(user);
+        var result = _userRepository.UpdateUser(user);
 
         Assert.False(result);
     }
@@ -60,7 +60,7 @@ public class UserRepositoryTests
         var sessions = new List<Session> { new Session { Id = 1 } };
         sessionDaoMock.Setup(d => d.FindByUserId(1)).Returns(sessions);
 
-        var result = userRepository.GetActiveSessions(1);
+        var result = _userRepository.GetActiveSessions(1);
 
         Assert.Single(result);
     }
@@ -68,7 +68,7 @@ public class UserRepositoryTests
     [Fact]
     public void DeleteOAuthLink_CallsDao()
     {
-        userRepository.DeleteOAuthLink(10);
+        _userRepository.DeleteOAuthLink(10);
 
         oauthDaoMock.Verify(d => d.Delete(10), Times.Once);
     }
@@ -81,7 +81,7 @@ public class UserRepositoryTests
 
         notifDaoMock.Setup(d => d.FindByUserId(1)).Returns(prefs);
 
-        var result = userRepository.GetNotificationPreferences(1);
+        var result = _userRepository.GetNotificationPreferences(1);
 
         Assert.Single(result);
     }
@@ -93,7 +93,7 @@ public class UserRepositoryTests
 
         notifDaoMock.Setup(d => d.Update(1, prefs)).Returns(true);
 
-        var result = userRepository.UpdateNotificationPreferences(1, prefs);
+        var result = _userRepository.UpdateNotificationPreferences(1, prefs);
 
         Assert.True(result);
     }

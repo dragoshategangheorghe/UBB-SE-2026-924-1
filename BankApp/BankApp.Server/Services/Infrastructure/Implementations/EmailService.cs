@@ -1,16 +1,15 @@
-﻿using System.Net;
+﻿using BankApp.Server.Services.Infrastructure.Interfaces;
+using System.Net;
 using System.Net.Mail;
-using BankApp.Server.Services.Infrastructure.Interfaces;
-using Microsoft.Extensions.Configuration;
 
 namespace BankApp.Server.Services.Infrastructure.Implementations
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration config;
+        private readonly IConfiguration _config;
         public EmailService(IConfiguration config)
         {
-            this.config = config;
+            this._config = config;
         }
 
         public void SendLockNotification(string email)
@@ -45,11 +44,11 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
         {
             try
             {
-                string host = config["Email:SmtpHost"] ?? throw new Exception("SMTP Host is missing.");
-                int port = int.Parse(config["Email:SmtpPort"] ?? "587");
-                string user = config["Email:SmtpUser"] ?? throw new Exception("SMTP User is missing.");
-                string pass = config["Email:SmtpPass"] ?? throw new Exception("SMTP Password is missing.");
-                string from = config["Email:FromAddress"] ?? user;
+                string host = _config["Email:SmtpHost"] ?? throw new Exception("SMTP Host is missing.");
+                int port = int.Parse(_config["Email:SmtpPort"] ?? "587");
+                string user = _config["Email:SmtpUser"] ?? throw new Exception("SMTP User is missing.");
+                string pass = _config["Email:SmtpPass"] ?? throw new Exception("SMTP Password is missing.");
+                string from = _config["Email:FromAddress"] ?? user;
                 using var client = new SmtpClient(host, port)
                 {
                     Credentials = new NetworkCredential(user, pass),

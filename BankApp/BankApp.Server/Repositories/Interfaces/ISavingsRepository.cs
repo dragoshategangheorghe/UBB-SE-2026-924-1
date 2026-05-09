@@ -83,7 +83,7 @@ namespace BankApp.Server.Repositories.Interfaces
         /// Gets available funding sources for the user.
         /// </summary>
         /// <param name="userId">The user identifier.</param>
-        /// <returns>The available funding source options.</returns>
+        /// <returns>The available funding source _options.</returns>
         Task<List<FundingSourceOption>> GetFundingSourcesAsync(int userId);
 
         /// <summary>

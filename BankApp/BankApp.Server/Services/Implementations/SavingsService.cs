@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
@@ -27,17 +23,17 @@ namespace BankApp.Server.Services.Implementations
 
         private const decimal DECIMAL_EARLY_CLOSURE_PENALTY = 0.02m;
         private const decimal DECIMAL_EARLY_WITHDRAWAL_PENALTY = 0.02m;
-        private readonly ISavingsRepository savingsRepository;
+        private readonly ISavingsRepository _savingsRepository;
 
         public SavingsService(ISavingsRepository savingsRepository)
         {
-            this.savingsRepository = savingsRepository;
+            this._savingsRepository = savingsRepository;
         }
 
         public async Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto dataTransferObject)
         {
             // Business rule: enforce max active accounts per user.
-            var activeAccountsList = await this.savingsRepository.GetSavingsAccountsByUserIdAsync(dataTransferObject.UserIdentificationNumber, false);
+            var activeAccountsList = await this._savingsRepository.GetSavingsAccountsByUserIdAsync(dataTransferObject.UserIdentificationNumber, false);
             if (activeAccountsList.Count >= MAX_ACTIVE_ACCOUNTS)
             {
                 throw new InvalidOperationException($"You cannot have more than {MAX_ACTIVE_ACCOUNTS} active savings accounts.");
@@ -70,7 +66,7 @@ namespace BankApp.Server.Services.Implementations
                 _ => DEFAULT_APY,
             };
 
-            return await this.savingsRepository.CreateSavingsAccountAsync(dataTransferObject, annualPercentageYield);
+            return await this._savingsRepository.CreateSavingsAccountAsync(dataTransferObject, annualPercentageYield);
         }
 
         public Task<List<SavingsAccount>> GetAccountsAsync(int userId, bool includesClosed = false)
@@ -80,7 +76,7 @@ namespace BankApp.Server.Services.Implementations
                 throw new ArgumentException("User ID must be a positive integer.");
             }
 
-            return this.savingsRepository.GetSavingsAccountsByUserIdAsync(userId, includesClosed);
+            return this._savingsRepository.GetSavingsAccountsByUserIdAsync(userId, includesClosed);
         }
 
         public async Task<DepositResponseDto> DepositAsync(int accountId, decimal amount, string source, int userId)
@@ -91,7 +87,7 @@ namespace BankApp.Server.Services.Implementations
             }
 
             // Business rule: validate ownership and status before deposit.
-            var userAccountsList = await this.savingsRepository.GetSavingsAccountsByUserIdAsync(userId, true);
+            var userAccountsList = await this._savingsRepository.GetSavingsAccountsByUserIdAsync(userId, true);
             var destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId)
                                      ?? throw new InvalidOperationException("Account not found or does not belong to you.");
 
@@ -106,12 +102,12 @@ namespace BankApp.Server.Services.Implementations
                 throw new InvalidOperationException("Cannot deposit into a matured account.");
             }
 
-            return await this.savingsRepository.DepositAsync(accountId, amount, source);
+            return await this._savingsRepository.DepositAsync(accountId, amount, source);
         }
 
         public async Task<ClosureResultDto> CloseAccountAsync(int accountId, int destinationAccountId, int userId)
         {
-            var userAccountsList = await this.savingsRepository.GetSavingsAccountsByUserIdAsync(userId, true);
+            var userAccountsList = await this._savingsRepository.GetSavingsAccountsByUserIdAsync(userId, true);
 
             var closingAccount = userAccountsList.FirstOrDefault(account => account.IdentificationNumber == accountId)
                                  ?? throw new InvalidOperationException("Account not found.");
@@ -139,7 +135,7 @@ namespace BankApp.Server.Services.Implementations
 
             var transferAmount = closingAccount.Balance - earlyClosurePenalty;
 
-            return await this.savingsRepository.CloseSavingsAccountAsync(
+            return await this._savingsRepository.CloseSavingsAccountAsync(
                 accountId,
                 destinationAccountId,
                 transferAmount,
@@ -157,7 +153,7 @@ namespace BankApp.Server.Services.Implementations
                 throw new ArgumentException("Withdrawal amount must be positive.");
             }
 
-            var userAccountsList = await this.savingsRepository.GetSavingsAccountsByUserIdAsync(userId, true);
+            var userAccountsList = await this._savingsRepository.GetSavingsAccountsByUserIdAsync(userId, true);
             var destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId)
                                      ?? throw new InvalidOperationException("Account not found or does not belong to you.");
 
@@ -185,7 +181,7 @@ namespace BankApp.Server.Services.Implementations
                 throw new InvalidOperationException("Insufficient balance after penalty.");
             }
 
-            return await this.savingsRepository.WithdrawAsync(
+            return await this._savingsRepository.WithdrawAsync(
                 accountId,
                 totalSumToWithdraw,
                 destinationLabel,
@@ -194,17 +190,17 @@ namespace BankApp.Server.Services.Implementations
 
         public Task<AutoDeposit?> GetAutoDepositAsync(int accountId)
         {
-            return this.savingsRepository.GetAutoDepositAsync(accountId);
+            return this._savingsRepository.GetAutoDepositAsync(accountId);
         }
 
         public Task SaveAutoDepositAsync(AutoDeposit autoDeposit)
         {
-            return this.savingsRepository.SaveAutoDepositAsync(autoDeposit);
+            return this._savingsRepository.SaveAutoDepositAsync(autoDeposit);
         }
 
         public Task<List<FundingSourceOption>> GetFundingSourcesAsync(int userId)
         {
-            return this.savingsRepository.GetFundingSourcesAsync(userId);
+            return this._savingsRepository.GetFundingSourcesAsync(userId);
         }
 
         public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsAsync(
@@ -223,7 +219,7 @@ namespace BankApp.Server.Services.Implementations
                 pageSize = DEFAULT_PAGE_SIZE;
             }
 
-            return await this.savingsRepository.GetTransactionsPagedAsync(
+            return await this._savingsRepository.GetTransactionsPagedAsync(
                 accountId,
                 filter,
                 page,
@@ -232,7 +228,7 @@ namespace BankApp.Server.Services.Implementations
 
         public async Task<List<SavingsAccount>> GetValidTransferDestinationsAsync(int currentAccountId)
         {
-            var openAccountsList = await this.savingsRepository.GetSavingsAccountsByUserIdAsync(currentAccountId);
+            var openAccountsList = await this._savingsRepository.GetSavingsAccountsByUserIdAsync(currentAccountId);
             return openAccountsList.Where(account => account.IdentificationNumber != currentAccountId).ToList();
         }
 

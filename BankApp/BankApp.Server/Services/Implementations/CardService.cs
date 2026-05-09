@@ -13,12 +13,12 @@ namespace BankApp.Server.Services.Implementations
         private const string ActiveCardStatus = "Active";
         private const string FrozenCardStatus = "Frozen";
 
-        private readonly ICardRepository cardRepository;
-        private readonly IUserRepository userRepository;
-        private readonly IHashService hashService;
-        private readonly IOTPService otpService;
-        private readonly IEmailService emailService;
-        private readonly TeamCOptions options;
+        private readonly ICardRepository _cardRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IHashService _hashService;
+        private readonly IOTPService _otpService;
+        private readonly IEmailService _emailService;
+        private readonly TeamCOptions _options;
 
         public CardService(
             ICardRepository cardRepository,
@@ -28,18 +28,18 @@ namespace BankApp.Server.Services.Implementations
             IEmailService emailService,
             IOptions<TeamCOptions> options)
         {
-            this.cardRepository = cardRepository;
-            this.userRepository = userRepository;
-            this.hashService = hashService;
-            this.otpService = otpService;
-            this.emailService = emailService;
-            this.options = options.Value;
+            this._cardRepository = cardRepository;
+            this._userRepository = userRepository;
+            this._hashService = hashService;
+            this._otpService = otpService;
+            this._emailService = emailService;
+            this._options = options.Value;
         }
 
         public GetCardsResponse GetCards(int userId)
         {
-            List<Card> cards = cardRepository.GetCardsByUserId(userId);
-            string sortOption = NormalizeSortOption(cardRepository.GetSortPreference(userId)?.SortOption);
+            List<Card> cards = _cardRepository.GetCardsByUserId(userId);
+            string sortOption = NormalizeSortOption(_cardRepository.GetSortPreference(userId)?.SortOption);
 
             return new GetCardsResponse
             {
@@ -72,7 +72,7 @@ namespace BankApp.Server.Services.Implementations
 
         public RevealCardResponse RevealSensitiveDetails(int userId, int cardId, RevealCardRequest request)
         {
-            User? user = userRepository.FindById(userId);
+            User? user = _userRepository.FindById(userId);
             Card? card = GetOwnedCard(userId, cardId);
 
             if (user == null)
@@ -93,7 +93,7 @@ namespace BankApp.Server.Services.Implementations
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(request.Password) || !hashService.Verify(request.Password, user.PasswordHash))
+            if (string.IsNullOrWhiteSpace(request.Password) || !_hashService.Verify(request.Password, user.PasswordHash))
             {
                 return new RevealCardResponse
                 {
@@ -112,11 +112,11 @@ namespace BankApp.Server.Services.Implementations
                         Success = false,
                         RequiresOtp = true,
                         Message = "OTP verification is required before revealing card details.",
-                        RevealDurationSeconds = options.CardRevealDurationSeconds
+                        RevealDurationSeconds = _options.CardRevealDurationSeconds
                     };
                 }
 
-                if (!otpService.VerifyTOTP(user.Id, request.OtpCode))
+                if (!_otpService.VerifyTOTP(user.Id, request.OtpCode))
                 {
                     return new RevealCardResponse
                     {
@@ -125,14 +125,14 @@ namespace BankApp.Server.Services.Implementations
                     };
                 }
 
-                otpService.InvalidateOTP(user.Id);
+                _otpService.InvalidateOTP(user.Id);
             }
 
             return new RevealCardResponse
             {
                 Success = true,
                 Message = "Sensitive card details revealed successfully.",
-                RevealDurationSeconds = options.CardRevealDurationSeconds,
+                RevealDurationSeconds = _options.CardRevealDurationSeconds,
                 SensitiveDetails = new SensitiveCardDetailsDto
                 {
                     CardNumber = card.CardNumber,
@@ -166,9 +166,9 @@ namespace BankApp.Server.Services.Implementations
                     return CreateCommandFailure("Spending limit must be a non-negative value.");
                 }
 
-                if (request.SpendingLimit.Value > options.MaximumSpendingLimit)
+                if (request.SpendingLimit.Value > _options.MaximumSpendingLimit)
                 {
-                    return CreateCommandFailure($"Spending limit cannot exceed {options.MaximumSpendingLimit:0.##}.");
+                    return CreateCommandFailure($"Spending limit cannot exceed {_options.MaximumSpendingLimit:0.##}.");
                 }
             }
 
@@ -176,13 +176,13 @@ namespace BankApp.Server.Services.Implementations
             bool isOnlineEnabled = request.IsOnlinePaymentsEnabled ?? card.IsOnlineEnabled;
             bool isContactlessEnabled = request.IsContactlessPaymentsEnabled ?? card.IsContactlessEnabled;
 
-            bool updated = cardRepository.UpdateSettings(cardId, spendingLimit, isOnlineEnabled, isContactlessEnabled);
+            bool updated = _cardRepository.UpdateSettings(cardId, spendingLimit, isOnlineEnabled, isContactlessEnabled);
             if (!updated)
             {
                 return CreateCommandFailure("Failed to update card settings.");
             }
 
-            Card refreshedCard = cardRepository.GetCardById(cardId) !;
+            Card refreshedCard = _cardRepository.GetCardById(cardId)!;
             return new CardCommandResponse
             {
                 Success = true,
@@ -199,7 +199,7 @@ namespace BankApp.Server.Services.Implementations
                 return CreateCommandFailure("Unsupported card sort option.");
             }
 
-            bool updated = cardRepository.SaveSortPreference(userId, sortOption);
+            bool updated = _cardRepository.SaveSortPreference(userId, sortOption);
             if (!updated)
             {
                 return CreateCommandFailure("Failed to update card sort preference.");
@@ -230,13 +230,13 @@ namespace BankApp.Server.Services.Implementations
                 };
             }
 
-            bool updated = cardRepository.UpdateStatus(cardId, status);
+            bool updated = _cardRepository.UpdateStatus(cardId, status);
             if (!updated)
             {
                 return CreateCommandFailure("Failed to update card status.");
             }
 
-            Card refreshedCard = cardRepository.GetCardById(cardId) !;
+            Card refreshedCard = _cardRepository.GetCardById(cardId)!;
             return new CardCommandResponse
             {
                 Success = true,
@@ -247,7 +247,7 @@ namespace BankApp.Server.Services.Implementations
 
         private Card? GetOwnedCard(int userId, int cardId)
         {
-            Card? card = cardRepository.GetCardById(cardId);
+            Card? card = _cardRepository.GetCardById(cardId);
             return card != null && card.User?.Id == userId ? card : null;
         }
 
@@ -288,11 +288,11 @@ namespace BankApp.Server.Services.Implementations
 
         private void SendRevealOtp(User user)
         {
-            string otp = otpService.GenerateTOTP(user.Id);
+            string otp = _otpService.GenerateTOTP(user.Id);
             if (string.IsNullOrWhiteSpace(user.Preferred2FAMethod) ||
                 string.Equals(user.Preferred2FAMethod, "Email", StringComparison.OrdinalIgnoreCase))
             {
-                emailService.SendOTPCode(user.Email, otp);
+                _emailService.SendOTPCode(user.Email, otp);
             }
         }
 

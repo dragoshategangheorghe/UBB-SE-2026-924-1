@@ -8,45 +8,45 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class TransactionsController : ControllerBase
     {
-        private readonly ITransactionHistoryService transactionHistoryService;
+        private readonly ITransactionHistoryService _transactionHistoryService;
 
         public TransactionsController(ITransactionHistoryService transactionHistoryService)
         {
-            this.transactionHistoryService = transactionHistoryService;
+            this._transactionHistoryService = transactionHistoryService;
         }
 
-        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
+        private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"]!;
 
         [HttpGet("filters")]
         public IActionResult GetFilterMetadata()
         {
-            return Ok(transactionHistoryService.GetFilterMetadata(GetAuthenticatedUserId()));
+            return Ok(_transactionHistoryService.GetFilterMetadata(GetAuthenticatedUserId()));
         }
 
         [HttpPost("history")]
         public IActionResult GetHistory([FromBody] TransactionHistoryRequest request)
         {
-            return Ok(transactionHistoryService.GetHistory(GetAuthenticatedUserId(), request));
+            return Ok(_transactionHistoryService.GetHistory(GetAuthenticatedUserId(), request));
         }
 
         [HttpGet("{transactionId:int}")]
         public IActionResult GetTransaction(int transactionId)
         {
-            TransactionDetailsResponse response = transactionHistoryService.GetTransaction(GetAuthenticatedUserId(), transactionId);
+            TransactionDetailsResponse response = _transactionHistoryService.GetTransaction(GetAuthenticatedUserId(), transactionId);
             return response.Success ? Ok(response) : NotFound(response);
         }
 
         [HttpPost("export")]
         public IActionResult ExportTransactions([FromBody] TransactionExportRequest request)
         {
-            TransactionExportResult exportResult = transactionHistoryService.ExportTransactions(GetAuthenticatedUserId(), request);
+            TransactionExportResult exportResult = _transactionHistoryService.ExportTransactions(GetAuthenticatedUserId(), request);
             return File(exportResult.Content, exportResult.ContentType, exportResult.FileName);
         }
 
         [HttpGet("{transactionId:int}/receipt")]
         public IActionResult ExportReceipt(int transactionId)
         {
-            TransactionExportResult exportResult = transactionHistoryService.ExportReceipt(GetAuthenticatedUserId(), transactionId);
+            TransactionExportResult exportResult = _transactionHistoryService.ExportReceipt(GetAuthenticatedUserId(), transactionId);
             if (exportResult.Content.Length == 0)
             {
                 return NotFound();

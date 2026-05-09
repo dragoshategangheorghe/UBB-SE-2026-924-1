@@ -4,14 +4,6 @@
 
 namespace BankApp.Client.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
     using BankApp.Client.Services.Implementations;
     using BankApp.Client.Services.Interfaces;
     using BankApp.Client.Utilities;
@@ -21,6 +13,14 @@ namespace BankApp.Client.ViewModels
     using BankApp.Models.Features.Loans;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Diagnostics;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public partial class LoansViewModel : ObservableObject
     {

@@ -7,21 +7,21 @@ namespace BankApp.Server.DataAccess
 {
     internal class NotificationPreferenceDAO : INotificationPreferenceDAO
     {
-        private AppDbContext appDbContext;
+        private AppDbContext _dbContext;
 
         public NotificationPreferenceDAO(AppDbContext appDbContext)
         {
-            this.appDbContext = appDbContext;
+            this._dbContext = appDbContext;
         }
 
         public bool Create(int userId, string category)
         {
             try
             {
-                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
-                if (appDbContext.Entry(user).State == EntityState.Detached)
+                var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (_dbContext.Entry(user).State == EntityState.Detached)
                 {
-                    appDbContext.Attach(user);
+                    _dbContext.Attach(user);
                 }
 
                 var preference = new NotificationPreference
@@ -33,8 +33,8 @@ namespace BankApp.Server.DataAccess
                     SmsEnabled = false
                 };
 
-                appDbContext.NotificationPreferences.Add(preference);
-                var rows = appDbContext.SaveChanges();
+                _dbContext.NotificationPreferences.Add(preference);
+                var rows = _dbContext.SaveChanges();
 
                 return rows > 0;
             }
@@ -46,7 +46,7 @@ namespace BankApp.Server.DataAccess
 
         public List<NotificationPreference> FindByUserId(int userId)
         {
-            return appDbContext.NotificationPreferences
+            return _dbContext.NotificationPreferences
                 .Include(p => p.User)
                 .Where(p => p.User.Id == userId)
                 .ToList();
@@ -56,20 +56,20 @@ namespace BankApp.Server.DataAccess
         {
             try
             {
-                var existing = appDbContext.NotificationPreferences
+                var existing = _dbContext.NotificationPreferences
                                            .Where(p => p.User.Id == userId);
 
-                appDbContext.NotificationPreferences.RemoveRange(existing);
+                _dbContext.NotificationPreferences.RemoveRange(existing);
 
-                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
-                if (appDbContext.Entry(user).State == EntityState.Detached)
+                var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (_dbContext.Entry(user).State == EntityState.Detached)
                 {
-                    appDbContext.Attach(user);
+                    _dbContext.Attach(user);
                 }
 
                 foreach (var preference in prefs)
                 {
-                    appDbContext.NotificationPreferences.Add(new NotificationPreference
+                    _dbContext.NotificationPreferences.Add(new NotificationPreference
                     {
                         User = user,
                         Category = preference.Category,
@@ -80,7 +80,7 @@ namespace BankApp.Server.DataAccess
                     });
                 }
 
-                appDbContext.SaveChanges();
+                _dbContext.SaveChanges();
                 return true;
             }
             catch

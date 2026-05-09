@@ -4,8 +4,6 @@ using BankApp.Models.Features.Loans;
 using BankApp.Server.DataAccess;
 using BankApp.Server.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BankApp.Server.Repositories.Implementations
 {
@@ -17,15 +15,15 @@ namespace BankApp.Server.Repositories.Implementations
         private const int EmptyCount = 0;
         private const int FirstIndex = 0;
 
-        private readonly AppDbContext dbContext;
+        private readonly AppDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoanRepository"/> class.
         /// </summary>
-        /// <param name="dbContext">The application's EF Core database context.</param>
+        /// <param name="dbContext">The application's EF Core database _dbContext.</param>
         public LoanRepository(AppDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            this._dbContext = dbContext;
         }
 
         /// <summary>
@@ -33,7 +31,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetAllLoansAsync()
         {
-            return await dbContext.Loans.AsNoTracking().ToListAsync();
+            return await _dbContext.Loans.AsNoTracking().ToListAsync();
         }
 
         /// <summary>
@@ -41,7 +39,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<Loan> GetLoanByIdAsync(int id)
         {
-            return await dbContext.Loans.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            return await _dbContext.Loans.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
         /// <summary>
@@ -49,7 +47,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetLoansByUserAsync(int userId)
         {
-            return await dbContext.Loans
+            return await _dbContext.Loans
                 .AsNoTracking()
                 .Where(x => EF.Property<int>(x, "UserId") == userId)
                 .ToListAsync();
@@ -60,7 +58,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetLoansByTypeAsync(LoanType loanType)
         {
-            return await dbContext.Loans
+            return await _dbContext.Loans
                 .AsNoTracking()
                 .Where(x => x.LoanType == loanType)
                 .ToListAsync();
@@ -71,7 +69,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetLoansByStatusAsync(LoanStatus loanStatus)
         {
-            return await dbContext.Loans
+            return await _dbContext.Loans
                 .AsNoTracking()
                 .Where(x => x.LoanStatus == loanStatus)
                 .ToListAsync();
@@ -87,14 +85,14 @@ namespace BankApp.Server.Repositories.Implementations
                 return;
             }
 
-            await using var transaction = await dbContext.Database.BeginTransactionAsync();
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
                 var loanId = rows[FirstIndex].LoanId;
-                var existingRows = dbContext.AmortizationRows.Where(x => x.LoanId == loanId);
-                dbContext.AmortizationRows.RemoveRange(existingRows);
-                await dbContext.AmortizationRows.AddRangeAsync(rows);
-                await dbContext.SaveChangesAsync();
+                var existingRows = _dbContext.AmortizationRows.Where(x => x.LoanId == loanId);
+                _dbContext.AmortizationRows.RemoveRange(existingRows);
+                await _dbContext.AmortizationRows.AddRangeAsync(rows);
+                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
@@ -109,7 +107,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<AmortizationRow>> GetAmortizationAsync(int loanId)
         {
-            return await dbContext.AmortizationRows
+            return await _dbContext.AmortizationRows
                 .AsNoTracking()
                 .Where(x => x.LoanId == loanId)
                 .OrderBy(x => x.InstallmentNumber)
@@ -132,8 +130,8 @@ namespace BankApp.Server.Repositories.Implementations
                 RejectionReason = null,
             };
 
-            dbContext.LoanApplications.Add(loanApplication);
-            await dbContext.SaveChangesAsync();
+            _dbContext.LoanApplications.Add(loanApplication);
+            await _dbContext.SaveChangesAsync();
             return loanApplication.UserId;
         }
 
@@ -145,7 +143,7 @@ namespace BankApp.Server.Repositories.Implementations
             LoanApplicationStatus loanApplicationStatus,
             string? reason)
         {
-            var application = await dbContext.LoanApplications.FirstOrDefaultAsync(x => x.UserId == id);
+            var application = await _dbContext.LoanApplications.FirstOrDefaultAsync(x => x.UserId == id);
             if (application == null)
             {
                 return;
@@ -153,7 +151,7 @@ namespace BankApp.Server.Repositories.Implementations
 
             application.ApplicationStatus = loanApplicationStatus;
             application.RejectionReason = reason;
-            await dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -161,8 +159,8 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<int> CreateLoanAsync(Loan loan)
         {
-            dbContext.Loans.Add(loan);
-            await dbContext.SaveChangesAsync();
+            _dbContext.Loans.Add(loan);
+            await _dbContext.SaveChangesAsync();
             return loan.Id;
         }
 
@@ -175,7 +173,7 @@ namespace BankApp.Server.Repositories.Implementations
             int newRemainingMonths,
             LoanStatus newStatus)
         {
-            var loan = await dbContext.Loans.FirstOrDefaultAsync(x => x.Id == id);
+            var loan = await _dbContext.Loans.FirstOrDefaultAsync(x => x.Id == id);
             if (loan == null)
             {
                 return;
@@ -184,7 +182,7 @@ namespace BankApp.Server.Repositories.Implementations
             loan.OutstandingBalance = newBalance;
             loan.RemainingMonths = newRemainingMonths;
             loan.LoanStatus = newStatus;
-            await dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
