@@ -1,6 +1,6 @@
 namespace BankApp.Client.Utilities
 {
-    public interface Observer<T>
+    public interface IAppObserver<T>
     {
         void Update(T value);
     }

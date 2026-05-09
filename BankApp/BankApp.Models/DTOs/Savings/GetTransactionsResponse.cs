@@ -4,19 +4,12 @@ namespace BankApp.Models.DTOs.Savings
 {
     public class GetTransactionsResponse
     {
-        public List<SavingsTransaction> Items { get; set; }
+        public List<SavingsTransaction> Items { get; set; } = new ();
 
         public int TotalCount { get; set; }
 
         public int Page { get; set; }
 
         public int PageSize { get; set; }
-    }
-
-    public class ValidationResponse
-    {
-        public bool IsValid { get; set; }
-
-        public string ErrorMessage { get; set; }
     }
 }
