@@ -1,5 +1,5 @@
-using BankApp.Models.DTOs.Statistics;
 using System.Threading.Tasks;
+using BankApp.Models.DTOs.Statistics;
 
 namespace BankApp.Client.Services.Interfaces
 {

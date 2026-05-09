@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
 using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Transactions;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Implementations
 {

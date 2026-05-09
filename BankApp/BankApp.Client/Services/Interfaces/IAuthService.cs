@@ -1,5 +1,5 @@
-using BankApp.Models.DTOs.Auth;
 using System.Threading.Tasks;
+using BankApp.Models.DTOs.Auth;
 
 namespace BankApp.Client.Services.Interfaces
 {

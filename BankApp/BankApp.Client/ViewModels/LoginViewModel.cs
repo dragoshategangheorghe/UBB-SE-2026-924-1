@@ -1,9 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Auth;
 using BankApp.Models.Enums;
 using Duende.IdentityModel.OidcClient;
-using System;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.ViewModels
 {

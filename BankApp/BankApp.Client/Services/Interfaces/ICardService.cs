@@ -1,5 +1,5 @@
-using BankApp.Models.DTOs.Cards;
 using System.Threading.Tasks;
+using BankApp.Models.DTOs.Cards;
 
 namespace BankApp.Client.Services.Interfaces
 {

@@ -1,9 +1,9 @@
-using BankApp.Client.ViewModels;
-using BankApp.Models.DTOs.Transactions;
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using BankApp.Client.ViewModels;
+using BankApp.Models.DTOs.Transactions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 

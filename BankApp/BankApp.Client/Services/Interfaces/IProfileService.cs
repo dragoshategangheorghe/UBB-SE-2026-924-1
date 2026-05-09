@@ -1,8 +1,8 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using BankApp.Models.DTOs.Profile;
 using BankApp.Models.Entities;
 using BankApp.Models.Enums;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Interfaces
 {

@@ -65,12 +65,16 @@ namespace BankApp.Client.ViewModels
             try
             {
                 int? userId = _authService.GetCurrentUserId();
-                if (userId == null) return;
+                if (userId == null)
+                {
+                    return;
+                }
+
                 await _authService.ResendOtpAsync(userId.Value);
             }
             catch (Exception)
             {
-                ;
+                // Ignore resend failures (network / server).
             }
         }
 

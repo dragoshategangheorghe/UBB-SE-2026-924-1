@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Interfaces
 {

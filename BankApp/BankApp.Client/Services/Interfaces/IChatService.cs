@@ -1,7 +1,7 @@
-using BankApp.Models.DTOs.Chat;
-using BankApp.Models.Features.Chat;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BankApp.Models.DTOs.Chat;
+using BankApp.Models.Features.Chat;
 
 namespace BankApp.Client.Services.Interfaces
 {

@@ -1,5 +1,5 @@
-using BankApp.Models.Features.Investments;
 using System.Threading.Tasks;
+using BankApp.Models.Features.Investments;
 
 namespace BankApp.Client.Services.Interfaces
 {

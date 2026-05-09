@@ -17,7 +17,6 @@ namespace BankApp.Client.ViewModels
     using CommunityToolkit.Mvvm.Input;
     using BankApp.Models.Enums;
 
-
     public partial class SavingsViewModel : BaseViewModel
     {
         private const int InitialPage = 1;
@@ -45,7 +44,7 @@ namespace BankApp.Client.ViewModels
 
         // ── Close Account Panel ──────────────────────────────────────────────
         [ObservableProperty]
-        private ObservableCollection<SavingsAccount> closeDestinationAccounts = new();
+        private ObservableCollection<SavingsAccount> closeDestinationAccounts = new ObservableCollection<SavingsAccount>();
 
         [ObservableProperty]
         private string closeResultMessage = string.Empty;
@@ -72,7 +71,7 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         private string depositSuccessMessage = string.Empty;
         [ObservableProperty]
-        private ObservableCollection<FundingSourceOption> fundingSources = new();
+        private ObservableCollection<FundingSourceOption> fundingSources = new ObservableCollection<FundingSourceOption>();
         [ObservableProperty]
         private bool hasExistingAutoDeposit;
         [ObservableProperty]
@@ -84,7 +83,7 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsEmpty))]
         [NotifyPropertyChangedFor(nameof(ShowAccountsList))]
-        private ObservableCollection<SavingsAccount> savingsAccounts = new();
+        private ObservableCollection<SavingsAccount> savingsAccounts = new ObservableCollection<SavingsAccount>();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LivePreview))]
@@ -151,7 +150,7 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         private string errorMessage;
         [ObservableProperty]
-        internal bool hasError;
+        private bool hasError;
 
         // ── Constructor ──────────────────────────────────-───────────────────
         public SavingsViewModel(ISavingsService savingsService)
@@ -167,7 +166,7 @@ namespace BankApp.Client.ViewModels
 
         public bool IsFixedDeposit => this.SelectedSavingsType == "FixedDeposit";
 
-        public Dictionary<string, string> FieldErrors { get; } = new();
+        public Dictionary<string, string> FieldErrors { get; } = new Dictionary<string, string>();
 
         public string LivePreview =>
             this.SelectedAccount == null

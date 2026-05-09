@@ -1,6 +1,6 @@
-using BankApp.Client.ViewModels;
 using System.ComponentModel;
 using System.Globalization;
+using BankApp.Client.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 

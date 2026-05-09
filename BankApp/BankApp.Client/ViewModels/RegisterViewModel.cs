@@ -1,10 +1,9 @@
-using BankApp.Client.Utilities;
-
-using BankApp.Models.Enums;
-using BankApp.Models.DTOs.Auth;
 using System;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
+using BankApp.Client.Utilities;
+using BankApp.Models.DTOs.Auth;
+using BankApp.Models.Enums;
 
 namespace BankApp.Client.ViewModels
 {
@@ -124,28 +123,46 @@ namespace BankApp.Client.ViewModels
 
         private RegisterState? ValidateLocally(string email, string password, string confirmPassword, string fullName)
         {
-            if (string.IsNullOrWhiteSpace(fullName)) { return RegisterState.Error; }
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                return RegisterState.Error;
+            }
 
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@")) { return RegisterState.InvalidEmail; }
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            {
+                return RegisterState.InvalidEmail;
+            }
 
             if (string.IsNullOrWhiteSpace(password) || password.Length < 8
                 || !password.Any(char.IsUpper)
                 || !password.Any(char.IsLower)
                 || !password.Any(char.IsDigit))
-                { return RegisterState.WeakPassword; }
+            {
+                return RegisterState.WeakPassword;
+            }
 
-            if (password != confirmPassword) { return RegisterState.PasswordMismatch; }
+            if (password != confirmPassword)
+            {
+                return RegisterState.PasswordMismatch;
+            }
+
             return null;
         }
 
         private void HandleRegisterError(RegisterResponse response)
         {
             if (response.Error != null && response.Error.Contains("already registered"))
+            {
                 SetState(State, RegisterState.EmailAlreadyExists);
+            }
             else if (response.Error != null && response.Error.Contains("email"))
+            {
                 SetState(State, RegisterState.InvalidEmail);
+            }
             else if (response.Error != null && response.Error.Contains("Password"))
+            {
                 SetState(State, RegisterState.WeakPassword);
+            }
             else
             {
                 RegistrationErrorDetail = response.Error;
