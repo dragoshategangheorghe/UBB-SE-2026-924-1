@@ -108,11 +108,7 @@ namespace BankApp.Server.Controllers
 
             List<OAuthLink> links = userRepository.GetLinkedProviders(userId);
 
-            if (links.Count == 0)
-            {
-                return NotFound(links);
-            }
-
+            // Empty list is normal — return 200 so clients do not treat "no links" as an error.
             return Ok(links);
         }
 
@@ -124,11 +120,7 @@ namespace BankApp.Server.Controllers
 
             List<NotificationPreference> prefs = userRepository.GetNotificationPreferences(userId);
 
-            if (prefs.Count == 0)
-            {
-                return NotFound(prefs);
-            }
-
+            // Empty list is normal — return 200 so profile load does not fail for new users.
             return Ok(prefs);
         }
 
