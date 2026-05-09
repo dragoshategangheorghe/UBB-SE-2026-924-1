@@ -74,6 +74,8 @@ namespace BankApp.Server.Controllers
             return Ok();
         }
 
+        // I think the return type is wrong here
+        // why is it returning an ActionResult<int> instead of an ActionResult<LoanApp..., string>?
         [HttpPost("apply")]
         public async Task<ActionResult<(LoanApplicationStatus Status, string? RejectionReason)>> SubmitLoanApplicationAsync([FromBody] LoanApplicationRequest loanApplicationRequest)
         {
