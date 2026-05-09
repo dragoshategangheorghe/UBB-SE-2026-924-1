@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using BankApp.Models.DTOs.Transactions;
 using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
@@ -15,7 +18,7 @@ namespace BankApp.Server.Services.Implementations
             this.transactionExportService = transactionExportService;
         }
 
-        public TransactionHistoryResponse GetHistory(int userId, TransactionHistoryRequest request)
+        public TransactionHistoryResponse GetHistory(TransactionHistoryRequest request)
         {
             TransactionHistoryRequest normalizedRequest = NormalizeRequest(request);
             List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
@@ -30,9 +33,9 @@ namespace BankApp.Server.Services.Implementations
             };
         }
 
-        public TransactionDetailsResponse GetTransaction(int userId, int transactionId)
+        public TransactionDetailsResponse GetTransaction(int transactionId)
         {
-            TransactionHistoryItemDto? transaction = transactionHistoryRepository.GetTransactionById(userId, transactionId);
+            TransactionHistoryItemDto? transaction = transactionHistoryRepository.GetTransactionById(transactionId);
             if (transaction == null)
             {
                 return new TransactionDetailsResponse
@@ -50,15 +53,15 @@ namespace BankApp.Server.Services.Implementations
             };
         }
 
-        public TransactionFilterMetadataResponse GetFilterMetadata(int userId)
+        public TransactionFilterMetadataResponse GetFilterMetadata()
         {
-            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUserId(userId);
+            List<TransactionHistoryItemDto> transactions = transactionHistoryRepository.GetTransactionsByUser();
 
             return new TransactionFilterMetadataResponse
             {
                 Success = true,
                 Message = "Transaction filters loaded successfully.",
-                Accounts = transactionHistoryRepository.GetAccountsByUserId(userId)
+                Accounts = transactionHistoryRepository.GetAccountsByUser()
                     .Select(account => new AccountFilterOptionDto
                     {
                         Id = account.Id,
@@ -67,7 +70,7 @@ namespace BankApp.Server.Services.Implementations
                     })
                     .OrderBy(account => account.Name, StringComparer.OrdinalIgnoreCase)
                     .ToList(),
-                Cards = transactionHistoryRepository.GetCardsByUserId(userId)
+                Cards = transactionHistoryRepository.GetCardsByUser()
                     .Select(card => new CardFilterOptionDto
                     {
                         Id = card.Id,
@@ -98,13 +101,13 @@ namespace BankApp.Server.Services.Implementations
 
         public TransactionExportResult ExportTransactions(int userId, TransactionExportRequest request)
         {
-            TransactionHistoryResponse history = GetHistory(userId, request);
+            TransactionHistoryResponse history = GetHistory(request);
             return transactionExportService.ExportStatement(history.Transactions, history.AppliedFilters, request.Format);
         }
 
         public TransactionExportResult ExportReceipt(int userId, int transactionId)
         {
-            TransactionDetailsResponse response = GetTransaction(userId, transactionId);
+            TransactionDetailsResponse response = GetTransaction(transactionId);
             if (!response.Success || response.Transaction == null)
             {
                 return new TransactionExportResult();

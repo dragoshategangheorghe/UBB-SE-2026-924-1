@@ -6,7 +6,7 @@ namespace BankApp.Server.Services.Interfaces
     {
         TransactionHistoryResponse GetHistory(int userId, TransactionHistoryRequest request);
         TransactionDetailsResponse GetTransaction(int userId, int transactionId);
-        TransactionFilterMetadataResponse GetFilterMetadata(int userId);
+        TransactionFilterMetadataResponse GetFilterMetadata();
         TransactionExportResult ExportTransactions(int userId, TransactionExportRequest request);
         TransactionExportResult ExportReceipt(int userId, int transactionId);
     }
