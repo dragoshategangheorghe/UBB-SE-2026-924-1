@@ -41,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BankApp.Client\BankApp.Client.csproj" />
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
     <ProjectReference Include="..\BankApp.Server\BankApp.Server.csproj" />
   </ItemGroup>
