@@ -7,7 +7,7 @@ namespace BankApp.Models.Entities
         [Key]
         public int Id { get; set; }
 
-        public int userId { get; set; }
+        public int UserId { get; set; }
         public virtual User User { get; set; } = null!;
         public string? AccountName { get; set; }
         public string IBAN { get; set; } = string.Empty;

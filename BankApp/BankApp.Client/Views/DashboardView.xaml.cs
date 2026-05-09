@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class DashboardView : Page, Observer<DashboardState>
+    public sealed partial class DashboardView : Page, IAppObserver<DashboardState>
     {
         private readonly DashboardViewModel _viewModel;
         private int _currentCardIndex = 0;

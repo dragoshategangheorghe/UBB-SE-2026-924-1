@@ -12,7 +12,6 @@ public class ChatAttachment
 
     public int MessageId { get; set; }
 
-
     /// <summary>
     /// Gets or sets the related message.
     /// </summary>

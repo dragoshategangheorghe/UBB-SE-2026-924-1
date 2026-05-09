@@ -12,7 +12,7 @@ namespace BankApp.Client.RepoProxies
 {
     public class ApiService
     {
-        private static readonly JsonSerializerOptions JsonWriteOptions = new(JsonSerializerDefaults.Web)
+        private static readonly JsonSerializerOptions JsonWriteOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
         };

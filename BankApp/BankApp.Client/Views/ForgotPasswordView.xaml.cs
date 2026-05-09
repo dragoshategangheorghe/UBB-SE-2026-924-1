@@ -7,7 +7,7 @@ using BankApp.Models.Enums;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class ForgotPasswordView : Page, Observer<ForgotPasswordState>
+    public sealed partial class ForgotPasswordView : Page, IAppObserver<ForgotPasswordState>
     {
         private readonly ForgotPasswordViewModel _viewModel;
 
@@ -46,7 +46,7 @@ namespace BankApp.Client.Views
                         VerifyTokenButton.Visibility = Visibility.Visible;
                         ResendPanel.Visibility = Visibility.Visible;
                         TokenBox.IsEnabled = true;
-                        TokenBox.Text = "";
+                        TokenBox.Text = string.Empty;
                         break;
 
                     case ForgotPasswordState.PasswordResetSuccess:

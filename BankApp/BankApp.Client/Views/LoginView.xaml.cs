@@ -6,7 +6,7 @@ using BankApp.Models.Enums;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class LoginView : Page, Observer<LoginState>
+    public sealed partial class LoginView : Page, IAppObserver<LoginState>
     {
         private readonly LoginViewModel _viewModel;
 

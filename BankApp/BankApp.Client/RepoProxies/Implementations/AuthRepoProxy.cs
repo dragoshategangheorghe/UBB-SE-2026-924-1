@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -9,9 +10,11 @@ namespace BankApp.Client.RepoProxies.Implementations
     {
         private class ApiResponse
         {
-            public string? message { get; set; }
+            [JsonPropertyName("message")]
+            public string? Message { get; set; }
 
-            public string? error { get; set; }
+            [JsonPropertyName("error")]
+            public string? Error { get; set; }
         }
 
         private readonly ApiService _apiService;
@@ -49,25 +52,25 @@ namespace BankApp.Client.RepoProxies.Implementations
         public async Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
             ApiResponse? response = await _apiService.PostAsync<ForgotPasswordRequest, ApiResponse>("/api/auth/forgot-password", request);
-            return response != null && response.error == null;
+            return response != null && response.Error == null;
         }
 
         public async Task<bool> VerifyResetTokenAsync(string token)
         {
             ApiResponse? response = await _apiService.PostAsync<object, ApiResponse>("/api/auth/verify-reset-token", new { Token = token });
-            return response != null && response.error == null;
+            return response != null && response.Error == null;
         }
 
         public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
         {
             ApiResponse? response = await _apiService.PostAsync<ResetPasswordRequest, ApiResponse>("/api/auth/reset-password", request);
-            return response != null && response.error == null;
+            return response != null && response.Error == null;
         }
 
         public async Task<bool> LogoutPostAsync()
         {
             ApiResponse? response = await _apiService.PostAsync<object, ApiResponse>("/api/auth/logout", new { });
-            return response != null && response.error == null;
+            return response != null && response.Error == null;
         }
 
         public void SetBearerToken(string token) => _apiService.SetToken(token);
