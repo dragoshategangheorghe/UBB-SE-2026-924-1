@@ -1,4 +1,5 @@
 using BankApp.Models.DTOs.Transactions;
+using BankApp.Server.Repositories.Interfaces;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,51 +9,39 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class TransactionsController : ControllerBase
     {
-        private readonly ITransactionHistoryService transactionHistoryService;
+        private readonly ITransactionHistoryRepository transactionHistoryRepository;
 
-        public TransactionsController(ITransactionHistoryService transactionHistoryService)
+        public TransactionsController(ITransactionHistoryRepository transactionHistoryRepository)
         {
-            this.transactionHistoryService = transactionHistoryService;
+            this.transactionHistoryRepository = transactionHistoryRepository;
         }
 
         private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
 
-        [HttpGet("filters")]
-        public IActionResult GetFilterMetadata()
+        // /api/transactions
+        public IActionResult GetTransactionsByUser()
         {
-            return Ok(transactionHistoryService.GetFilterMetadata(GetAuthenticatedUserId()));
-        }
-
-        [HttpPost("history")]
-        public IActionResult GetHistory([FromBody] TransactionHistoryRequest request)
-        {
-            return Ok(transactionHistoryService.GetHistory(GetAuthenticatedUserId(), request));
+            return Ok(transactionHistoryRepository.GetTransactionsByUserId(GetAuthenticatedUserId()));
         }
 
         [HttpGet("{transactionId:int}")]
         public IActionResult GetTransaction(int transactionId)
         {
-            TransactionDetailsResponse response = transactionHistoryService.GetTransaction(GetAuthenticatedUserId(), transactionId);
-            return response.Success ? Ok(response) : NotFound(response);
+            TransactionHistoryItemDto transaction = transactionHistoryRepository.GetTransactionById(GetAuthenticatedUserId(), transactionId);
+            return transaction == null ? Ok(transaction) : NotFound(transaction);
         }
 
-        [HttpPost("export")]
-        public IActionResult ExportTransactions([FromBody] TransactionExportRequest request)
+        [HttpGet("cards")] // why do we need this for user cards?? so backwards, anyway
+        public IActionResult GetCards()
         {
-            TransactionExportResult exportResult = transactionHistoryService.ExportTransactions(GetAuthenticatedUserId(), request);
-            return File(exportResult.Content, exportResult.ContentType, exportResult.FileName);
+            return Ok(transactionHistoryRepository.GetCardsByUserId(GetAuthenticatedUserId()));
         }
 
-        [HttpGet("{transactionId:int}/receipt")]
-        public IActionResult ExportReceipt(int transactionId)
+        [HttpGet("accounts")]
+        public IActionResult GetAccounts()
         {
-            TransactionExportResult exportResult = transactionHistoryService.ExportReceipt(GetAuthenticatedUserId(), transactionId);
-            if (exportResult.Content.Length == 0)
-            {
-                return NotFound();
-            }
-
-            return File(exportResult.Content, exportResult.ContentType, exportResult.FileName);
+            return Ok(transactionHistoryRepository.GetAccountsByUserId(GetAuthenticatedUserId()));
         }
+
     }
 }

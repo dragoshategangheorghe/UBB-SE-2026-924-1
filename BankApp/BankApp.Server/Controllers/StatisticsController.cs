@@ -1,3 +1,6 @@
+/*
+ NOTE: From my understanding this is useless, it uses transaction history in the client which already has those methods
+
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,3 +44,4 @@ namespace BankApp.Server.Controllers
         }
     }
 }
+*/

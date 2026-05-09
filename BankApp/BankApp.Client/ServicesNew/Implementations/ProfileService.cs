@@ -1,4 +1,6 @@
-﻿using Azure.Core;
+﻿using System;
+using System.Collections.Generic;
+using Azure.Core;
 using BankApp.Models.DTOs.Profile;
 using BankApp.Models.Entities;
 using BankApp.Models.Enums;
@@ -68,19 +70,18 @@ namespace BankApp.Server.Services.Implementations
             return new UpdateProfileResponse(true, "User profile updated successfully.");
         }
 
-        public ChangePasswordResponse ChangePassword(ChangePasswordRequest request)
+        public ChangePasswordResponse ChangePassword(ChangePasswordRequest changePasswordRequest)
         {
-            User? user = userRepository.FindById(request.UserId);
+            User? user = userRepository.FindById(changePasswordRequest.UserId);
             if (user == null)
             {
                 // Just making sure, should never happen though
                 return new ChangePasswordResponse(false, "User not found.");
             }
 
-            if (hashService.Verify(request.CurrentPassword, user.PasswordHash))
+            if (hashService.Verify(changePasswordRequest.CurrentPassword, user.PasswordHash))
             {
-                user.PasswordHash = hashService.GetHash(request.NewPassword);
-                userRepository.UpdatePassword(user.Id, user.PasswordHash);
+                userRepository.UpdatePassword(changePasswordRequest); // in proxy repo make sure to send a ChangePasswordRequest
                 return new ChangePasswordResponse(true, "Password changed successfully.");
             }
             else
@@ -115,16 +116,18 @@ namespace BankApp.Server.Services.Implementations
             return userRepository.UpdateUser(user);
         }
 
-        public List<OAuthLink> GetOAuthLinks(int userId)
+        public List<OAuthLink> GetOAuthLinks()
         {
+            /*
             User? user = userRepository.FindById(userId);
             if (user == null)
             {
                 // Just making sure, should never happen though
                 return new List<OAuthLink>();
             }
+            */
 
-            return userRepository.GetLinkedProviders(userId);
+            return userRepository.GetLinkedProviders(); // I think this should return a List, not caring if it's not found or Ok
         }
 
         public bool LinkOAuth(int userId, string provider)
@@ -137,41 +140,29 @@ namespace BankApp.Server.Services.Implementations
             throw new NotImplementedException();
         }
 
-        public List<NotificationPreference> GetNotificationPreferences(int userId)
+        public List<NotificationPreference> GetNotificationPreferences()
         {
-            User? user = userRepository.FindById(userId);
-            if (user == null)
-            {
-                // AGAIN just making sure, should never happen
-                return new List<NotificationPreference>();
-            }
-
-            return userRepository.GetNotificationPreferences(userId);
+            return userRepository.GetNotificationPreferences(); // empty, user Id will be seen in the backend
         }
 
-        public bool UpdateNotificationPreferences(int userId, List<NotificationPreference> prefs)
+        public bool UpdateNotificationPreferences(List<NotificationPreference> prefs)
         {
+            /*
             User? user = userRepository.FindById(userId);
             if (user == null)
             {
                 // Last time just making sure, should never happen
                 return false;
             }
+            */
 
-            return userRepository.UpdateNotificationPreferences(userId, prefs);
+            return userRepository.UpdateNotificationPreferences(prefs); // PUT call request only with prefs, user id is on the back end 
         }
 
-        public bool VerifyPassword(int userId, string password)
+        public bool VerifyPassword(string password)
         {
-            User? user = userRepository.FindById(userId);
 
-            if (user == null)
-            {
-                // ACTUAL last time making sure, should never happen though
-                return false;
-            }
-
-            return hashService.Verify(password, user.PasswordHash);
+            return userRepository.Verify(password);
         }
     }
 }

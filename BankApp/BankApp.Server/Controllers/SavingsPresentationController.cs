@@ -1,4 +1,7 @@
-﻿using BankApp.Models.Features.Savings;
+﻿/*
+NOTE: Read from the other savings controllers, no dependencies, can be used in the client, no API need
+
+using BankApp.Models.Features.Savings;
 using BankApp.Server.Services.Implementations;
 using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -40,3 +43,4 @@ namespace BankApp.Server.Controllers
         }
     }
 }
+*/
