@@ -126,9 +126,14 @@ namespace BankApp.Server.Controllers
 
         // PUT: api/profile/notifications/preferences
         [HttpPut("notifications/preferences")]
-        public IActionResult UpdateNotificationPreferences([FromBody] List<NotificationPreference> prefs)
+        public IActionResult UpdateNotificationPreferences([FromBody] List<NotificationPreference>? prefs)
         {
             int userId = GetAuthenticatedUserId();
+
+            if (prefs == null)
+            {
+                return BadRequest(false);
+            }
 
             bool success = userRepository.UpdateNotificationPreferences(userId, prefs);
 

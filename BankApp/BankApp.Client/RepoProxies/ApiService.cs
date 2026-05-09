@@ -5,12 +5,18 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BankApp.Client.RepoProxies
 {
     public class ApiService
     {
+        private static readonly JsonSerializerOptions JsonWriteOptions = new(JsonSerializerDefaults.Web)
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        };
+
         private readonly HttpClient _httpClient;
         private string? _token;
         private int? _currentUserId;
@@ -55,7 +61,7 @@ namespace BankApp.Client.RepoProxies
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data);
+                HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);
                 await EnsureSuccessAsync(response, endpoint);
                 return await ReadJsonAsync<TResponse>(response);
             }
@@ -72,7 +78,7 @@ namespace BankApp.Client.RepoProxies
         /// </summary>
         public async Task<TResponse?> PostAllowBadRequestAsync<TRequest, TResponse>(string endpoint, TRequest data)
         {
-            using HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data);
+            using HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);
             string json = await response.Content.ReadAsStringAsync();
             TResponse? parsed = DeserializeWebJson<TResponse>(json);
 
@@ -121,14 +127,14 @@ namespace BankApp.Client.RepoProxies
 
         public async Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest data)
         {
-            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(endpoint, data);
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(endpoint, data, JsonWriteOptions);
             await EnsureSuccessAsync(response, endpoint);
             return await ReadJsonAsync<TResponse>(response);
         }
 
         public async Task<DownloadResponse?> PostDownloadAsync<TRequest>(string endpoint, TRequest data)
         {
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data);
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);
             if (!response.IsSuccessStatusCode)
             {
                 return null;

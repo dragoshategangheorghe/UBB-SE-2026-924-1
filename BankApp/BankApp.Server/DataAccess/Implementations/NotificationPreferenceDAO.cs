@@ -57,7 +57,8 @@ namespace BankApp.Server.DataAccess
             try
             {
                 var existing = appDbContext.NotificationPreferences
-                                           .Where(p => p.User.Id == userId);
+                    .Where(p => p.User.Id == userId)
+                    .ToList();
 
                 appDbContext.NotificationPreferences.RemoveRange(existing);
 

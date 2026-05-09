@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using BankApp.Models.Enums;
 
 namespace BankApp.Models.Entities
@@ -7,7 +8,12 @@ namespace BankApp.Models.Entities
     {
         [Key]
         public int Id { get; set; }
-        public virtual User User { get; set; }
+
+        /// <summary>
+        /// Not serialized on API round-trip — avoids object cycles (User aggregates NotificationPreferences).
+        /// </summary>
+        [JsonIgnore]
+        public virtual User User { get; set; } = null!;
         public NotificationType Category { get; set; }
         // public string Category { get; set; } = string.Empty;
         public bool PushEnabled { get; set; } = true;
