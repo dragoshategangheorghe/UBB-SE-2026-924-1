@@ -29,7 +29,7 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-                int? userId = App.ApiService.GetCurrentUserId();
+                int? userId = _authService.GetCurrentUserId();
                 if (userId == null)
                 {
                     SetState(State, TwoFactorState.InvalidOTP);
@@ -64,7 +64,7 @@ namespace BankApp.Client.ViewModels
             SetState(State, TwoFactorState.Idle);
             try
             {
-                int? userId = App.ApiService.GetCurrentUserId();
+                int? userId = _authService.GetCurrentUserId();
                 if (userId == null) return;
                 await _authService.ResendOtpAsync(userId.Value);
             }

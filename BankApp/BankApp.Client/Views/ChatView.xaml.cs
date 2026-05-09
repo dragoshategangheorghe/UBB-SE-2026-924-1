@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BankApp.Client.Services.Interfaces;
+using BankApp.Models.DTOs.Chat;
 using BankApp.Models.Features.Chat;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;

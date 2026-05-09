@@ -132,7 +132,7 @@ namespace BankApp.Client.Views
 
         private void BackToLoginButton_Click(object sender, RoutedEventArgs e)
         {
-            App.ApiService.ClearToken();
+            App.AuthService.ClearLocalSession();
             App.NavigationService.NavigateTo<LoginView>();
         }
     }

@@ -1,29 +1,22 @@
 using System.Threading.Tasks;
-
+using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
-using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Auth;
 
 namespace BankApp.Client.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private class ApiResponse
-        {
-            public string? message { get; set; }
-            public string? error { get; set; }
-        }
+        private readonly IAuthApiService _authRepo;
 
-        private readonly ApiService _apiService;
-
-        public AuthService(ApiService apiService)
+        public AuthService(IAuthApiService authRepo)
         {
-            _apiService = apiService;
+            _authRepo = authRepo;
         }
 
         public async Task<LoginResponse?> LoginAsync(LoginRequest request)
         {
-            LoginResponse? response = await _apiService.PostAllowBadRequestAsync<LoginRequest, LoginResponse>("/api/auth/login", request);
+            LoginResponse? response = await _authRepo.LoginAsync(request);
             if (response?.Success != true)
             {
                 return response;
@@ -31,14 +24,14 @@ namespace BankApp.Client.Services.Implementations
 
             if (response.Requires2FA && response.UserId.HasValue)
             {
-                _apiService.SetCurrentUserId(response.UserId.Value);
+                _authRepo.SetCurrentUserId(response.UserId.Value);
                 return response;
             }
 
             if (!string.IsNullOrWhiteSpace(response.Token) && response.UserId.HasValue)
             {
-                _apiService.SetToken(response.Token);
-                _apiService.SetCurrentUserId(response.UserId.Value);
+                _authRepo.SetBearerToken(response.Token);
+                _authRepo.SetCurrentUserId(response.UserId.Value);
             }
 
             return response;
@@ -46,7 +39,7 @@ namespace BankApp.Client.Services.Implementations
 
         public async Task<LoginResponse?> OAuthLoginAsync(OAuthLoginRequest request)
         {
-            LoginResponse? response = await _apiService.PostAllowBadRequestAsync<OAuthLoginRequest, LoginResponse>("/api/auth/oauth-login", request);
+            LoginResponse? response = await _authRepo.OAuthLoginAsync(request);
             if (response?.Success != true)
             {
                 return response;
@@ -54,14 +47,14 @@ namespace BankApp.Client.Services.Implementations
 
             if (response.Requires2FA && response.UserId.HasValue)
             {
-                _apiService.SetCurrentUserId(response.UserId.Value);
+                _authRepo.SetCurrentUserId(response.UserId.Value);
                 return response;
             }
 
             if (!string.IsNullOrWhiteSpace(response.Token) && response.UserId.HasValue)
             {
-                _apiService.SetToken(response.Token);
-                _apiService.SetCurrentUserId(response.UserId.Value);
+                _authRepo.SetBearerToken(response.Token);
+                _authRepo.SetCurrentUserId(response.UserId.Value);
             }
 
             return response;
@@ -69,15 +62,15 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<RegisterResponse?> RegisterAsync(RegisterRequest request)
         {
-            return _apiService.PostAllowBadRequestAsync<RegisterRequest, RegisterResponse>("/api/auth/register", request);
+            return _authRepo.RegisterAsync(request);
         }
 
         public async Task<LoginResponse?> VerifyOtpAsync(VerifyOTPRequest request)
         {
-            LoginResponse? response = await _apiService.PostAllowBadRequestAsync<VerifyOTPRequest, LoginResponse>("/api/auth/verify-otp", request);
+            LoginResponse? response = await _authRepo.VerifyOtpAsync(request);
             if (response?.Success == true && !string.IsNullOrWhiteSpace(response.Token))
             {
-                _apiService.SetToken(response.Token);
+                _authRepo.SetBearerToken(response.Token);
             }
 
             return response;
@@ -85,40 +78,40 @@ namespace BankApp.Client.Services.Implementations
 
         public Task ResendOtpAsync(int userId)
         {
-            return _apiService.PostAsync<object, object>($"/api/auth/resend-otp?userId={userId}", new { });
+            return _authRepo.ResendOtpAsync(userId);
         }
 
-        public async Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request)
+        public Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            ApiResponse? response = await _apiService.PostAsync<ForgotPasswordRequest, ApiResponse>("/api/auth/forgot-password", request);
-            return response != null && response.error == null;
+            return _authRepo.ForgotPasswordAsync(request);
         }
 
-        public async Task<bool> VerifyResetTokenAsync(string token)
+        public Task<bool> VerifyResetTokenAsync(string token)
         {
-            ApiResponse? response = await _apiService.PostAsync<object, ApiResponse>("/api/auth/verify-reset-token", new { Token = token });
-            return response != null && response.error == null;
+            return _authRepo.VerifyResetTokenAsync(token);
         }
 
-        public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+        public Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            ApiResponse? response = await _apiService.PostAsync<ResetPasswordRequest, ApiResponse>("/api/auth/reset-password", request);
-            return response != null && response.error == null;
+            return _authRepo.ResetPasswordAsync(request);
         }
 
         public async Task<bool> LogoutAsync()
         {
-            string? token = _apiService.GetToken();
+            string? token = _authRepo.GetBearerToken();
             if (string.IsNullOrWhiteSpace(token))
             {
-                _apiService.ClearToken();
+                _authRepo.ClearLocalSession();
                 return true;
             }
 
-            ApiResponse? response = await _apiService.PostAsync<object, ApiResponse>("/api/auth/logout", new { });
-            _apiService.ClearToken();
-            return response != null && response.error == null;
+            bool ok = await _authRepo.LogoutPostAsync();
+            _authRepo.ClearLocalSession();
+            return ok;
         }
+
+        public int? GetCurrentUserId() => _authRepo.GetCurrentUserId();
+
+        public void ClearLocalSession() => _authRepo.ClearLocalSession();
     }
 }
-

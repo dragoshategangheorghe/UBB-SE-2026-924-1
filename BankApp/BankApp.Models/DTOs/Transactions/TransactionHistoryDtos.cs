@@ -105,4 +105,13 @@ namespace BankApp.Models.DTOs.Transactions
         public const string Pdf = "pdf";
         public const string Xlsx = "xlsx";
     }
+
+    public class ExportedFileResult
+    {
+        public string FileName { get; set; } = string.Empty;
+
+        public string FilePath { get; set; } = string.Empty;
+
+        public string ContentType { get; set; } = string.Empty;
+    }
 }

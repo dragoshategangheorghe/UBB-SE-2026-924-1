@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using BankApp.Client.ViewModels;
-using BankApp.Client.Services.Implementations;
-
 namespace BankApp.Client.Views
 {
     public sealed partial class LoansAndSavingsView : Page

@@ -16,6 +16,16 @@ namespace BankApp.Client.Services.Interfaces
         Task<bool> ResetPasswordAsync(ResetPasswordRequest request);
 
         Task<bool> LogoutAsync();
+
+        /// <summary>
+        /// Session context stored locally after login / OAuth / OTP (used before JWT is fully established).
+        /// </summary>
+        int? GetCurrentUserId();
+
+        /// <summary>
+        /// Clears JWT and cached user id without calling the API (e.g. abandon login flow).
+        /// </summary>
+        void ClearLocalSession();
     }
 }
 

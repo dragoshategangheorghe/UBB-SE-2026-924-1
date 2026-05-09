@@ -1,3 +1,4 @@
+using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Cards;
 using System.Threading.Tasks;

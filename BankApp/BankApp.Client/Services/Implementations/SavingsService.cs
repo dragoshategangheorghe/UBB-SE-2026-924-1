@@ -1,5 +1,7 @@
+using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Enums;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
 using System;
@@ -28,10 +30,20 @@ namespace BankApp.Client.Services.Implementations
         private const decimal DecimalEarlyWithdrawalPenalty = 0.02m;
 
         private readonly ISavingsApiService _savingsRepoProxy;
+        private readonly ISavingsUiRulesApiService _savingsUiRules;
+        private readonly ISavingsPresentationApiService _savingsPresentation;
+        private readonly ISavingsWorkflowApiService _savingsWorkflow;
 
-        public SavingsService(ISavingsApiService savingsRepoProxy)
+        public SavingsService(
+            ISavingsApiService savingsRepoProxy,
+            ISavingsUiRulesApiService savingsUiRules,
+            ISavingsPresentationApiService savingsPresentation,
+            ISavingsWorkflowApiService savingsWorkflow)
         {
-            _savingsRepoProxy = savingsRepoProxy;
+            _savingsRepoProxy = savingsRepoProxy ?? throw new ArgumentNullException(nameof(savingsRepoProxy));
+            _savingsUiRules = savingsUiRules ?? throw new ArgumentNullException(nameof(savingsUiRules));
+            _savingsPresentation = savingsPresentation ?? throw new ArgumentNullException(nameof(savingsPresentation));
+            _savingsWorkflow = savingsWorkflow ?? throw new ArgumentNullException(nameof(savingsWorkflow));
         }
 
         public async Task<SavingsAccount> CreateAccountAsync(CreateSavingsAccountDto dto)
@@ -236,6 +248,56 @@ namespace BankApp.Client.Services.Implementations
 
             return Task.FromResult(penaltyRate);
         }
+
+        public Task<decimal> ParsePositiveAmountAsync(string text) => _savingsUiRules.ParsePositiveAmount(text);
+
+        public Task<string> GetDepositPreviewAsync(string depositAmountText, SavingsAccount selectedAccount) =>
+            _savingsUiRules.GetDepositPreview(depositAmountText, selectedAccount);
+
+        public Task<decimal> GetWithdrawNetAmountAsync(decimal requestedAmount, decimal penalty) =>
+            _savingsUiRules.GetWithdrawNetAmount(requestedAmount, penalty);
+
+        public Task<DepositFrequency> ParseDepositFrequencyAsync(string frequencyText) =>
+            _savingsUiRules.ParseDepositFrequency(frequencyText);
+
+        public Task<int> GetTotalPagesAsync(int totalCount, int pageSize) =>
+            _savingsUiRules.GetTotalPages(totalCount, pageSize);
+
+        public Task<Dictionary<string, string>> ValidateCreateAccountAsync(ValidateCreateAccountRequest request) =>
+            _savingsUiRules.ValidateCreateAccount(request);
+
+        public Task<string> GetTotalSavedAmountAsync(IEnumerable<SavingsAccount> accounts) =>
+            _savingsPresentation.GetTotalSavedAmount(accounts);
+
+        public Task<string> GetNumberOfAccountsTextAsync(int accountCount) =>
+            _savingsPresentation.GetNumberOfAccountsText(accountCount);
+
+        public Task<string> GetBestInterestRateAsync(IEnumerable<SavingsAccount> accounts) =>
+            _savingsPresentation.GetBestInterestRate(accounts);
+
+        public Task<bool> CheckClosePenaltyRiskAsync(SavingsAccount selectedAccount) =>
+            _savingsPresentation.CheckClosePenaltyRisk(selectedAccount);
+
+        public Task<FundingSourceOption> GetDefaultFundingSourceAsync(IEnumerable<FundingSourceOption> fundingSources) =>
+            _savingsWorkflow.GetDefaultFundingSource(fundingSources);
+
+        public Task<int> GetDefaultCloseDestinationIdAsync(IEnumerable<SavingsAccount> destinationAccounts) =>
+            _savingsWorkflow.GetDefaultCloseDestinationId(destinationAccounts);
+
+        public Task<ValidationResponse> ValidateWithdrawRequestAsync(decimal amount, FundingSourceOption? destination) =>
+            _savingsWorkflow.ValidateWithdrawRequest(amount, destination);
+
+        public Task<string> BuildWithdrawResultMessageAsync(WithdrawResponseDto response) =>
+            _savingsWorkflow.BuildWithdrawResultMessage(response);
+
+        public Task<ValidationResponse> ValidateCloseConfirmationAsync(bool userConfirmed, int destinationId) =>
+            _savingsWorkflow.ValidateCloseConfirmation(userConfirmed, destinationId);
+
+        public Task<bool> CanMoveToNextPageAsync(int currentPage, int totalPages) =>
+            _savingsWorkflow.CanMoveToNextPage(currentPage, totalPages);
+
+        public Task<bool> CanMoveToPreviousPageAsync(int currentPage) =>
+            _savingsWorkflow.CanMoveToPreviousPage(currentPage);
     }
 }
 

@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Client.Commands;
 using BankApp.Client.Services.Interfaces;
-using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Transactions;
+using BankApp.Client.Utilities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 

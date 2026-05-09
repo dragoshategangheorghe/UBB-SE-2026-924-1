@@ -1,66 +1,65 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
-using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Profile;
 using BankApp.Models.Entities;
 using BankApp.Models.Enums;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Services.Implementations
 {
     public class ProfileService : IProfileService
     {
-        private readonly ApiService _apiService;
+        private readonly IProfileApiService _profileRepo;
 
-        public ProfileService(ApiService apiService)
+        public ProfileService(IProfileApiService profileRepo)
         {
-            _apiService = apiService;
+            _profileRepo = profileRepo;
         }
 
         public Task<GetProfileResponse?> GetProfileAsync()
         {
-            return _apiService.GetAsync<GetProfileResponse>("/api/profile");
+            return _profileRepo.GetProfileAsync();
         }
 
         public Task<List<OAuthLink>?> GetOAuthLinksAsync()
         {
-            return _apiService.GetAsync<List<OAuthLink>>("/api/profile/oauthlinks");
+            return _profileRepo.GetOAuthLinksAsync();
         }
 
         public Task<List<NotificationPreference>?> GetNotificationPreferencesAsync()
         {
-            return _apiService.GetAsync<List<NotificationPreference>>("/api/profile/notifications/preferences");
+            return _profileRepo.GetNotificationPreferencesAsync();
         }
 
         public Task<UpdateProfileResponse?> UpdateProfileAsync(UpdateProfileRequest request)
         {
-            return _apiService.PutAsync<UpdateProfileRequest, UpdateProfileResponse>("/api/profile", request);
+            return _profileRepo.UpdateProfileAsync(request);
         }
 
         public Task<ChangePasswordResponse?> ChangePasswordAsync(ChangePasswordRequest request)
         {
-            return _apiService.PutAsync<ChangePasswordRequest, ChangePasswordResponse>("/api/profile/password", request);
+            return _profileRepo.ChangePasswordAsync(request);
         }
 
         public Task<Toggle2FAResponse?> Enable2FAAsync(TwoFactorMethod method)
         {
-            return _apiService.PutAsync<object, Toggle2FAResponse>("/api/profile/2fa/enable", new { Method = method });
+            return _profileRepo.Enable2FAAsync(method);
         }
 
         public Task<Toggle2FAResponse?> Disable2FAAsync()
         {
-            return _apiService.PutAsync<object, Toggle2FAResponse>("/api/profile/2fa/disable", new { });
+            return _profileRepo.Disable2FAAsync();
         }
 
-        public async Task<bool> VerifyPasswordAsync(string password)
+        public Task<bool> VerifyPasswordAsync(string password)
         {
-            return await _apiService.PostAsync<string, bool>("/api/profile/verify-password", password);
+            return _profileRepo.VerifyPasswordAsync(password);
         }
 
-        public async Task<bool> UpdateNotificationPreferencesAsync(List<NotificationPreference> prefs)
+        public Task<bool> UpdateNotificationPreferencesAsync(List<NotificationPreference> prefs)
         {
-            return await _apiService.PutAsync<List<NotificationPreference>, bool>("/api/profile/notifications/preferences", prefs);
+            return _profileRepo.UpdateNotificationPreferencesAsync(prefs);
         }
     }
 }
-

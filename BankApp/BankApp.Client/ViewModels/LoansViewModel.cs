@@ -12,7 +12,6 @@ namespace BankApp.Client.ViewModels
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using BankApp.Client.Services.Implementations;
     using BankApp.Client.Services.Interfaces;
     using BankApp.Client.Utilities;
     using BankApp.Models.DTOs.Loans;
@@ -31,8 +30,6 @@ namespace BankApp.Client.ViewModels
         private const int DefaultPageSize = 10;
 
         private readonly ILoansService loanService;
-        private readonly LoanApplicationPresentationApiService loanApplicationPresentationService;
-        private readonly ILoanDialogStateApiService loanDialogStateService;
         private readonly PdfExporter pdfExporter;
 
         [ObservableProperty]
@@ -111,10 +108,8 @@ namespace BankApp.Client.ViewModels
 
         public LoansViewModel(ILoansService loanService)
         {
-            this.loanService = loanService;
+            this.loanService = loanService ?? throw new ArgumentNullException(nameof(loanService));
             this.pdfExporter = new PdfExporter();
-            this.loanDialogStateService = new LoanDialogStateApiService(App.ApiService);
-            this.loanApplicationPresentationService = new LoanApplicationPresentationApiService(App.ApiService);
             _ = this.LoadLoansAsync();
         }
 
@@ -172,7 +167,7 @@ namespace BankApp.Client.ViewModels
 
                 var applicationResult = await this.loanService.SubmitLoanApplicationAsync(request);
 
-                var applicationOutcome = await this.loanApplicationPresentationService.GetBuildApplicationOutcome(
+                var applicationOutcome = await this.loanService.GetBuildApplicationOutcomeAsync(
                     applicationResult.RejectionReason);
                 this.ApplicationResult = applicationOutcome?.Message ?? string.Empty;
                 this.ApplicationWasApproved = applicationOutcome?.IsApproved ?? false;
@@ -394,7 +389,7 @@ namespace BankApp.Client.ViewModels
 
         private async Task TryComputeEstimateAsync()
         {
-            var isFullyFilled = await this.loanDialogStateService.GetShouldComputeEstimate(
+            var isFullyFilled = await this.loanService.GetShouldComputeEstimateAsync(
                 this.DesiredAmount,
                 this.PreferredTermMonths,
                 this.Purpose);

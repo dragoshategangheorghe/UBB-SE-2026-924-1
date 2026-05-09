@@ -8,8 +8,8 @@ using System.Windows.Input;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using BankApp.Models.Entities;
-using BankApp.Client.Utilities;
 using BankApp.Client.Services.Interfaces;
+using BankApp.Client.Utilities;
 using BankApp.Models.Features.Investments;
 
 namespace BankApp.Client.ViewModels
@@ -100,8 +100,7 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-                int userId = App.ApiService.GetCurrentUserId() ?? 1;
-                var portfolio = await investmentsService.GetPortfolioAsync(userId);
+                var portfolio = await investmentsService.GetPortfolioForCurrentUserAsync();
 
                 if (portfolio != null)
                 {

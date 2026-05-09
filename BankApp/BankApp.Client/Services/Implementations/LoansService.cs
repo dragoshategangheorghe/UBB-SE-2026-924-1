@@ -1,3 +1,4 @@
+using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Loans;
@@ -24,12 +25,19 @@ namespace BankApp.Client.Services.Implementations
         private const decimal AutoLoanRate = 6.5m;
 
         private readonly ILoansApiService _loanRepoProxy;
+        private readonly ILoanDialogStateApiService _loanDialogState;
+        private readonly ILoanApplicationPresentationApiService _loanApplicationPresentation;
         private readonly LoanApplicationValidator _validator;
         private readonly PaymentCalculationService _paymentCalculationService;
 
-        public LoansService(ILoansApiService loanRepoProxy)
+        public LoansService(
+            ILoansApiService loanRepoProxy,
+            ILoanDialogStateApiService loanDialogState,
+            ILoanApplicationPresentationApiService loanApplicationPresentation)
         {
-            _loanRepoProxy = loanRepoProxy;
+            _loanRepoProxy = loanRepoProxy ?? throw new ArgumentNullException(nameof(loanRepoProxy));
+            _loanDialogState = loanDialogState ?? throw new ArgumentNullException(nameof(loanDialogState));
+            _loanApplicationPresentation = loanApplicationPresentation ?? throw new ArgumentNullException(nameof(loanApplicationPresentation));
             _validator = new LoanApplicationValidator();
             _paymentCalculationService = new PaymentCalculationService();
         }
@@ -195,6 +203,12 @@ namespace BankApp.Client.Services.Implementations
                 }
             }
         }
+
+        public Task<BuildApplicationOutcomeResponse?> GetBuildApplicationOutcomeAsync(string? rejectionReason) =>
+            _loanApplicationPresentation.GetBuildApplicationOutcome(rejectionReason);
+
+        public Task<bool> GetShouldComputeEstimateAsync(double desiredAmount, int preferredTermMonths, string purpose) =>
+            _loanDialogState.GetShouldComputeEstimate(desiredAmount, preferredTermMonths, purpose);
 
         private async Task<(LoanApplicationStatus approved, string? reason)> EvaluateApplicationAsync(LoanApplication application)
         {

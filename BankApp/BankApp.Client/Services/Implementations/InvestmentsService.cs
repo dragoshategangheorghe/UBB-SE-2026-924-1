@@ -1,23 +1,27 @@
-using BankApp.Client.Services.Interfaces;
-using BankApp.Client.Utilities;
-using BankApp.Models.Features.Investments;
 using System.Threading.Tasks;
+using BankApp.Client.RepoProxies.Interfaces;
+using BankApp.Client.Services.Interfaces;
+using BankApp.Models.Features.Investments;
 
 namespace BankApp.Client.Services.Implementations
 {
     public class InvestmentsService : IInvestmentsService
     {
-        private readonly ApiService _apiService;
+        private readonly IInvestmentsApiService _investmentsRepo;
 
-        public InvestmentsService(ApiService apiService)
+        public InvestmentsService(IInvestmentsApiService investmentsRepo)
         {
-            _apiService = apiService;
+            _investmentsRepo = investmentsRepo;
         }
 
         public Task<Portfolio?> GetPortfolioAsync(int userId)
         {
-            return _apiService.GetAsync<Portfolio>($"/api/investments/portfolio/{userId}");
+            return _investmentsRepo.GetPortfolioAsync(userId);
+        }
+
+        public Task<Portfolio?> GetPortfolioForCurrentUserAsync()
+        {
+            return _investmentsRepo.GetPortfolioForCurrentUserAsync();
         }
     }
 }
-

@@ -7,7 +7,6 @@ namespace BankApp.Client.ViewModels
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using BankApp.Client.Services.Implementations;
     using BankApp.Client.Services.Interfaces;
     using BankApp.Client.Utilities;
     using BankApp.Models.DTOs.Savings;
@@ -26,10 +25,7 @@ namespace BankApp.Client.ViewModels
         private const int InitialAutoDepositDelayDays = 1;
         private const decimal ZeroAmount = 0m;
 
-        private readonly ISavingsPresentationApiService savingsPresentationService;
         private readonly ISavingsService savingsService;
-        private readonly ISavingsUiRulesApiService savingsUiRulesService;
-        private readonly ISavingsWorkflowApiService savingsWorkflowService;
 
         [ObservableProperty]
         private string accountName = string.Empty;
@@ -160,10 +156,7 @@ namespace BankApp.Client.ViewModels
         // ── Constructor ──────────────────────────────────────────────────────
         public SavingsViewModel(ISavingsService savingsService)
         {
-            this.savingsService = savingsService;
-            this.savingsUiRulesService = new SavingsUiRulesApiService(App.ApiService);
-            this.savingsPresentationService = new SavingsPresentationApiService(App.ApiService);
-            this.savingsWorkflowService = new SavingsWorkflowApiService(App.ApiService);
+            this.savingsService = savingsService ?? throw new ArgumentNullException(nameof(savingsService));
         }
 
         public bool IsEmpty => !this.SavingsAccounts.Any();
@@ -179,7 +172,7 @@ namespace BankApp.Client.ViewModels
         public string LivePreview =>
             this.SelectedAccount == null
                 ? string.Empty
-                : this.savingsUiRulesService.GetDepositPreview(this.DepositAmountText, this.SelectedAccount).GetAwaiter().GetResult();
+                : this.savingsService.GetDepositPreviewAsync(this.DepositAmountText, this.SelectedAccount).GetAwaiter().GetResult();
 
         public bool WithdrawHasEarlyRisk => this.SelectedAccount != null &&
             this.savingsService.HasRiskEarlyWithdrawal(this.SelectedAccount).GetAwaiter().GetResult();
@@ -196,7 +189,7 @@ namespace BankApp.Client.ViewModels
                 decimal withdrawAmount;
                 try
                 {
-                    withdrawAmount = this.savingsUiRulesService.ParsePositiveAmount(this.WithdrawAmountText).GetAwaiter().GetResult();
+                    withdrawAmount = this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText).GetAwaiter().GetResult();
                 }
                 catch
                 {
@@ -214,14 +207,14 @@ namespace BankApp.Client.ViewModels
                 decimal withdrawAmount;
                 try
                 {
-                    withdrawAmount = this.savingsUiRulesService.ParsePositiveAmount(this.WithdrawAmountText).GetAwaiter().GetResult();
+                    withdrawAmount = this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText).GetAwaiter().GetResult();
                 }
                 catch
                 {
                     return ZeroAmount;
                 }
 
-                return this.savingsUiRulesService.GetWithdrawNetAmount(withdrawAmount, this.WithdrawEstimatedPenalty).GetAwaiter().GetResult();
+                return this.savingsService.GetWithdrawNetAmountAsync(withdrawAmount, this.WithdrawEstimatedPenalty).GetAwaiter().GetResult();
             }
         }
 
@@ -259,7 +252,7 @@ namespace BankApp.Client.ViewModels
         }
 
         public bool CloseHasPenalty => this.SelectedAccount != null &&
-            this.savingsPresentationService.CheckClosePenaltyRisk(this.SelectedAccount).GetAwaiter().GetResult();
+            this.savingsService.CheckClosePenaltyRiskAsync(this.SelectedAccount).GetAwaiter().GetResult();
 
         public DateTimeOffset? MaturityDate { get; set; }
 
@@ -270,7 +263,7 @@ namespace BankApp.Client.ViewModels
             decimal amount;
             try
             {
-                amount = this.savingsUiRulesService.ParsePositiveAmount(this.WithdrawAmountText).GetAwaiter().GetResult();
+                amount = this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText).GetAwaiter().GetResult();
             }
             catch
             {
@@ -278,7 +271,7 @@ namespace BankApp.Client.ViewModels
                 return false;
             }
 
-            var withdrawValidation = await this.savingsWorkflowService.ValidateWithdrawRequest(amount, this.WithdrawDestination);
+            var withdrawValidation = await this.savingsService.ValidateWithdrawRequestAsync(amount, this.WithdrawDestination);
             if (!withdrawValidation.IsValid)
             {
                 this.WithdrawResultMessage = withdrawValidation.ErrorMessage;
@@ -294,7 +287,7 @@ namespace BankApp.Client.ViewModels
                     this.WithdrawDestination.DisplayName,
                     CurrentUser.Id);
                 this.WithdrawSuccess = withdrawResponseDto.Success;
-                this.WithdrawResultMessage = await this.savingsWorkflowService.BuildWithdrawResultMessage(withdrawResponseDto);
+                this.WithdrawResultMessage = await this.savingsService.BuildWithdrawResultMessageAsync(withdrawResponseDto);
                 if (withdrawResponseDto.Success)
                 {
                     this.WithdrawAmountText = string.Empty;
@@ -344,7 +337,7 @@ namespace BankApp.Client.ViewModels
             decimal amount;
             try
             {
-                amount = this.savingsUiRulesService.ParsePositiveAmount(this.AutoDepositAmountText).GetAwaiter().GetResult();
+                amount = this.savingsService.ParsePositiveAmountAsync(this.AutoDepositAmountText).GetAwaiter().GetResult();
             }
             catch
             {
@@ -361,7 +354,7 @@ namespace BankApp.Client.ViewModels
             DepositFrequency frequency;
             try
             {
-                frequency = this.savingsUiRulesService.ParseDepositFrequency(this.AutoDepositFrequency).GetAwaiter().GetResult();
+                frequency = this.savingsService.ParseDepositFrequencyAsync(this.AutoDepositFrequency).GetAwaiter().GetResult();
             }
             catch
             {
@@ -402,10 +395,10 @@ namespace BankApp.Client.ViewModels
                 this.OnPropertyChanged(nameof(this.IsEmpty));
                 this.OnPropertyChanged(nameof(this.ShowAccountsList));
 
-                this.TotalSavedAmount = await this.savingsPresentationService.GetTotalSavedAmount(this.SavingsAccounts);
+                this.TotalSavedAmount = await this.savingsService.GetTotalSavedAmountAsync(this.SavingsAccounts);
                 this.NumberOfAccountsText =
-                    await this.savingsPresentationService.GetNumberOfAccountsText(this.SavingsAccounts.Count);
-                this.BestInterestRate = await this.savingsPresentationService.GetBestInterestRate(this.SavingsAccounts);
+                    await this.savingsService.GetNumberOfAccountsTextAsync(this.SavingsAccounts.Count);
+                this.BestInterestRate = await this.savingsService.GetBestInterestRateAsync(this.SavingsAccounts);
             }
             catch (Exception exception)
             {
@@ -462,13 +455,13 @@ namespace BankApp.Client.ViewModels
             }
 
             this.SelectedCloseDestinationId =
-                await this.savingsWorkflowService.GetDefaultCloseDestinationId(this.CloseDestinationAccounts);
+                await this.savingsService.GetDefaultCloseDestinationIdAsync(this.CloseDestinationAccounts);
             this.OnPropertyChanged(nameof(this.CloseHasPenalty));
         }
 
         public async Task<bool> ConfirmCloseAsync()
         {
-            var closeValidation = await this.savingsWorkflowService.ValidateCloseConfirmation(
+            var closeValidation = await this.savingsService.ValidateCloseConfirmationAsync(
                 this.CloseUserConfirmed,
                 this.SelectedCloseDestinationId);
             if (!closeValidation.IsValid)
@@ -516,7 +509,7 @@ namespace BankApp.Client.ViewModels
                     this.FundingSources.Add(fundingSource);
                 }
 
-                this.SelectedFundingSource = await this.savingsWorkflowService.GetDefaultFundingSource(this.FundingSources);
+                this.SelectedFundingSource = await this.savingsService.GetDefaultFundingSourceAsync(this.FundingSources);
             }
             catch (Exception exception)
             {
@@ -541,7 +534,7 @@ namespace BankApp.Client.ViewModels
             {
                 try
                 {
-                    this.TargetAmount = this.savingsUiRulesService.ParsePositiveAmount(targetAmountText).GetAwaiter().GetResult();
+                    this.TargetAmount = this.savingsService.ParsePositiveAmountAsync(targetAmountText).GetAwaiter().GetResult();
                 }
                 catch
                 {
@@ -560,7 +553,7 @@ namespace BankApp.Client.ViewModels
             this.ErrorMessage = string.Empty;
             this.ShowCreateConfirmation = false;
 
-            var errors = await this.savingsUiRulesService.ValidateCreateAccount(new ValidateCreateAccountRequest
+            var errors = await this.savingsService.ValidateCreateAccountAsync(new ValidateCreateAccountRequest
             {
                 SelectedSavingsType = this.SelectedSavingsType,
                 AccountName = this.AccountName,
@@ -583,7 +576,7 @@ namespace BankApp.Client.ViewModels
                 return;
             }
 
-            var deposit = this.savingsUiRulesService.ParsePositiveAmount(this.InitialDepositText).GetAwaiter().GetResult();
+            var deposit = this.savingsService.ParsePositiveAmountAsync(this.InitialDepositText).GetAwaiter().GetResult();
 
             this.IsLoading = true;
             try
@@ -600,7 +593,7 @@ namespace BankApp.Client.ViewModels
                     MaturityDate = this.MaturityDate?.DateTime,
                     DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency)
                         ? null
-                        : this.savingsUiRulesService.ParseDepositFrequency(this.SelectedFrequency).GetAwaiter().GetResult(),
+                        : this.savingsService.ParseDepositFrequencyAsync(this.SelectedFrequency).GetAwaiter().GetResult(),
                 };
                 await this.savingsService.CreateAccountAsync(createSavingsAccountDto);
                 this.ShowCreateConfirmation = true;
@@ -643,7 +636,7 @@ namespace BankApp.Client.ViewModels
             decimal amount;
             try
             {
-                amount = this.savingsUiRulesService.ParsePositiveAmount(this.DepositAmountText).GetAwaiter().GetResult();
+                amount = this.savingsService.ParsePositiveAmountAsync(this.DepositAmountText).GetAwaiter().GetResult();
             }
             catch
             {
@@ -703,7 +696,7 @@ namespace BankApp.Client.ViewModels
                     this.transactions.Add(transaction);
                 }
 
-                this.totalPages = await this.savingsUiRulesService.GetTotalPages(result.TotalCount, DefaultTransactionPageSize);
+                this.totalPages = await this.savingsService.GetTotalPagesAsync(result.TotalCount, DefaultTransactionPageSize);
             }
             catch (Exception exception)
             {
@@ -713,7 +706,7 @@ namespace BankApp.Client.ViewModels
 
         public async Task NextPage(int accountId)
         {
-            if (!await this.savingsWorkflowService.CanMoveToNextPage(this.currentPage, this.totalPages))
+            if (!await this.savingsService.CanMoveToNextPageAsync(this.currentPage, this.totalPages))
             {
                 return;
             }
@@ -724,7 +717,7 @@ namespace BankApp.Client.ViewModels
 
         public async Task PreviousPage(int accountId)
         {
-            if (!await this.savingsWorkflowService.CanMoveToPreviousPage(this.currentPage))
+            if (!await this.savingsService.CanMoveToPreviousPageAsync(this.currentPage))
             {
                 return;
             }

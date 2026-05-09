@@ -27,6 +27,10 @@ namespace BankApp.Client.Services.Interfaces
         double GetRepaymentProgress(Loan loan);
 
         Task<List<AmortizationRow>> GetAmortizationAsync(int loanId);
+
+        Task<BuildApplicationOutcomeResponse?> GetBuildApplicationOutcomeAsync(string? rejectionReason);
+
+        Task<bool> GetShouldComputeEstimateAsync(double desiredAmount, int preferredTermMonths, string purpose);
     }
 
     public class LoanApplicationResult

@@ -240,34 +240,6 @@ namespace BankApp.Client.ViewModels
         {
             try
             {
-                /*
-                if (string.IsNullOrWhiteSpace(provider))
-                    return false;
-
-                var existing = OAuthLinks.Find(o =>
-                    string.Equals(o.Provider, provider, StringComparison.OrdinalIgnoreCase));
-
-                if (existing == null)
-                    return false;
-
-                State.SetValue(ProfileState.Loading);
-
-                var request = new { Provider = provider.Trim() };
-
-                var result = await _apiService.PostAsync<object, bool>(
-                    $"api/profile/{CurrentUser.Id}/oauth/unlink", request);
-
-                if (result)
-                {
-                    OAuthLinks.Remove(existing);
-                    State.SetValue(ProfileState.UpdateSuccess);
-                }
-                else
-                {
-                    State.SetValue(ProfileState.Error);
-                }
-
-                return result;*/
                 State.SetValue(ProfileState.Error);
                 return Task.FromResult(false);
             }

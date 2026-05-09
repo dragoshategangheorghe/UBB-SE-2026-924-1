@@ -1,5 +1,5 @@
-using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Enums;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
 using System.Collections.Generic;
@@ -23,6 +23,25 @@ namespace BankApp.Client.Services.Interfaces
         Task<decimal> ComputeWithdrawalPenalty(decimal amount);
         Task<bool> HasRiskEarlyWithdrawal(SavingsAccount savingsAccount);
         Task<decimal> GetPenaltyDecimalFor(string penaltyCase);
+
+        // Presentation / workflow (repo proxies live inside SavingsService — UI uses only this interface).
+        Task<decimal> ParsePositiveAmountAsync(string text);
+        Task<string> GetDepositPreviewAsync(string depositAmountText, SavingsAccount selectedAccount);
+        Task<decimal> GetWithdrawNetAmountAsync(decimal requestedAmount, decimal penalty);
+        Task<DepositFrequency> ParseDepositFrequencyAsync(string frequencyText);
+        Task<int> GetTotalPagesAsync(int totalCount, int pageSize);
+        Task<Dictionary<string, string>> ValidateCreateAccountAsync(ValidateCreateAccountRequest request);
+        Task<string> GetTotalSavedAmountAsync(IEnumerable<SavingsAccount> accounts);
+        Task<string> GetNumberOfAccountsTextAsync(int accountCount);
+        Task<string> GetBestInterestRateAsync(IEnumerable<SavingsAccount> accounts);
+        Task<bool> CheckClosePenaltyRiskAsync(SavingsAccount selectedAccount);
+        Task<FundingSourceOption> GetDefaultFundingSourceAsync(IEnumerable<FundingSourceOption> fundingSources);
+        Task<int> GetDefaultCloseDestinationIdAsync(IEnumerable<SavingsAccount> destinationAccounts);
+        Task<ValidationResponse> ValidateWithdrawRequestAsync(decimal amount, FundingSourceOption? destination);
+        Task<string> BuildWithdrawResultMessageAsync(WithdrawResponseDto response);
+        Task<ValidationResponse> ValidateCloseConfirmationAsync(bool userConfirmed, int destinationId);
+        Task<bool> CanMoveToNextPageAsync(int currentPage, int totalPages);
+        Task<bool> CanMoveToPreviousPageAsync(int currentPage);
     }
 }
 
