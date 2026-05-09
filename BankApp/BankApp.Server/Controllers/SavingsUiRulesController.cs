@@ -1,4 +1,7 @@
-﻿using BankApp.Models.DTOs.Savings;
+﻿/*
+ NOTE: read SavingsWorkFlowController, but I think this one too can be used in the client, no dependencies
+
+using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Savings;
 using BankApp.Server.Services.Implementations;
@@ -73,3 +76,5 @@ namespace BankApp.Server.Controllers
         }
     }
 }
+
+*/
