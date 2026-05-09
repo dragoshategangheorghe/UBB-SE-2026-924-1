@@ -207,49 +207,36 @@ namespace BankApp.Client.ViewModels
         }
 
 
-        public async Task<bool> LinkOAuth(string provider)
+        public Task<bool> LinkOAuth(string provider)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(provider))
-                    return false;
+                    return Task.FromResult(false);
 
                 var alreadyLinked = OAuthLinks.Exists(o =>
                     string.Equals(o.Provider, provider, StringComparison.OrdinalIgnoreCase));
 
                 if (alreadyLinked)
-                    return false;
+                    return Task.FromResult(false);
 
                 State.SetValue(ProfileState.Loading);
 
-                var request = new { Provider = provider.Trim() };
-
-                var result = await _apiService.PostAsync<object, bool>(
-                    $"/api/profile/oauth/link", request);  /* what is this endpoint */
-
-                if (result)
-                {
-                    /*
-                    OAuthLinks.Add(new OAuthLink { Provider = provider, UserId = ProfileInfo.UserId });*/
-                    State.SetValue(ProfileState.UpdateSuccess);
-                }
-                else
-                {
-                    State.SetValue(ProfileState.Error);
-                }
-
-                return result;
+                // OAuth linking is not yet refactored into the new client-service + repo-proxy layering.
+                // Keep UI responsive but report the feature as unavailable for now.
+                State.SetValue(ProfileState.Error);
+                return Task.FromResult(false);
             }
             catch (Exception ex)
             {
                 State.SetValue(ProfileState.Error);
                 LogError(nameof(LinkOAuth), ex);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
 
-        public async Task<bool> UnlinkOAuth(string provider)
+        public Task<bool> UnlinkOAuth(string provider)
         {
             try
             {
@@ -281,13 +268,14 @@ namespace BankApp.Client.ViewModels
                 }
 
                 return result;*/
-                return true;
+                State.SetValue(ProfileState.Error);
+                return Task.FromResult(false);
             }
             catch (Exception ex)
             {
                 State.SetValue(ProfileState.Error);
                 LogError(nameof(UnlinkOAuth), ex);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
