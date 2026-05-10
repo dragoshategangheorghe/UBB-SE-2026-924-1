@@ -35,14 +35,28 @@ namespace BankApp.Client.Views
 
         private async void StartNewChat_Click(object sender, RoutedEventArgs e)
         {
-            string issueCategory = IssueCategoryComboBox.SelectedItem?.ToString() ?? "General";
-            CreateChatSessionResponse? response = await chatService.CreateSessionAsync(issueCategory);
-            if (response == null || !response.Success || response.SessionId <= 0)
+            try
             {
-                return;
-            }
+                string issueCategory = IssueCategoryComboBox.SelectedItem?.ToString() ?? "General";
+                CreateChatSessionResponse? response = await chatService.CreateSessionAsync(issueCategory);
+                if (response == null || !response.Success || response.SessionId <= 0)
+                {
+                    return;
+                }
 
-            Frame?.Navigate(typeof(ChatView), response.SessionId);
+                Frame?.Navigate(typeof(ChatView), response.SessionId);
+            }
+            catch (Exception ex)
+            {
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "Could not start chat",
+                    Content = ex.Message,
+                    CloseButtonText = "OK",
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
         }
 
         private void SessionsList_ItemClick(object sender, ItemClickEventArgs e)
