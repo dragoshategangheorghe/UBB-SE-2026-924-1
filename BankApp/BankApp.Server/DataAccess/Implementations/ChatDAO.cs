@@ -17,14 +17,17 @@ public class ChatDAO : IChatDAO
     {
         return db.ChatSessions
             .Include(s => s.User)
-            .Where(s => s.User.Id == userId)
+            .Where(s => EF.Property<int>(s, "UserId") == userId)
             .OrderByDescending(s => s.StartedAt)
+            .AsNoTracking()
             .ToList();
     }
 
     public ChatSession? GetById(int id)
     {
-        ChatSession? session = db.ChatSessions.FirstOrDefault(s => s.Id == id);
+        ChatSession? session = db.ChatSessions
+            .Include(s => s.User)
+            .FirstOrDefault(s => s.Id == id);
         return session;
     }
 

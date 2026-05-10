@@ -242,21 +242,46 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<ChatSession>(entity =>
             {
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.IssueCategory).HasColumnName("issueCategory").HasMaxLength(50);
+                entity.Property(e => e.SessionStatus).HasColumnName("sessionStatus").HasMaxLength(30);
+                entity.Property(e => e.Rating).HasColumnName("rating");
+                entity.Property(e => e.StartedAt).HasColumnName("startedAt");
+                entity.Property(e => e.EndedAt).HasColumnName("endedAt");
+                entity.Property(e => e.Feedback).HasColumnName("feedback").HasMaxLength(255);
+                entity.Property<int>("UserId").HasColumnName("userId");
+
                 entity.HasOne(s => s.User)
                     .WithMany()
+                    .HasForeignKey("UserId")
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(s => s.Messages)
                     .WithOne(m => m.Session)
                     .IsRequired();
+            });
 
-                entity.HasOne(s => s.Attachment);
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.SessionId).HasColumnName("sessionId");
+                entity.Property(e => e.SenderType).HasColumnName("senderType").HasMaxLength(20);
+                entity.Property(e => e.Content).HasColumnName("content");
+                entity.Property(e => e.SentAt).HasColumnName("sentAt");
             });
 
             modelBuilder.Entity<ChatAttachment>(entity =>
             {
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.MessageId).HasColumnName("messageId");
+                entity.Property(e => e.AttachmentName).HasColumnName("attachmentName").HasMaxLength(255);
+                entity.Property(e => e.FileType).HasColumnName("fileType").HasMaxLength(50);
+                entity.Property(e => e.FileSizeBytes).HasColumnName("fileSizeBytes");
+                entity.Property(e => e.StorageUrl).HasColumnName("storageUrl").HasMaxLength(255);
+
                 entity.HasOne(a => a.Message)
                     .WithMany()
+                    .HasForeignKey(a => a.MessageId)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
