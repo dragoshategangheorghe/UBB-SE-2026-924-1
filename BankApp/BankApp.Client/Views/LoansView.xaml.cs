@@ -5,6 +5,7 @@ namespace BankApp.Client.Views
     using BankApp.Client.View.Dialogs;
     using BankApp.Client.ViewModels;
     using BankApp.Client.Views.Dialogs;
+    using BankApp.Models.Entities;
     using BankApp.Models.Enums;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
@@ -25,7 +26,17 @@ namespace BankApp.Client.Views
         {
             if (ViewModel != null)
             {
-                await this.ViewModel.LoadLoansAsync();
+                try
+                {
+                    var userId = App.AuthService.GetCurrentUserId() ?? throw new Exception("Current user id is null.");
+                    this.ViewModel.CurrentUser = new User { Id = userId };
+
+                    await this.ViewModel.LoadLoansAsync();
+                }
+                catch (Exception ex)
+                {
+                    this.ViewModel.ErrorMessage = ex.Message;
+                }
             }
         }
 
