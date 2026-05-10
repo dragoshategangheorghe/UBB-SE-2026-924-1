@@ -2,9 +2,7 @@
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Savings;
-using BankApp.Server.Services.Implementations;
 using Microsoft.AspNetCore.Mvc;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace BankApp.Server.Controllers
 {
@@ -15,12 +13,10 @@ namespace BankApp.Server.Controllers
         private const decimal PositiveAmountThreshold = 0m;
         private const int NoPages = 0;
 
-        private readonly SavingsUiRulesService _uiRulesService = new ();
-
         [HttpGet("parse-positive-amount")]
         public ActionResult<decimal> ParsePositiveAmount([FromQuery] string text)
         {
-            var isValid = this.TryParsePositiveAmount(text, out var amount);
+            var isValid = SavingsUiRulesController.TryParsePositiveAmount(text, out var amount);
             if (isValid)
             {
                 return Ok(amount);
@@ -32,7 +28,7 @@ namespace BankApp.Server.Controllers
         public ActionResult<string> GetDepositPreview([FromQuery] string depositAmountText, [FromBody] SavingsAccount selectedAccount)
         {
             string previewText;
-            bool isDepositTextPositiveAmount = this.TryParsePositiveAmount(depositAmountText, out var amount);
+            bool isDepositTextPositiveAmount = SavingsUiRulesController.TryParsePositiveAmount(depositAmountText, out var amount);
 
             if (selectedAccount == null || !isDepositTextPositiveAmount)
             {
@@ -87,7 +83,7 @@ namespace BankApp.Server.Controllers
                 errors["AccountName"] = "Account name is required.";
             }
 
-            if (!this.TryParsePositiveAmount(request.InitialDepositText, out _))
+            if (!SavingsUiRulesController.TryParsePositiveAmount(request.InitialDepositText, out _))
             {
                 errors["InitialDeposit"] = "Initial deposit must be a positive number.";
             }
@@ -126,7 +122,7 @@ namespace BankApp.Server.Controllers
         //  outside of the function which it is "routed" to
         //  I don't know if it's good to have a function that is not routed to by anything inside an API controller,
         //  this is just a helper function to not have to write out the same long conditional multiple times (DRY)
-        private bool TryParsePositiveAmount(string text, out decimal amount)
+        private static bool TryParsePositiveAmount(string text, out decimal amount)
         {
             if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out amount) && amount > PositiveAmountThreshold)
             {
