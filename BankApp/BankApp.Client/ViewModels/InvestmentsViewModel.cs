@@ -10,7 +10,7 @@ using Microsoft.UI.Dispatching;
 using BankApp.Models.Entities;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
-using BankApp.Models.Features.Investments;
+using BankApp.Models.Entities;
 
 namespace BankApp.Client.ViewModels
 {
@@ -110,7 +110,7 @@ namespace BankApp.Client.ViewModels
             {
                 var portfolio = await investmentsService.GetPortfolioForCurrentUserAsync();
 
-                if (portfolio != null)
+                if (this.UserPortfolio is not null)
                 {
                     this.UserPortfolio = portfolio;
                     this.RefreshDisplayedHoldings();

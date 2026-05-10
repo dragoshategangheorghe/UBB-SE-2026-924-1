@@ -1,28 +1,25 @@
-using System.Threading.Tasks;
-using BankApp.Client.RepoProxies;
-using BankApp.Client.RepoProxies.Interfaces;
-using BankApp.Models.Features.Investments;
-
 namespace BankApp.Client.RepoProxies.Implementations
 {
+    using System.Threading.Tasks;
+    using BankApp.Client.RepoProxies.Interfaces;
+    using BankApp.Client.Utilities;
+    using BankApp.Models.Entities;
+
     public class InvestmentsRepoProxy : IInvestmentsRepoProxy
     {
-        private readonly ApiService _apiService;
+        private readonly ApiService apiService;
 
-        public InvestmentsRepoProxy(ApiService apiService)
+        public InvestmentsRepoProxy(ApiService apiService) => this.apiService = apiService;
+
+        public async Task<Portfolio?> GetPortfolioAsync(int userId)
         {
-            _apiService = apiService;
+            return await this.apiService.GetAsync<Portfolio>($"/api/investments/portfolio/{userId}");
         }
 
-        public Task<Portfolio?> GetPortfolioAsync(int userId)
+        public async Task<Portfolio?> GetPortfolioForCurrentUserAsync()
         {
-            return _apiService.GetAsync<Portfolio>($"/api/investments/portfolio/{userId}");
-        }
-
-        public Task<Portfolio?> GetPortfolioForCurrentUserAsync()
-        {
-            int? userId = _apiService.GetCurrentUserId();
-            return userId == null ? Task.FromResult<Portfolio?>(null) : GetPortfolioAsync(userId.Value);
+            int? userId = this.apiService.GetCurrentUserId();
+            return userId == null ? null : await this.GetPortfolioAsync(userId.Value);
         }
     }
 }

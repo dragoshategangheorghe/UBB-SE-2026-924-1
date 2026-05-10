@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using BankApp.Models.Features.Investments; // Updated to use the merged models
+    using BankApp.Models.Entities;
 
     /// <summary>
     /// Defines persistence operations for investment portfolios and trades.

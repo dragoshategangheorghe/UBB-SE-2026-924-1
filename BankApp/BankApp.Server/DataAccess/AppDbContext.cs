@@ -53,9 +53,9 @@ namespace BankApp.Server.DataAccess
         // FEATURES: Investments
         public DbSet<FundingSourceOption> FundingSourceOptions { get; set; }
 
-        public DbSet<InvestmentHolding> InvestmentHoldings { get; set; }
+        public DbSet<Models.Entities.InvestmentHolding> InvestmentHoldings { get; set; }
 
-        public DbSet<Portfolio> Portfolios { get; set; }
+        public DbSet<Models.Entities.Portfolio> Portfolios { get; set; }
 
         public DbSet<SelectedAttachment> SelectedAttachments { get; set; }
 
@@ -97,9 +97,9 @@ namespace BankApp.Server.DataAccess
             modelBuilder.Entity<SavingsAccount>().ToTable("SavingsAccount");
             modelBuilder.Entity<SavingsTransaction>().ToTable("SavingsTransaction");
             modelBuilder.Entity<AutoDeposit>().ToTable("AutoDeposit");
-            modelBuilder.Entity<Portfolio>().ToTable("Portfolio");
-            modelBuilder.Entity<InvestmentHolding>().ToTable("InvestmentHolding");
-            modelBuilder.Entity<InvestmentTransaction>().ToTable("InvestmentTransaction");
+            modelBuilder.Entity<Models.Entities.Portfolio>().ToTable("Portfolio");
+            modelBuilder.Entity<Models.Entities.InvestmentHolding>().ToTable("InvestmentHolding");
+            modelBuilder.Entity<Models.Entities.InvestmentTransaction>().ToTable("InvestmentTransaction");
             modelBuilder.Entity<ChatSession>().ToTable("ChatSession");
             modelBuilder.Entity<ChatMessage>().ToTable("ChatMessage");
             modelBuilder.Entity<ChatAttachment>().ToTable("ChatAttachment");
@@ -285,7 +285,7 @@ namespace BankApp.Server.DataAccess
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
-            modelBuilder.Entity<Portfolio>(entity =>
+            modelBuilder.Entity<Models.Entities.Portfolio>(entity =>
             {
                 entity.HasOne(p => p.User)
                     .WithMany()
@@ -296,7 +296,7 @@ namespace BankApp.Server.DataAccess
                     .IsRequired();
             });
 
-            modelBuilder.Entity<InvestmentHolding>(entity =>
+            modelBuilder.Entity<Models.Entities.InvestmentHolding>(entity =>
             {
                 entity.HasMany(h => h.Transactions)
                     .WithOne(t => t.Holding)
