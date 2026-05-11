@@ -126,7 +126,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 var savingsTransaction = new SavingsTransaction
                 {
-                    // SavingsAccount = account,
+                    SavingsAccount = account,
                     Account = account.FundingAccount,
                     Amount = amount,
                     Type = TransactionType.Deposit,
@@ -192,7 +192,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 _context.SavingsTransactions.Add(new SavingsTransaction
                 {
-                    // SavingsAccount = sourceAccount,
+                    SavingsAccount = sourceAccount,
                     Account = sourceAccount.FundingAccount,
                     Amount = transferAmount,
                     Type = TransactionType.Deposit,
@@ -266,7 +266,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 _context.SavingsTransactions.Add(new SavingsTransaction
                 {
-                    // SavingsAccount = account,
+                    SavingsAccount = account,
                     Account = account.FundingAccount,
                     Amount = amount,
                     Type = TransactionType.Withdrawal,
@@ -312,8 +312,7 @@ namespace BankApp.Server.Repositories.Implementations
                 .AsNoTracking()
                 .Include(x => x.SavingsAccount)
                 .ThenInclude(x => x.User)
-                // .FirstOrDefaultAsync(x => x.SavingsAccount.IdentificationNumber == accountId);
-                .FirstOrDefaultAsync(x => x.SavingsAccountId == accountId);
+                .FirstOrDefaultAsync(x => x.SavingsAccount.IdentificationNumber == accountId);
         }
 
         /// <summary>
@@ -357,16 +356,14 @@ namespace BankApp.Server.Repositories.Implementations
         {
             var query = _context.SavingsTransactions
                 .AsNoTracking()
+                .Include(x => x.SavingsAccount)
+                .ThenInclude(x => x.User)
                 .Include(x => x.Account)
-                .Where(x => x.SavingsAccount != null &&
-                            x.SavingsAccount.IdentificationNumber == accountId);
+                .Where(x => x.SavingsAccount.IdentificationNumber == accountId);
 
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
             {
-                if (Enum.TryParse<TransactionType>(typeFilter, out var parsedType))
-                {
-                    query = query.Where(x => x.Type == parsedType);
-                }
+                query = query.Where(x => x.Type.ToString() == typeFilter);
             }
 
             var totalCount = await query.CountAsync();

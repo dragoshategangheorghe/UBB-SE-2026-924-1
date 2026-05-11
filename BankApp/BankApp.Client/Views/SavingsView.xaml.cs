@@ -9,7 +9,6 @@ namespace BankApp.Client.Views
     using Microsoft.UI.Xaml.Navigation;
     using BankApp.Models.Features.Investments;
     using BankApp.Models.Features.Savings;
-    using BankApp.Models.Entities;
 
     public sealed partial class SavingsView : UserControl
     {
@@ -31,20 +30,12 @@ namespace BankApp.Client.Views
             // Ne asigurăm că ViewModel-ul a fost injectat cu succes din XAML
             if (this.ViewModel != null)
             {
-                try
-                {
-                    var userId = App.AuthService.GetCurrentUserId() ?? throw new Exception("Current user id is null.");
-                    this.ViewModel.CurrentUser = new User { Id = userId };
-
-                    await this.ViewModel.LoadAccountsAsync();
-                }
-                catch (Exception ex)
-                {
-                    this.ViewModel.ErrorMessage = ex.Message;
-                }
+                // Apelăm proprietatea cu V mare
+                await this.ViewModel.LoadAccountsAsync();
 
                 if (this.ViewModel.HasError)
                 {
+                    // Presupun că ShowDialogAsync e o metodă definită mai jos în clasa ta
                     await this.ShowDialogAsync("Load Error", this.ViewModel.ErrorMessage);
                 }
             }

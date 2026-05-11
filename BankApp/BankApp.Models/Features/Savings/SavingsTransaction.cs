@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,18 +15,10 @@ namespace BankApp.Models.Features.Savings
         /// </summary>
         public int Id { get; set; }
 
-        /*
-        /// <summary>
-        /// Gets or sets the foreign key from SavingsAccount
-        /// </summary>
-        [Column("savingsAccountId")]
-        public int SavingsAccountId { get; set; }
-        */
-
         /// <summary>
         ///     Gets or sets the savings account involved in the transaction.
         /// </summary>
-        public virtual SavingsAccount? SavingsAccount { get; set; }
+        public virtual SavingsAccount SavingsAccount { get; set; } = null!;
 
         /// <summary>
         ///     Gets or sets the amount of money involved in the transaction.
@@ -37,7 +28,6 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the type of transaction, which can be either a deposit or a withdrawal.
         /// </summary>
-        [Column("transactionType")]
         public TransactionType Type { get; set; }
 
         /// <summary>
@@ -52,17 +42,10 @@ namespace BankApp.Models.Features.Savings
         public DateTime CreatedAt { get; set; }
 
         /// <summary>
-        /// Gets or sets the foreign key from Account
-        /// </summary>
-        [Column("accountId")]
-        public int AccountId { get; set; }
-
-        /// <summary>
         ///     Gets or sets the account associated with this transaction.
         ///     This is the account that the transaction is being made on, and it is used to link the transaction to the correct
         ///     account in the database.
         /// </summary>
-        [ForeignKey("AccountId")]
         public virtual Account Account { get; set; } = null!;
 
         /// <summary>

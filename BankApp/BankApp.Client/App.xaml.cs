@@ -6,7 +6,6 @@ using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Implementations;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.State;
-using BankApp.Models.Entities;
 using Microsoft.UI.Xaml;
 
 namespace BankApp.Client
