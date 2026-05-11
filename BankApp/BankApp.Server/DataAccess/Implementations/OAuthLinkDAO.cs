@@ -6,19 +6,18 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class OAuthLinkDAO : IOAuthLinkDAO
     {
-        private readonly AppDbContext _dbContext;
-
+        private readonly AppDbContext context;
         public OAuthLinkDAO(AppDbContext context)
         {
-            this._dbContext = context;
+            this.context = context;
         }
 
         public bool Create(int userId, string provider, string providerUserId, string? providerEmail)
         {
-            var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
-            if (_dbContext.Entry(user).State == EntityState.Detached)
+            var user = context.Users.Local.FirstOrDefault(u => u.Id == userId) ?? context.Users.Find(userId) ?? new User { Id = userId };
+            if (context.Entry(user).State == EntityState.Detached)
             {
-                _dbContext.Attach(user);
+                context.Attach(user);
             }
 
             var link = new OAuthLink
@@ -29,32 +28,33 @@ namespace BankApp.Server.DataAccess.Implementations
                 ProviderEmail = providerEmail
             };
 
-            _dbContext.OAuthLinks.Add(link);
-            return _dbContext.SaveChanges() > 0;
+            context.OAuthLinks.Add(link);
+            return context.SaveChanges() > 0;
         }
 
         public void Delete(int id)
         {
-            var entity = _dbContext.OAuthLinks.FirstOrDefault(x => x.Id == id);
+            var entity = context.OAuthLinks.FirstOrDefault(x => x.Id == id);
 
             if (entity == null)
+            {
                 return;
+            }
 
-            _dbContext.OAuthLinks.Remove(entity);
-            _dbContext.SaveChanges();
-
+            context.OAuthLinks.Remove(entity);
+            context.SaveChanges();
         }
 
         public OAuthLink? FindByProvider(string provider, string providerUserId)
         {
-            return _dbContext.OAuthLinks
+            return context.OAuthLinks
                     .Include(x => x.User)
                     .FirstOrDefault(x => x.Provider == provider && x.ProviderUserId == providerUserId);
         }
 
         public List<OAuthLink> FindByUserId(int userId)
         {
-            return _dbContext.OAuthLinks
+            return context.OAuthLinks
                    .Include(x => x.User)
                    .Where(x => x.User.Id == userId)
                    .ToList();

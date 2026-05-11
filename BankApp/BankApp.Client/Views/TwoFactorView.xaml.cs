@@ -7,7 +7,7 @@ using BankApp.Models.Enums;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class TwoFactorView : Page, Observer<TwoFactorState>
+    public sealed partial class TwoFactorView : Page, IAppObserver<TwoFactorState>
     {
         private readonly TwoFactorViewModel _viewModel;
         private DispatcherTimer _countdownTimer;
@@ -17,7 +17,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new TwoFactorViewModel(App.ApiService);
+            _viewModel = new TwoFactorViewModel(App.AuthService);
             _viewModel.State.AddObserver(this);
 
             _countdownTimer = new DispatcherTimer();
@@ -132,7 +132,7 @@ namespace BankApp.Client.Views
 
         private void BackToLoginButton_Click(object sender, RoutedEventArgs e)
         {
-            App.ApiService.ClearToken();
+            App.AuthService.ClearLocalSession();
             App.NavigationService.NavigateTo<LoginView>();
         }
     }

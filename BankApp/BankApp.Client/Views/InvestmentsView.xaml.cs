@@ -1,8 +1,8 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using BankApp.Client.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
-namespace BankApp.Client.Views 
+namespace BankApp.Client.Views
 {
     public sealed partial class InvestmentsView : Page
     {
@@ -11,7 +11,7 @@ namespace BankApp.Client.Views
             this.InitializeComponent();
 
             // Unified GUI: Initialize the ViewModel and link DataContext
-            this.ViewModel = new InvestmentsViewModel();
+            this.ViewModel = new InvestmentsViewModel(App.InvestmentsService);
             this.DataContext = this.ViewModel;
 
             this.Loaded += this.OnPageLoaded;

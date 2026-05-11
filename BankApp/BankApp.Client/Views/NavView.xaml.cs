@@ -1,4 +1,4 @@
-﻿namespace BankApp.Client.Views
+namespace BankApp.Client.Views
 {
     using System;
     using System.Collections.Generic;
@@ -77,14 +77,9 @@
             SetActiveNav(NavSavings);
             App.NavigationService.NavigateToContent<LoansAndSavingsView>();
         }
-        
-        private async void NavInvestments_Click(object sender, RoutedEventArgs e) {
-            // Update the UI style to show this tab is active
+        private void NavInvestments_Click(object sender, RoutedEventArgs e)
+        {
             this.SetActiveNav(NavInvestments);
-            // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
-            App.NavigationService.NavigateToContent<InvestmentsView>();
-        
-            // Navigate the central frame to your merged view using the project's NavigationService[cite: 1]
             App.NavigationService.NavigateToContent<InvestmentsView>();
         }
 
@@ -103,7 +98,7 @@
 
         private async void NavCurrencyExchange_Click(object sender, RoutedEventArgs e) =>
             await this.ShowComingSoonAsync("Currency Exchange");
-        
+
         private void NavSupport_Click(object sender, RoutedEventArgs e)
         {
             this.SetActiveNav(NavSupport);
@@ -129,7 +124,7 @@
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            App.ApiService.ClearToken();
+            App.AuthService.ClearLocalSession();
             App.NavigationService.NavigateTo<LoginView>();
         }
 

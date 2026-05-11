@@ -1,41 +1,37 @@
-using BankApp.Client.Utilities;
-using BankApp.Client.ViewModels;
-using BankApp.Models.Entities;
-using BankApp.Models.Enums;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using BankApp.Client.Utilities;
+using BankApp.Client.ViewModels;
+using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 using BankApp.Models.Extensions;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class ProfileView : Page, Observer<ProfileState>
+    public sealed partial class ProfileView : Page, IAppObserver<ProfileState>
     {
         private ProfileViewModel _viewModel;
 
-
         private string _verifiedPassword = string.Empty;
-        private string _pending2FAType = "";
+        private string _pending2FAType = string.Empty;
         private bool _isChangingPasswordFlow = false;
         private bool _is2FAFlow = false;
         private bool _isPopulating = false;
         private bool _isUpdatingToggle = false;
 
-
         public ProfileView()
         {
             this.InitializeComponent();
 
-            _viewModel = new ProfileViewModel(App.ApiService);
+            _viewModel = new ProfileViewModel(App.ProfileService);
             _viewModel.State.AddObserver(this);
         }
-
-        // ─── Navigation ─────────────────────────────────────────
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -61,25 +57,23 @@ namespace BankApp.Client.Views
             _viewModel?.State.RemoveObserver(this);
         }
 
-        // ─── UI Setup ─────────────────────────────────────────
-
         private void PopulateUI()
         {
             var user = _viewModel.ProfileInfo;
 
-            ProfileCardName.Text = user.FullName ?? "";
-            ProfileCardEmail.Text = user.Email ?? "";
-            ProfileCardPhone.Text = user.PhoneNumber ?? "";
-            ProfileCardAddress.Text = user.Address ?? "";
+            ProfileCardName.Text = user.FullName ?? string.Empty;
+            ProfileCardEmail.Text = user.Email ?? string.Empty;
+            ProfileCardPhone.Text = user.PhoneNumber ?? string.Empty;
+            ProfileCardAddress.Text = user.Address ?? string.Empty;
 
-            FullNameBox.Text = user.FullName ?? "";
-            EmailBox.Text = user.Email ?? "";
+            FullNameBox.Text = user.FullName ?? string.Empty;
+            EmailBox.Text = user.Email ?? string.Empty;
 
-            PhoneBox.Text = user.PhoneNumber ?? "";
-            AddressBox.Text = user.Address ?? "";
+            PhoneBox.Text = user.PhoneNumber ?? string.Empty;
+            AddressBox.Text = user.Address ?? string.Empty;
 
-            TwoFactorPhoneDisplay.Text = user.PhoneNumber ?? "";
-            TwoFactorEmailDisplay.Text = user.Email ?? "";
+            TwoFactorPhoneDisplay.Text = user.PhoneNumber ?? string.Empty;
+            TwoFactorEmailDisplay.Text = user.Email ?? string.Empty;
 
             _isPopulating = true;
             TwoFactorToggle.IsOn = user.Is2FAEnabled;
@@ -92,42 +86,35 @@ namespace BankApp.Client.Views
 
         private void SetEditingEnabled(bool enabled)
         {
-            //FullNameBox.IsEnabled = enabled;
             PhoneBox.IsEnabled = enabled;
             AddressBox.IsEnabled = enabled;
             SaveButton.IsEnabled = enabled;
 
-            
             PhoneBox.IsReadOnly = !enabled;
             AddressBox.IsReadOnly = !enabled;
-            //FullNameBox.IsReadOnly = !enabled;
-          
+
             PhoneBox.Opacity = enabled ? 1.0 : 0.6;
             AddressBox.Opacity = enabled ? 1.0 : 0.6;
-           // FullNameBox.Opacity = !enabled ? 1.0 : 0.6;
-            
+
             if (enabled)
             {
                 PhoneBox.Focus(FocusState.Programmatic);
                 AddressBox.Focus(FocusState.Programmatic);
-               // FullNameBox.Focus(FocusState.Programmatic);
             }
         }
-
-        // ─── PERSONAL INFO FLOW ───────────────────────────────
 
         private async void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
             _isChangingPasswordFlow = false; // Just editing info
             _is2FAFlow = false;
-            VerifyCurrentPasswordBox.Password = "";
+            VerifyCurrentPasswordBox.Password = string.Empty;
             VerifyErrorInfoBar.IsOpen = false;
             await VerifyPasswordDialog.ShowAsync();
         }
 
         private async void VerifyPasswordDialog_PrimaryButtonClick(
-     ContentDialog sender,
-     ContentDialogButtonClickEventArgs args)
+            ContentDialog sender,
+            ContentDialogButtonClickEventArgs args)
         {
             var deferral = args.GetDeferral();
 
@@ -164,8 +151,8 @@ namespace BankApp.Client.Views
                 // We MUST use the Dispatcher to wait until the first dialog is gone
                 DispatcherQueue.TryEnqueue(async () =>
                 {
-                    NewPasswordBox.Password = "";
-                    ConfirmPasswordBox.Password = "";
+                    NewPasswordBox.Password = string.Empty;
+                    ConfirmPasswordBox.Password = string.Empty;
                     NewPasswordErrorInfoBar.IsOpen = false;
                     await NewPasswordDialog.ShowAsync();
                 });
@@ -194,7 +181,7 @@ namespace BankApp.Client.Views
                 ProfileCardPhone.Text = PhoneBox.Text.Trim();
                 ProfileCardAddress.Text = AddressBox.Text.Trim();
 
-                _verifiedPassword = "";
+                _verifiedPassword = string.Empty;
                 SetEditingEnabled(false);
 
                 ShowSuccess("Profile updated successfully.");
@@ -205,20 +192,18 @@ namespace BankApp.Client.Views
             }
         }
 
-        // ─── PASSWORD CHANGE ───────────────────────────────
-
         private async void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {
             _isChangingPasswordFlow = true; // Password change flow
             _is2FAFlow = false;
-            VerifyCurrentPasswordBox.Password = "";
+            VerifyCurrentPasswordBox.Password = string.Empty;
             VerifyErrorInfoBar.IsOpen = false;
             await VerifyPasswordDialog.ShowAsync();
         }
 
         private async void NewPasswordDialog_PrimaryButtonClick(
-     ContentDialog sender,
-     ContentDialogButtonClickEventArgs args)
+            ContentDialog sender,
+            ContentDialogButtonClickEventArgs args)
         {
             var deferral = args.GetDeferral();
 
@@ -250,7 +235,7 @@ namespace BankApp.Client.Views
 
             if (success)
             {
-                _verifiedPassword = ""; // Clear security sensitive data
+                _verifiedPassword = string.Empty; // Clear security sensitive data
                 NewPasswordErrorInfoBar.IsOpen = false;
 
                 deferral.Complete();
@@ -264,9 +249,6 @@ namespace BankApp.Client.Views
                 deferral.Complete();
             }
         }
-       
-        // ─── 2FA ─────────────────────────────────────────
-
 
         private async void Handle2FAAction_Click(object sender, RoutedEventArgs e)
         {
@@ -281,33 +263,34 @@ namespace BankApp.Client.Views
             {
                 // Logic for Add/Verify
                 _is2FAFlow = true;
-                VerifyCurrentPasswordBox.Password = "";
+                VerifyCurrentPasswordBox.Password = string.Empty;
                 await VerifyPasswordDialog.ShowAsync();
             }
         }
 
-
-
         private async void SaveTwoFactorSettings_Click(object sender, RoutedEventArgs e)
         {
-            //bool success = await _viewModel.UpdateTwoFactorContacts(
-            //    TwoFactorPhoneBox.Text.Trim(),
-            //    TwoFactorEmailBox.Text.Trim());
-
-            //if (success)
-            //    ShowSuccess("2FA settings saved.");
-            //else
-            //    ShowError("Failed to save 2FA settings.");
+            // bool success = await _viewModel.UpdateTwoFactorContacts(
+            //     TwoFactorPhoneBox.Text.Trim(),
+            //     TwoFactorEmailBox.Text.Trim());
+            //
+            // if (success)
+            //     ShowSuccess("2FA settings saved.");
+            // else
+            //     ShowError("Failed to save 2FA settings.");
         }
+
         private async void TwoFactorToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            if (_isPopulating) return;
+            if (_isPopulating)
+            {
+                return;
+            }
 
             bool success;
 
             if (TwoFactorToggle.IsOn)
             {
-              
                 success = await _viewModel.EnableTwoFactor(TwoFactorMethod.Email);
             }
             else
@@ -326,15 +309,13 @@ namespace BankApp.Client.Views
 
         private async void TwoFactorEmailToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            //bool success = TwoFactorEmailToggle.IsOn
-            //    ? await _viewModel.EnableTwoFactor(TwoFactorMethod.Email)
-            //    : await _viewModel.DisableTwoFactor(TwoFactorMethod.Email);
-
-            //if (!success)
-            //    ShowError("2FA email update failed.");
+            // bool success = TwoFactorEmailToggle.IsOn
+            //     ? await _viewModel.EnableTwoFactor(TwoFactorMethod.Email)
+            //     : await _viewModel.DisableTwoFactor(TwoFactorMethod.Email);
+            //
+            // if (!success)
+            //     ShowError("2FA email update failed.");
         }
-
-        // ─── OAuth ─────────────────────────────────────────
 
         private async void RemoveConnectedAccount_Click(object sender, RoutedEventArgs e)
         {
@@ -343,9 +324,13 @@ namespace BankApp.Client.Views
                 bool success = await _viewModel.UnlinkOAuth(link.Provider);
 
                 if (success)
+                {
                     PopulateOAuthLinks(_viewModel.OAuthLinks);
+                }
                 else
+                {
                     ShowError("Failed to remove account.");
+                }
             }
         }
 
@@ -353,12 +338,13 @@ namespace BankApp.Client.Views
         {
         }
 
-        // ─── Notifications ─────────────────────────
-
         private async void NotificationToggle_Toggled(object sender, RoutedEventArgs e)
         {
             // 1. Ignore the event if we are just drawing the UI
-            if (_isPopulating) return;
+            if (_isPopulating)
+            {
+                return;
+            }
 
             if (sender is ToggleSwitch toggle && toggle.Tag is NotificationPreference pref)
             {
@@ -386,7 +372,6 @@ namespace BankApp.Client.Views
                 }
             }
         }
-        // ─── Navigation ─────────────────────────
 
         private void DashboardNavButton_Click(object sender, RoutedEventArgs e)
         {
@@ -398,8 +383,6 @@ namespace BankApp.Client.Views
             App.NavigationService.NavigateTo<LoginView>();
         }
 
-        // ─── Helpers ─────────────────────────
-
         private void Update2FAVisuals()
         {
             var user = _viewModel.ProfileInfo;
@@ -410,15 +393,11 @@ namespace BankApp.Client.Views
                 TwoFactorPhoneDisplay.Text = "No phone number set";
                 ConfigureActionButton(ActionPhoneBtn, PhoneStatusBadge, PhoneStatusText, "Add", "#F1F5F9", "#64748B", "Disabled");
             }
-            else if (true/*!user.IsPhoneVerified*/)
-            { // You need this property in your Model
-                TwoFactorPhoneDisplay.Text = user.PhoneNumber;
-                ConfigureActionButton(ActionPhoneBtn, PhoneStatusBadge, PhoneStatusText, "Verify", "#FFF7ED", "#C2410C", "Unverified");
-            }
             else
             {
-                this.TwoFactorPhoneDisplay.Text = user.PhoneNumber;
-                ConfigureActionButton(ActionPhoneBtn, PhoneStatusBadge, PhoneStatusText, "Remove", "#F0FDF4", "#15803D", "Active");
+                // When IsPhoneVerified exists on the profile model, branch between Verify vs Remove here.
+                TwoFactorPhoneDisplay.Text = user.PhoneNumber;
+                ConfigureActionButton(ActionPhoneBtn, PhoneStatusBadge, PhoneStatusText, "Verify", "#FFF7ED", "#C2410C", "Unverified");
             }
         }
 
@@ -426,10 +405,8 @@ namespace BankApp.Client.Views
         {
             btn.Content = action;
             statusTxt.Text = status;
-            
         }
 
-        
         private void ShowLoading(bool visible)
         {
             LoadingPanel.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
@@ -452,8 +429,6 @@ namespace BankApp.Client.Views
             ErrorInfoBar.IsOpen = false;
         }
 
-        // ─── Observer ─────────────────────────
-
         public void Update(ProfileState state)
         {
             DispatcherQueue.TryEnqueue(() =>
@@ -465,10 +440,10 @@ namespace BankApp.Client.Views
                     {
                         ShowError("Failed to save notification preferences.");
                     }
+
                     // Ignore Loading and UpdateSuccess so the screen doesn't wipe and redraw!
                     return;
                 }
-                // ----------------------------------------------------------------------------
 
                 switch (state)
                 {
@@ -488,10 +463,6 @@ namespace BankApp.Client.Views
                 }
             });
         }
-
-        // ─── EXISTING HELPERS (unchanged) ─────────────────────────
-
-        // ─── TAB SWITCHING ─────────────────────────
 
         private void TabPersonalBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -530,7 +501,10 @@ namespace BankApp.Client.Views
         {
             OAuthLinksPanel.Children.Clear();
 
-            if (links == null) return;
+            if (links == null)
+            {
+                return;
+            }
 
             foreach (var link in links)
             {
@@ -595,8 +569,5 @@ namespace BankApp.Client.Views
 
             _isPopulating = false;
         }
-
-
-
     }
 }

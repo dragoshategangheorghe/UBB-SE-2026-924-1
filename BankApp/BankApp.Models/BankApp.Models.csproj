@@ -5,11 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<!--
-		<CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
-		
-		-->
+	<PropertyGroup>
+		<CodeAnalysisRuleSet>SE.ruleset</CodeAnalysisRuleSet>
+
 	</PropertyGroup>
 	<ItemGroup>
 	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">

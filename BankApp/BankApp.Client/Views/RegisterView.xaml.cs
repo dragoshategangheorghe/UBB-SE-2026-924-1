@@ -6,7 +6,7 @@ using BankApp.Models.Enums;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class RegisterView : Page, Observer<RegisterState>
+    public sealed partial class RegisterView : Page, IAppObserver<RegisterState>
     {
         private readonly RegisterViewModel _viewModel;
 
@@ -14,7 +14,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new RegisterViewModel(App.ApiService);
+            _viewModel = new RegisterViewModel(App.AuthService);
             _viewModel.State.AddObserver(this);
         }
 
@@ -66,7 +66,9 @@ namespace BankApp.Client.Views
                         break;
 
                     case RegisterState.Error:
-                        ShowError("Something went wrong. Please try again.");
+                        ShowError(string.IsNullOrWhiteSpace(_viewModel.RegistrationErrorDetail)
+                            ? "Something went wrong. Please try again."
+                            : _viewModel.RegistrationErrorDetail);
                         break;
                 }
             });
@@ -94,10 +96,10 @@ namespace BankApp.Client.Views
 
         private void ClearForm()
         {
-            FullNameBox.Text = "";
-            EmailBox.Text = "";
-            PasswordBox.Password = "";
-            ConfirmPasswordBox.Password = "";
+            FullNameBox.Text = string.Empty;
+            EmailBox.Text = string.Empty;
+            PasswordBox.Password = string.Empty;
+            ConfirmPasswordBox.Password = string.Empty;
         }
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)

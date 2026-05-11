@@ -42,10 +42,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
-    <ProjectReference Include="..\BankServer\BankApp.Server.csproj" />
+    <ProjectReference Include="..\BankApp.Server\BankApp.Server.csproj" />
   </ItemGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<CodeAnalysisRuleSet>..\SE.ruleset</CodeAnalysisRuleSet>
+	<PropertyGroup>
+		<CodeAnalysisRuleSet>SE.ruleset</CodeAnalysisRuleSet>
 	</PropertyGroup>
 
 </Project>

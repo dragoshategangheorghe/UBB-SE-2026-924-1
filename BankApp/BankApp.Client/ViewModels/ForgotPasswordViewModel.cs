@@ -1,25 +1,19 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using BankApp.Client.Utilities;
+using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Auth;
 using BankApp.Models.Enums;
 
 namespace BankApp.Client.ViewModels
 {
-    public class ApiResponse
-    {
-        public string? message { get; set; }
-        public string? error { get; set; }
-    }
-
     public class ForgotPasswordViewModel : BaseViewModel
     {
-        private readonly ApiService _apiService;
+        private readonly IAuthService _authService;
         public Observable<ForgotPasswordState> State { get; private set; }
 
-        public ForgotPasswordViewModel(ApiService apiService)
+        public ForgotPasswordViewModel(IAuthService authService)
         {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             State = new Observable<ForgotPasswordState>(ForgotPasswordState.Idle);
         }
 
@@ -34,8 +28,8 @@ namespace BankApp.Client.ViewModels
             try
             {
                 var request = new ForgotPasswordRequest { Email = email };
-                var response = await _apiService.PostAsync<ForgotPasswordRequest, ApiResponse>("/api/auth/forgot-password", request);
-                if (response != null && response.error == null)
+                bool ok = await _authService.ForgotPasswordAsync(request);
+                if (ok)
                 {
                     SetState(State, ForgotPasswordState.EmailSent);
                 }
@@ -65,21 +59,14 @@ namespace BankApp.Client.ViewModels
                     Token = code,
                     NewPassword = newPassword
                 };
-                var response = await _apiService.PostAsync<ResetPasswordRequest, ApiResponse>("/api/auth/reset-password", request);
-                if (response != null && response.error == null)
+                bool ok = await _authService.ResetPasswordAsync(request);
+                if (ok)
                 {
                     SetState(State, ForgotPasswordState.PasswordResetSuccess);
                 }
                 else
                 {
-                    if (response?.error != null && response.error.Contains("expired", StringComparison.OrdinalIgnoreCase))
-                    {
-                        SetState(State, ForgotPasswordState.TokenExpired);
-                    }
-                    else
-                    {
-                        SetState(State, ForgotPasswordState.Error);
-                    }
+                    SetState(State, ForgotPasswordState.Error);
                 }
             }
             catch (Exception)
@@ -98,9 +85,8 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-                var response = await _apiService.PostAsync<object, ApiResponse>("/api/auth/verify-reset-token", new { Token = code });
-
-                if (response != null && response.error == null)
+                bool ok = await _authService.VerifyResetTokenAsync(code);
+                if (ok)
                 {
                     SetState(State, ForgotPasswordState.TokenValid);
                 }
@@ -114,7 +100,6 @@ namespace BankApp.Client.ViewModels
                 SetState(State, ForgotPasswordState.Error);
             }
         }
-
 
         public override void Dispose()
         {

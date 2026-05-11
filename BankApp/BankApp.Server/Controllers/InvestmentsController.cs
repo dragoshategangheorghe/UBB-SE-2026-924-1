@@ -1,19 +1,19 @@
 ﻿namespace BankApp.Server.Controllers
 {
-    using Microsoft.AspNetCore.Mvc;
-    using BankApp.Server.Services.Interfaces;
-    using BankApp.Models.Entities;
     using System.Threading.Tasks;
+    using BankApp.Models.Entities;
+    using BankApp.Server.Repositories.Interfaces;
+    using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/[controller]")]
     public class InvestmentsController : ControllerBase
     {
-        private readonly IInvestmentService _investmentService;
+        private readonly IInvestmentRepository _investmentRepository;
 
-        public InvestmentsController(IInvestmentService investmentService)
+        public InvestmentsController(IInvestmentRepository investmentRepository)
         {
-            _investmentService = investmentService;
+            _investmentRepository = investmentRepository;
         }
 
         /// <summary>
@@ -22,7 +22,7 @@
         [HttpGet("portfolio/{userId}")]
         public IActionResult GetPortfolio(int userId)
         {
-            var portfolio = _investmentService.GetPortfolio(userId);
+            var portfolio = _investmentRepository.GetPortfolio(userId);
             return Ok(portfolio);
         }
 

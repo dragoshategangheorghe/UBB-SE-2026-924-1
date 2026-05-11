@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 namespace BankApp.Client.Master
 {
@@ -30,7 +30,9 @@ namespace BankApp.Client.Master
         public void GoBack()
         {
             if (CanGoBack())
+            {
                 _frame?.GoBack();
+            }
         }
 
         public bool CanGoBack()

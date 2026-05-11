@@ -1,29 +1,27 @@
-﻿using BankApp.Client.Utilities;
-
-using BankApp.Models.DTOs.Profile;
-using BankApp.Models.Entities;
-using BankApp.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Windows.UI.Text.Core;
+using BankApp.Client.Services.Interfaces;
+using BankApp.Models.DTOs.Profile;
+using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 
 namespace BankApp.Client.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
-        private readonly ApiService _apiService;
+        private readonly IProfileService _profileService;
         private bool _disposed;
-        
+
         public Observable<ProfileState> State { get; private set; }
         public ProfileInfo ProfileInfo { get; private set; }
         public List<OAuthLink> OAuthLinks { get; private set; }
         public List<Session> ActiveSessions { get; private set; }
         public List<NotificationPreference> NotificationPreferences { get; private set; }
 
-        public ProfileViewModel(ApiService apiService)
+        public ProfileViewModel(IProfileService profileService)
         {
-            _apiService = apiService;
+            _profileService = profileService;
             State = new Observable<ProfileState>(ProfileState.Idle);
         }
 
@@ -33,8 +31,7 @@ namespace BankApp.Client.ViewModels
             {
                 State.SetValue(ProfileState.Loading);
 
-                GetProfileResponse? profileResponse = await _apiService.GetAsync<GetProfileResponse>(
-                    $"/api/profile");
+                GetProfileResponse? profileResponse = await _profileService.GetProfileAsync();
 
                 if (profileResponse == null || !profileResponse.Success || profileResponse.ProfileInfo == null)
                 {
@@ -44,8 +41,7 @@ namespace BankApp.Client.ViewModels
 
                 ProfileInfo = profileResponse.ProfileInfo;
 
-                List<OAuthLink>? oauthResponse = await _apiService.GetAsync<List<OAuthLink>>(
-                    $"/api/profile/oauthlinks");
+                List<OAuthLink>? oauthResponse = await _profileService.GetOAuthLinksAsync();
 
                 if (oauthResponse == null)
                 {
@@ -55,8 +51,7 @@ namespace BankApp.Client.ViewModels
 
                 OAuthLinks = oauthResponse;
 
-                List<NotificationPreference>? prefsResponse = await _apiService.GetAsync<List<NotificationPreference>>(
-                    $"/api/profile/notifications/preferences");
+                List<NotificationPreference>? prefsResponse = await _profileService.GetNotificationPreferencesAsync();
 
                 if (prefsResponse == null)
                 {
@@ -72,7 +67,7 @@ namespace BankApp.Client.ViewModels
             catch (Exception ex)
             {
                 State.SetValue(ProfileState.Error);
-                LogError(nameof(UpdatePersonalInfo), ex);
+                LogError(nameof(LoadProfile), ex);
                 return false;
             }
         }
@@ -93,9 +88,8 @@ namespace BankApp.Client.ViewModels
                 address = string.IsNullOrWhiteSpace(address) ? null : address.Trim();
 
                 UpdateProfileRequest request = new UpdateProfileRequest(ProfileInfo.UserId, phone, address);
-                
-                UpdateProfileResponse? response = await _apiService.PutAsync<UpdateProfileRequest, UpdateProfileResponse>(
-                    $"/api/profile", request);
+
+                UpdateProfileResponse? response = await _profileService.UpdateProfileAsync(request);
 
                 if (response == null)
                 {
@@ -124,7 +118,6 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
         public async Task<bool> ChangePassword(string currentPassword, string newPassword)
         {
             try
@@ -139,8 +132,7 @@ namespace BankApp.Client.ViewModels
 
                 ChangePasswordRequest request = new ChangePasswordRequest(ProfileInfo.UserId.Value, currentPassword, newPassword);
 
-                ChangePasswordResponse? result = await _apiService.PutAsync<ChangePasswordRequest, ChangePasswordResponse>(
-                    $"/api/profile/password", request);
+                ChangePasswordResponse? result = await _profileService.ChangePasswordAsync(request);
 
                 if (result == null || !result.Success)
                 {
@@ -164,10 +156,7 @@ namespace BankApp.Client.ViewModels
             {
                 State.SetValue(ProfileState.Loading);
 
-                var request = new { Method = method };
-
-                var result = await _apiService.PutAsync<object, Toggle2FAResponse>(
-                    $"/api/profile/2fa/enable", request);
+                var result = await _profileService.Enable2FAAsync(method);
 
                 if (result?.Success == true)
                 {
@@ -185,8 +174,6 @@ namespace BankApp.Client.ViewModels
                 LogError(nameof(EnableTwoFactor), ex);
                 return false;
             }
-            return false;
-
         }
 
         public async Task<bool> DisableTwoFactor()
@@ -195,8 +182,7 @@ namespace BankApp.Client.ViewModels
             {
                 State.SetValue(ProfileState.Loading);
 
-                var result = await _apiService.PutAsync<object, Toggle2FAResponse>(
-                    $"/api/profile/2fa/disable", new { });
+                var result = await _profileService.Disable2FAAsync();
 
                 if (result?.Success == true)
                 {
@@ -216,103 +202,65 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-
-        public async Task<bool> LinkOAuth(string provider)
+        public Task<bool> LinkOAuth(string provider)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(provider))
-                    return false;
+                {
+                    return Task.FromResult(false);
+                }
 
                 var alreadyLinked = OAuthLinks.Exists(o =>
                     string.Equals(o.Provider, provider, StringComparison.OrdinalIgnoreCase));
 
                 if (alreadyLinked)
-                    return false;
+                {
+                    return Task.FromResult(false);
+                }
 
                 State.SetValue(ProfileState.Loading);
 
-                var request = new { Provider = provider.Trim() };
-
-                var result = await _apiService.PostAsync<object, bool>(
-                    $"/api/profile/oauth/link", request);  /* what is this endpoint */
-
-                if (result)
-                {
-                    /*
-                    OAuthLinks.Add(new OAuthLink { Provider = provider, UserId = ProfileInfo.UserId });*/
-                    State.SetValue(ProfileState.UpdateSuccess);
-                }
-                else
-                {
-                    State.SetValue(ProfileState.Error);
-                }
-
-                return result;
+                // OAuth linking is not yet refactored into the new client-service + repo-proxy layering.
+                // Keep UI responsive but report the feature as unavailable for now.
+                State.SetValue(ProfileState.Error);
+                return Task.FromResult(false);
             }
             catch (Exception ex)
             {
                 State.SetValue(ProfileState.Error);
                 LogError(nameof(LinkOAuth), ex);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-
-        public async Task<bool> UnlinkOAuth(string provider)
+        public Task<bool> UnlinkOAuth(string provider)
         {
             try
             {
-                /*
-                if (string.IsNullOrWhiteSpace(provider))
-                    return false;
-
-                var existing = OAuthLinks.Find(o =>
-                    string.Equals(o.Provider, provider, StringComparison.OrdinalIgnoreCase));
-
-                if (existing == null)
-                    return false;
-
-                State.SetValue(ProfileState.Loading);
-
-                var request = new { Provider = provider.Trim() };
-
-                var result = await _apiService.PostAsync<object, bool>(
-                    $"api/profile/{CurrentUser.Id}/oauth/unlink", request);
-
-                if (result)
-                {
-                    OAuthLinks.Remove(existing);
-                    State.SetValue(ProfileState.UpdateSuccess);
-                }
-                else
-                {
-                    State.SetValue(ProfileState.Error);
-                }
-
-                return result;*/
-                return true;
+                State.SetValue(ProfileState.Error);
+                return Task.FromResult(false);
             }
             catch (Exception ex)
             {
                 State.SetValue(ProfileState.Error);
                 LogError(nameof(UnlinkOAuth), ex);
-                return false;
+                return Task.FromResult(false);
             }
         }
-
 
         public async Task<bool> UpdateNotificationPreferences(List<NotificationPreference> preferences)
         {
             try
             {
                 if (preferences == null || preferences.Count == 0)
+                {
                     return false;
+                }
 
                 State.SetValue(ProfileState.Loading);
 
-                var result = await _apiService.PutAsync<List<NotificationPreference>, bool>(
-                    $"/api/profile/notifications/preferences", preferences);
+                bool result = await _profileService.UpdateNotificationPreferencesAsync(preferences);
 
                 if (result)
                 {
@@ -346,10 +294,7 @@ namespace BankApp.Client.ViewModels
                     return false;
                 }
 
-                bool? response = await _apiService.PostAsync<string, bool>(
-                    $"/api/profile/verify-password", password);
-
-                bool result = response ?? false;
+                bool result = await _profileService.VerifyPasswordAsync(password);
 
                 if (!result)
                 {
@@ -370,7 +315,11 @@ namespace BankApp.Client.ViewModels
 
         public override void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
             GC.SuppressFinalize(this);
         }

@@ -1,9 +1,9 @@
-using BankApp.Client.ViewModels;
-using BankApp.Models.DTOs.Transactions;
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using BankApp.Client.ViewModels;
+using BankApp.Models.DTOs.Transactions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -14,7 +14,7 @@ namespace BankApp.Client.Views
         public TransactionHistoryView()
         {
             InitializeComponent();
-            ViewModel = new TransactionHistoryViewModel(App.TransactionApiService, App.TransactionHistorySessionState);
+            ViewModel = new TransactionHistoryViewModel(App.TransactionHistoryService, App.TransactionHistorySessionState);
             DataContext = ViewModel;
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Loaded += TransactionHistoryView_Loaded;

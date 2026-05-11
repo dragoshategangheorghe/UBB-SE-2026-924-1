@@ -10,6 +10,12 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Padding="36,32" Spacing="28">
 
+                <InfoBar x:Name="DashboardErrorInfoBar"
+                         IsOpen="False"
+                         IsClosable="True"
+                         Severity="Error"
+                         Title="Could not load dashboard"/>
+
                 <!-- Page Title -->
                 <StackPanel Spacing="2">
                     <TextBlock Text="Welcome back," FontSize="20" Foreground="Black"/>

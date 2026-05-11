@@ -16,7 +16,7 @@ namespace BankApp.Client.ViewModels
 {
     public class CardManagementViewModel : BaseViewModel
     {
-        private readonly ICardApiService _cardApiService;
+        private readonly ICardService _cardService;
         private readonly AsyncRelayCommand _refreshCommand;
         private readonly AsyncRelayCommand _applySortCommand;
         private readonly AsyncRelayCommand _freezeCommand;
@@ -37,9 +37,9 @@ namespace BankApp.Client.ViewModels
         private string _revealCountdownText = string.Empty;
         private CancellationTokenSource? _autoHideCancellation;
 
-        public CardManagementViewModel(ICardApiService cardApiService)
+        public CardManagementViewModel(ICardService cardService)
         {
-            _cardApiService = cardApiService;
+            _cardService = cardService;
 
             Cards = new ObservableCollection<CardSummaryDto>();
             SortOptions = new List<SelectableOption>
@@ -170,7 +170,7 @@ namespace BankApp.Client.ViewModels
             try
             {
                 IsLoading = true;
-                GetCardsResponse? response = await _cardApiService.GetCardsAsync();
+                GetCardsResponse? response = await _cardService.GetCardsAsync();
                 if (response == null || !response.Success)
                 {
                     ShowStatus("Failed to load cards.", InfoBarSeverity.Error);
@@ -212,7 +212,7 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-                RevealCardResponse? response = await _cardApiService.RevealCardAsync(SelectedCard.Id, new RevealCardRequest
+                RevealCardResponse? response = await _cardService.RevealCardAsync(SelectedCard.Id, new RevealCardRequest
                 {
                     Password = password,
                     OtpCode = otpCode
@@ -254,7 +254,7 @@ namespace BankApp.Client.ViewModels
         {
             try
             {
-                CardCommandResponse? response = await _cardApiService.UpdateSortPreferenceAsync(new UpdateCardSortPreferenceRequest
+                CardCommandResponse? response = await _cardService.UpdateSortPreferenceAsync(new UpdateCardSortPreferenceRequest
                 {
                     SortOption = SelectedSortOption
                 });
@@ -281,7 +281,7 @@ namespace BankApp.Client.ViewModels
                 return;
             }
 
-            await ExecuteCardUpdateAsync(() => _cardApiService.FreezeCardAsync(SelectedCard.Id));
+            await ExecuteCardUpdateAsync(() => _cardService.FreezeCardAsync(SelectedCard.Id));
         }
 
         private async Task UnfreezeSelectedCardAsync()
@@ -291,7 +291,7 @@ namespace BankApp.Client.ViewModels
                 return;
             }
 
-            await ExecuteCardUpdateAsync(() => _cardApiService.UnfreezeCardAsync(SelectedCard.Id));
+            await ExecuteCardUpdateAsync(() => _cardService.UnfreezeCardAsync(SelectedCard.Id));
         }
 
         private async Task SaveSettingsAsync()
@@ -313,7 +313,7 @@ namespace BankApp.Client.ViewModels
                 spendingLimit = parsedLimit;
             }
 
-            await ExecuteCardUpdateAsync(() => _cardApiService.UpdateSettingsAsync(SelectedCard.Id, new UpdateCardSettingsRequest
+            await ExecuteCardUpdateAsync(() => _cardService.UpdateSettingsAsync(SelectedCard.Id, new UpdateCardSettingsRequest
             {
                 SpendingLimit = spendingLimit,
                 IsOnlinePaymentsEnabled = SelectedCard.IsOnlinePaymentsEnabled,
@@ -417,18 +417,5 @@ namespace BankApp.Client.ViewModels
             _autoHideCancellation?.Cancel();
             _autoHideCancellation?.Dispose();
         }
-    }
-
-    public class SelectableOption
-    {
-        public SelectableOption(string value, string label)
-        {
-            Value = value;
-            Label = label;
-        }
-
-        public string Value { get; }
-
-        public string Label { get; }
     }
 }

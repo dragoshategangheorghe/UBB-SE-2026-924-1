@@ -1,5 +1,5 @@
 ﻿using BankApp.Models.Entities;
-using BankApp.Models.Enums;
+using BankApp.Models.Extensions;
 using BankApp.Server.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,34 +7,34 @@ namespace BankApp.Server.DataAccess
 {
     internal class NotificationPreferenceDAO : INotificationPreferenceDAO
     {
-        private AppDbContext _dbContext;
+        private AppDbContext appDbContext;
 
         public NotificationPreferenceDAO(AppDbContext appDbContext)
         {
-            this._dbContext = appDbContext;
+            this.appDbContext = appDbContext;
         }
 
         public bool Create(int userId, string category)
         {
             try
             {
-                var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
-                if (_dbContext.Entry(user).State == EntityState.Detached)
+                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (appDbContext.Entry(user).State == EntityState.Detached)
                 {
-                    _dbContext.Attach(user);
+                    appDbContext.Attach(user);
                 }
 
                 var preference = new NotificationPreference
                 {
                     User = user,
-                    Category = (NotificationType)Enum.Parse(typeof(NotificationType), category),
+                    Category = NotificationTypeExtensions.FromString(category),
                     PushEnabled = false,
                     EmailEnabled = false,
                     SmsEnabled = false
                 };
 
-                _dbContext.NotificationPreferences.Add(preference);
-                var rows = _dbContext.SaveChanges();
+                appDbContext.NotificationPreferences.Add(preference);
+                var rows = appDbContext.SaveChanges();
 
                 return rows > 0;
             }
@@ -46,7 +46,7 @@ namespace BankApp.Server.DataAccess
 
         public List<NotificationPreference> FindByUserId(int userId)
         {
-            return _dbContext.NotificationPreferences
+            return appDbContext.NotificationPreferences
                 .Include(p => p.User)
                 .Where(p => p.User.Id == userId)
                 .ToList();
@@ -56,20 +56,21 @@ namespace BankApp.Server.DataAccess
         {
             try
             {
-                var existing = _dbContext.NotificationPreferences
-                                           .Where(p => p.User.Id == userId);
+                var existing = appDbContext.NotificationPreferences
+                    .Where(p => p.User.Id == userId)
+                    .ToList();
 
-                _dbContext.NotificationPreferences.RemoveRange(existing);
+                appDbContext.NotificationPreferences.RemoveRange(existing);
 
-                var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
-                if (_dbContext.Entry(user).State == EntityState.Detached)
+                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (appDbContext.Entry(user).State == EntityState.Detached)
                 {
-                    _dbContext.Attach(user);
+                    appDbContext.Attach(user);
                 }
 
                 foreach (var preference in prefs)
                 {
-                    _dbContext.NotificationPreferences.Add(new NotificationPreference
+                    appDbContext.NotificationPreferences.Add(new NotificationPreference
                     {
                         User = user,
                         Category = preference.Category,
@@ -80,7 +81,7 @@ namespace BankApp.Server.DataAccess
                     });
                 }
 
-                _dbContext.SaveChanges();
+                appDbContext.SaveChanges();
                 return true;
             }
             catch

@@ -11,8 +11,8 @@ namespace BankApp.Server.Services.Implementations
 
         public TransactionHistoryService(ITransactionHistoryRepository transactionHistoryRepository, ITransactionExportService transactionExportService)
         {
-            this._transactionHistoryRepository = transactionHistoryRepository;
-            this._transactionExportService = transactionExportService;
+            _transactionHistoryRepository = transactionHistoryRepository;
+            _transactionExportService = transactionExportService;
         }
 
         public TransactionHistoryResponse GetHistory(int userId, TransactionHistoryRequest request)

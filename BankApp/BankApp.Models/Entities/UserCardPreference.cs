@@ -6,8 +6,6 @@ namespace BankApp.Models.Entities
     public class UserCardPreference
     {
         [Key]
-        public int Id { get; set; }
-
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
 

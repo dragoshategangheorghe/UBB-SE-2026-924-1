@@ -1,10 +1,9 @@
-﻿using BankApp.Client.Utilities;
-
-using BankApp.Models.Enums;
-using BankApp.Models.DTOs.Auth;
 using System;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
+using BankApp.Client.Utilities;
+using BankApp.Models.DTOs.Auth;
+using BankApp.Models.Enums;
 
 namespace BankApp.Client.ViewModels
 {
@@ -12,12 +11,17 @@ namespace BankApp.Client.ViewModels
     {
         public Observable<RegisterState> State { get; private set; }
 
-        private readonly ApiService _apiService;
+        private readonly BankApp.Client.Services.Interfaces.IAuthService _authService;
 
-        public RegisterViewModel(ApiService apiService)
+        /// <summary>
+        /// Server or network message for <see cref="RegisterState.Error"/> (shown in the UI when set).
+        /// </summary>
+        public string? RegistrationErrorDetail { get; private set; }
+
+        public RegisterViewModel(BankApp.Client.Services.Interfaces.IAuthService authService)
         {
             State = new Observable<RegisterState>(RegisterState.Idle);
-            _apiService = apiService;
+            _authService = authService;
         }
 
         public async void Register(string email, string password, string confirmPassword, string fullName)
@@ -30,6 +34,7 @@ namespace BankApp.Client.ViewModels
                 return;
             }
 
+            RegistrationErrorDetail = null;
             SetState(State, RegisterState.Loading);
 
             try
@@ -41,11 +46,11 @@ namespace BankApp.Client.ViewModels
                     FullName = fullName
                 };
 
-                RegisterResponse? response = await _apiService.PostAsync<RegisterRequest, RegisterResponse>(
-                    "/api/auth/register", request);
+                RegisterResponse? response = await _authService.RegisterAsync(request);
 
                 if (response == null)
                 {
+                    RegistrationErrorDetail = "No response from server. Is the API running (e.g. http://localhost:5024)?";
                     SetState(State, RegisterState.Error);
                     return;
                 }
@@ -58,8 +63,9 @@ namespace BankApp.Client.ViewModels
 
                 SetState(State, RegisterState.Success);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                RegistrationErrorDetail = ex.Message;
                 SetState(State, RegisterState.Error);
             }
         }
@@ -98,17 +104,13 @@ namespace BankApp.Client.ViewModels
                         ProviderToken = loginResult.IdentityToken
                     };
 
-                    LoginResponse? response = await _apiService.PostAsync<OAuthLoginRequest, LoginResponse>(
-                        "/api/auth/oauth-login", apiRequest);
+                    LoginResponse? response = await _authService.OAuthLoginAsync(apiRequest);
 
                     if (response == null || !response.Success)
                     {
                         SetState(State, RegisterState.Error);
                         return;
                     }
-
-                    _apiService.SetToken(response.Token!);
-                    _apiService.SetCurrentUserId(response.UserId!.Value);
 
                     SetState(State, RegisterState.AutoLoggedIn);
                 }
@@ -121,30 +123,51 @@ namespace BankApp.Client.ViewModels
 
         private RegisterState? ValidateLocally(string email, string password, string confirmPassword, string fullName)
         {
-            if (string.IsNullOrWhiteSpace(fullName)) { return RegisterState.Error; }
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                return RegisterState.Error;
+            }
 
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@")) { return RegisterState.InvalidEmail; }
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            {
+                return RegisterState.InvalidEmail;
+            }
 
             if (string.IsNullOrWhiteSpace(password) || password.Length < 8
                 || !password.Any(char.IsUpper)
                 || !password.Any(char.IsLower)
                 || !password.Any(char.IsDigit))
-                { return RegisterState.WeakPassword; }
+            {
+                return RegisterState.WeakPassword;
+            }
 
-            if (password != confirmPassword) { return RegisterState.PasswordMismatch; }
+            if (password != confirmPassword)
+            {
+                return RegisterState.PasswordMismatch;
+            }
+
             return null;
         }
 
         private void HandleRegisterError(RegisterResponse response)
         {
             if (response.Error != null && response.Error.Contains("already registered"))
+            {
                 SetState(State, RegisterState.EmailAlreadyExists);
+            }
             else if (response.Error != null && response.Error.Contains("email"))
+            {
                 SetState(State, RegisterState.InvalidEmail);
+            }
             else if (response.Error != null && response.Error.Contains("Password"))
+            {
                 SetState(State, RegisterState.WeakPassword);
+            }
             else
+            {
+                RegistrationErrorDetail = response.Error;
                 SetState(State, RegisterState.Error);
+            }
         }
 
         public override void Dispose()

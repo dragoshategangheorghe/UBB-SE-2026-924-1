@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Client.Commands;
 using BankApp.Client.Services.Interfaces;
-using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Statistics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,7 +13,7 @@ namespace BankApp.Client.ViewModels
 {
     public class StatisticsViewModel : BaseViewModel
     {
-        private readonly IStatisticsApiService _statisticsApiService;
+        private readonly IStatisticsService _statisticsService;
         private readonly AsyncRelayCommand _refreshCommand;
 
         private bool _isLoading;
@@ -29,9 +28,9 @@ namespace BankApp.Client.ViewModels
         private double _maxBalanceAmount = 1;
         private double _maxTopRecipientAmount = 1;
 
-        public StatisticsViewModel(IStatisticsApiService statisticsApiService)
+        public StatisticsViewModel(IStatisticsService statisticsService)
         {
-            _statisticsApiService = statisticsApiService;
+            _statisticsService = statisticsService;
             SpendingByCategory = new ObservableCollection<CategorySpendingPointDto>();
             BalanceTrends = new ObservableCollection<BalanceTrendPointDto>();
             TopRecipients = new ObservableCollection<TopCounterpartyDto>();
@@ -126,10 +125,10 @@ namespace BankApp.Client.ViewModels
             {
                 IsLoading = true;
 
-                Task<SpendingByCategoryResponse?> spendingTask = _statisticsApiService.GetSpendingByCategoryAsync();
-                Task<IncomeVsExpensesResponse?> incomeTask = _statisticsApiService.GetIncomeVsExpensesAsync();
-                Task<BalanceTrendsResponse?> balanceTask = _statisticsApiService.GetBalanceTrendsAsync();
-                Task<TopRecipientsResponse?> topRecipientsTask = _statisticsApiService.GetTopRecipientsAsync();
+                Task<SpendingByCategoryResponse?> spendingTask = _statisticsService.GetSpendingByCategoryAsync();
+                Task<IncomeVsExpensesResponse?> incomeTask = _statisticsService.GetIncomeVsExpensesAsync();
+                Task<BalanceTrendsResponse?> balanceTask = _statisticsService.GetBalanceTrendsAsync();
+                Task<TopRecipientsResponse?> topRecipientsTask = _statisticsService.GetTopRecipientsAsync();
 
                 await Task.WhenAll(spendingTask, incomeTask, balanceTask, topRecipientsTask);
 

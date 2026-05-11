@@ -1,6 +1,6 @@
 ﻿using BankApp.Models.DTOs.Dashboard;
-using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using BankApp.Server.Repositories.Interfaces;
 
 namespace BankApp.Server.Controllers
 {
@@ -8,10 +8,13 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class DashboardController : ControllerBase
     {
-        private readonly IDashboardService _dashService;
-        public DashboardController(IDashboardService dashService)
+        private readonly IDashboardRepository dashboardRepository;
+        private readonly IUserRepository userRepository;
+
+        public DashboardController(IDashboardRepository dashboardRepository, IUserRepository userRepository)
         {
-            this._dashService = dashService;
+            this.dashboardRepository = dashboardRepository;
+            this.userRepository = userRepository;
         }
 
         [HttpGet]
@@ -19,13 +22,21 @@ namespace BankApp.Server.Controllers
         {
             try
             {
-                int userId = (int)HttpContext.Items["UserId"]!;
+                int userId = (int)HttpContext.Items["UserId"] !;
 
-                DashboardResponse dashboardData = _dashService.GetDashboardData(userId);
-                if (dashboardData == null)
+                var user = userRepository.FindById(userId);
+                if (user == null)
                 {
-                    return NotFound(new { message = "Dashboard data not found." });
+                    return NotFound(new { message = "User not found." });
                 }
+
+                DashboardResponse dashboardData = new DashboardResponse
+                {
+                    CurrentUser = user,
+                    Cards = dashboardRepository.GetCardsByUser(userId),
+                    RecentTransactions = dashboardRepository.GetRecentTransactions(userId, 10),
+                    UnreadNotificationCount = dashboardRepository.GetUnreadNotificationCount(userId)
+                };
 
                 return Ok(dashboardData);
             }

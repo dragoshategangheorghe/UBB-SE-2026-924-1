@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BankApp.Client.Services.Interfaces;
+using BankApp.Models.DTOs.Chat;
 using BankApp.Models.Features.Chat;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -31,7 +32,7 @@ namespace BankApp.Client.Views
                 "Please contact the team from this chat and include a short description of what happened. Screenshots or PDFs can help the team investigate faster.",
         };
 
-        private readonly IChatApiService chatApiService;
+        private readonly IChatService chatService;
         private readonly DispatcherTimer refreshTimer;
         private int sessionId;
         private StorageFile? pendingAttachment;
@@ -39,7 +40,7 @@ namespace BankApp.Client.Views
         public ChatView()
         {
             InitializeComponent();
-            chatApiService = App.ChatApiService;
+            chatService = App.ChatService;
             refreshTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(3)
@@ -61,13 +62,28 @@ namespace BankApp.Client.Views
                 return;
             }
 
-            ChatSession? session = await chatApiService.GetSessionAsync(sessionId);
-            HeaderText.Text = session == null
-                ? $"Chat #{sessionId}"
-                : $"{session.IssueCategory} - #{session.Id}";
+            try
+            {
+                ChatSession? session = await chatService.GetSessionAsync(sessionId);
+                HeaderText.Text = session == null
+                    ? $"Chat #{sessionId}"
+                    : $"{session.IssueCategory} - #{session.Id}";
 
-            await LoadMessagesAsync();
-            refreshTimer.Start();
+                await LoadMessagesAsync();
+                refreshTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                HeaderText.Text = $"Chat #{sessionId}";
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "Could not load chat",
+                    Content = ex.Message,
+                    CloseButtonText = "OK",
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -78,7 +94,7 @@ namespace BankApp.Client.Views
 
         private async System.Threading.Tasks.Task LoadMessagesAsync()
         {
-            List<ChatMessage>? messages = await chatApiService.GetMessagesAsync(sessionId);
+            List<ChatMessage>? messages = await chatService.GetMessagesAsync(sessionId);
             MessagesList.ItemsSource = messages ?? new List<ChatMessage>();
             if (messages != null && messages.Count > 0)
             {
@@ -94,7 +110,7 @@ namespace BankApp.Client.Views
                 return;
             }
 
-            CreateChatMessageResponse? response = await chatApiService.CreateMessageAsync(sessionId, "User", content);
+            CreateChatMessageResponse? response = await chatService.CreateMessageAsync(sessionId, "User", content);
             if (response == null || !response.Success)
             {
                 return;
@@ -102,7 +118,7 @@ namespace BankApp.Client.Views
 
             if (DefaultChatbotResponses.TryGetValue(content, out string? responseText))
             {
-                await chatApiService.CreateMessageAsync(sessionId, "Bot", responseText);
+                await chatService.CreateMessageAsync(sessionId, "Bot", responseText);
             }
 
             if (pendingAttachment != null)
@@ -111,7 +127,7 @@ namespace BankApp.Client.Views
                 string extension = System.IO.Path.GetExtension(pendingAttachment.Name)?.ToLowerInvariant() ?? string.Empty;
                 string fileType = extension == ".pdf" ? "application/pdf" : "image";
 
-                await chatApiService.CreateAttachmentAsync(response.MessageId, new CreateChatAttachmentRequest
+                await chatService.CreateAttachmentAsync(response.MessageId, new CreateChatAttachmentRequest
                 {
                     AttachmentName = pendingAttachment.Name,
                     FileType = fileType,
@@ -169,13 +185,13 @@ namespace BankApp.Client.Views
 
         private async void EscalateButton_Click(object sender, RoutedEventArgs e)
         {
-            await chatApiService.UpdateSessionStatusAsync(sessionId, "Escalated");
+            await chatService.UpdateSessionStatusAsync(sessionId, "Escalated");
             await LoadMessagesAsync();
         }
 
         private async void EndSessionButton_Click(object sender, RoutedEventArgs e)
         {
-            await chatApiService.UpdateSessionStatusAsync(sessionId, "Closed");
+            await chatService.UpdateSessionStatusAsync(sessionId, "Closed");
 
             ComboBox ratingBox = new ComboBox
             {
@@ -214,7 +230,7 @@ namespace BankApp.Client.Views
             {
                 if (ratingBox.SelectedItem is int rating)
                 {
-                    await chatApiService.SaveFeedbackAsync(sessionId, rating, feedbackBox.Text ?? string.Empty);
+                    await chatService.SaveFeedbackAsync(sessionId, rating, feedbackBox.Text ?? string.Empty);
                 }
             }
         }
@@ -236,7 +252,7 @@ namespace BankApp.Client.Views
             ContentDialogResult result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary && dialog.Content is TextBox emailBox)
             {
-                await chatApiService.EmailTranscriptAsync(sessionId, emailBox.Text ?? string.Empty);
+                await chatService.EmailTranscriptAsync(sessionId, emailBox.Text ?? string.Empty);
             }
         }
 

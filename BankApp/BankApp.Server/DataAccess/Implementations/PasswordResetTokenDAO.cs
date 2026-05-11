@@ -1,48 +1,50 @@
-﻿using BankApp.Models.Entities;
+﻿using System.Data;
+using BankApp.Models.Entities;
 using BankApp.Server.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
 
 namespace BankApp.Server.DataAccess.Implementations
 {
     public class PasswordResetTokenDAO : IPasswordResetTokenDAO
     {
-        private readonly AppDbContext _dbContext;
+        private readonly AppDbContext context;
 
         public PasswordResetTokenDAO(AppDbContext context)
         {
-            this._dbContext = context;
+            this.context = context;
         }
 
         public PasswordResetToken Create(int userId, string tokenHash, DateTime expiresAt)
         {
             var token = new PasswordResetToken
             {
-                Id = userId,
+                UserId = userId,
                 TokenHash = tokenHash,
                 ExpiresAt = expiresAt
             };
 
-            _dbContext.PasswordResetTokens.Add(token);
+            context.PasswordResetTokens.Add(token);
 
-            var rows = _dbContext.SaveChanges();
+            var rows = context.SaveChanges();
 
             if (rows <= 0)
+            {
                 throw new Exception("Failed to create password reset token.");
+            }
 
             return token;
         }
 
         public void DeleteExpired()
         {
-            _dbContext.PasswordResetTokens
+            context.PasswordResetTokens
                 .Where(t => t.ExpiresAt < DateTime.UtcNow)
                 .ExecuteDelete();
         }
 
         public PasswordResetToken? FindByToken(string tokenHash)
         {
-            PasswordResetToken? token = _dbContext.PasswordResetTokens
+            PasswordResetToken? token = context.PasswordResetTokens
                                         .Where(t => t.TokenHash == tokenHash)
                                         .Select(t => new PasswordResetToken
                                         {
@@ -59,7 +61,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public void MarkAsUsed(int tokenId)
         {
-            _dbContext.PasswordResetTokens
+            context.PasswordResetTokens
                 .Where(t => t.Id == tokenId)
                 .ExecuteUpdate(s => s.SetProperty(t => t.UsedAt, DateTime.UtcNow));
         }

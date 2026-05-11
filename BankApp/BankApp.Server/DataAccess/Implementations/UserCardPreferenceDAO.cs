@@ -5,22 +5,22 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class UserCardPreferenceDAO : IUserCardPreferenceDAO
     {
-        private readonly AppDbContext _dbContext;
+        private readonly AppDbContext dbContext;
 
         public UserCardPreferenceDAO(AppDbContext dbContext)
         {
-            this._dbContext = dbContext;
+            this.dbContext = dbContext;
         }
 
         public UserCardPreference? FindByUserId(int userId)
         {
-            UserCardPreference? preference = _dbContext.UserCardPreferences.FirstOrDefault(p => p.UserId == userId);
+            UserCardPreference? preference = dbContext.UserCardPreferences.FirstOrDefault(p => p.UserId == userId);
             return preference;
         }
 
         public bool Upsert(int userId, string sortOption)
         {
-            var existing = _dbContext.UserCardPreferences
+            var existing = dbContext.UserCardPreferences
                             .FirstOrDefault(p => p.UserId == userId);
 
             if (existing != null)
@@ -28,19 +28,19 @@ namespace BankApp.Server.DataAccess.Implementations
                 existing.SortOption = sortOption;
                 existing.UpdatedAt = DateTime.UtcNow;
 
-                _dbContext.SaveChanges();
+                dbContext.SaveChanges();
                 return true;
             }
             else
             {
-                _dbContext.UserCardPreferences.Add(new UserCardPreference
+                dbContext.UserCardPreferences.Add(new UserCardPreference
                 {
                     UserId = userId,
                     SortOption = sortOption,
                     UpdatedAt = DateTime.UtcNow
                 });
 
-                return _dbContext.SaveChanges() > 0;
+                return dbContext.SaveChanges() > 0;
             }
         }
     }

@@ -9,12 +9,16 @@ namespace BankApp.Server.DataAccess
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext() { }
+        public AppDbContext()
+        {
+        }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+        }
 
         // Entity sets for the tables
-
         public DbSet<Account> Accounts { get; set; }
 
         public DbSet<Card> Cards { get; set; }
@@ -38,8 +42,6 @@ namespace BankApp.Server.DataAccess
         public DbSet<User> Users { get; set; }
 
         public DbSet<UserCardPreference> UserCardPreferences { get; set; }
-
-
         // FEATURES: Chat
         public DbSet<AttachmentUploadResponse> AttachmentUploadResponses { get; set; }
 
@@ -48,14 +50,12 @@ namespace BankApp.Server.DataAccess
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public DbSet<ChatSession> ChatSessions { get; set; }
-
-
         // FEATURES: Investments
         public DbSet<FundingSourceOption> FundingSourceOptions { get; set; }
 
-        public DbSet<InvestmentHolding> InvestmentHoldings { get; set; }
+        public DbSet<Models.Entities.InvestmentHolding> InvestmentHoldings { get; set; }
 
-        public DbSet<Portfolio> Portfolios { get; set; }
+        public DbSet<Models.Entities.Portfolio> Portfolios { get; set; }
 
         public DbSet<SelectedAttachment> SelectedAttachments { get; set; }
 
@@ -67,8 +67,6 @@ namespace BankApp.Server.DataAccess
         public DbSet<LoanApplication> LoanApplications { get; set; }
 
         public DbSet<LoanEstimate> LoanEstimates { get; set; }
-
-
         // FEATURE: Savings
         public DbSet<AutoDeposit> AutoDeposits { get; set; }
 
@@ -79,6 +77,32 @@ namespace BankApp.Server.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Names match DatabaseSchema/BankAppDb_creation.sql. EF defaults would use Users, Sessions, etc.
+            modelBuilder.Entity<User>().ToTable("User");
+            modelBuilder.Entity<Session>().ToTable("Session");
+            modelBuilder.Entity<OAuthLink>().ToTable("OAuthLink");
+            modelBuilder.Entity<Account>().ToTable("Account");
+            modelBuilder.Entity<Card>().ToTable("Card");
+            modelBuilder.Entity<Category>().ToTable("Category");
+            modelBuilder.Entity<Transaction>().ToTable("Transaction");
+            modelBuilder.Entity<Notification>().ToTable("Notification");
+            modelBuilder.Entity<NotificationPreference>().ToTable("NotificationPreference");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetToken");
+            modelBuilder.Entity<TransactionCategoryOverride>().ToTable("TransactionCategoryOverride");
+            modelBuilder.Entity<UserCardPreference>().ToTable("UserCardPreference");
+            modelBuilder.Entity<Loan>().ToTable("Loan");
+            modelBuilder.Entity<LoanApplication>().ToTable("LoanApplication");
+            modelBuilder.Entity<AmortizationRow>().ToTable("AmortizationRow");
+            modelBuilder.Entity<SavingsAccount>().ToTable("SavingsAccount");
+            modelBuilder.Entity<SavingsTransaction>().ToTable("SavingsTransaction");
+            modelBuilder.Entity<AutoDeposit>().ToTable("AutoDeposit");
+            modelBuilder.Entity<Models.Entities.Portfolio>().ToTable("Portfolio");
+            modelBuilder.Entity<Models.Entities.InvestmentHolding>().ToTable("InvestmentHolding");
+            modelBuilder.Entity<Models.Entities.InvestmentTransaction>().ToTable("InvestmentTransaction");
+            modelBuilder.Entity<ChatSession>().ToTable("ChatSession");
+            modelBuilder.Entity<ChatMessage>().ToTable("ChatMessage");
+            modelBuilder.Entity<ChatAttachment>().ToTable("ChatAttachment");
 
             modelBuilder.Entity<Account>(entity =>
             {
@@ -141,6 +165,9 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<NotificationPreference>(entity =>
             {
+                entity.Property(p => p.Category)
+                    .HasConversion<string>();
+
                 entity.HasOne(p => p.User)
                     .WithMany(u => u.NotificationPreferences)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
@@ -215,25 +242,50 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<ChatSession>(entity =>
             {
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.IssueCategory).HasColumnName("issueCategory").HasMaxLength(50);
+                entity.Property(e => e.SessionStatus).HasColumnName("sessionStatus").HasMaxLength(30);
+                entity.Property(e => e.Rating).HasColumnName("rating");
+                entity.Property(e => e.StartedAt).HasColumnName("startedAt");
+                entity.Property(e => e.EndedAt).HasColumnName("endedAt");
+                entity.Property(e => e.Feedback).HasColumnName("feedback").HasMaxLength(255);
+                entity.Property<int>("UserId").HasColumnName("userId");
+
                 entity.HasOne(s => s.User)
                     .WithMany()
+                    .HasForeignKey("UserId")
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(s => s.Messages)
                     .WithOne(m => m.Session)
                     .IsRequired();
+            });
 
-                entity.HasOne(s => s.Attachment);
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.SessionId).HasColumnName("sessionId");
+                entity.Property(e => e.SenderType).HasColumnName("senderType").HasMaxLength(20);
+                entity.Property(e => e.Content).HasColumnName("content");
+                entity.Property(e => e.SentAt).HasColumnName("sentAt");
             });
 
             modelBuilder.Entity<ChatAttachment>(entity =>
             {
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.MessageId).HasColumnName("messageId");
+                entity.Property(e => e.AttachmentName).HasColumnName("attachmentName").HasMaxLength(255);
+                entity.Property(e => e.FileType).HasColumnName("fileType").HasMaxLength(50);
+                entity.Property(e => e.FileSizeBytes).HasColumnName("fileSizeBytes");
+                entity.Property(e => e.StorageUrl).HasColumnName("storageUrl").HasMaxLength(255);
+
                 entity.HasOne(a => a.Message)
                     .WithMany()
+                    .HasForeignKey(a => a.MessageId)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
-            modelBuilder.Entity<Portfolio>(entity =>
+            modelBuilder.Entity<Models.Entities.Portfolio>(entity =>
             {
                 entity.HasOne(p => p.User)
                     .WithMany()
@@ -244,7 +296,7 @@ namespace BankApp.Server.DataAccess
                     .IsRequired();
             });
 
-            modelBuilder.Entity<InvestmentHolding>(entity =>
+            modelBuilder.Entity<Models.Entities.InvestmentHolding>(entity =>
             {
                 entity.HasMany(h => h.Transactions)
                     .WithOne(t => t.Holding)

@@ -1,5 +1,4 @@
-﻿using BankApp.Server.Services.Implementations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
 {
@@ -7,12 +6,14 @@ namespace BankApp.Server.Controllers
     [Route("api/loans/should-compute-estimate")]
     public class LoanDialogStateController : ControllerBase
     {
-        private readonly LoanDialogStateService _loanDialogStateService = new();
+        private const int PositiveThreshold = 0;
 
         [HttpGet]
         public IActionResult GetShouldComputeEstimate([FromQuery] double desiredAmount, [FromQuery] int preferredTermMonths, [FromQuery] string purpose)
         {
-            bool result = _loanDialogStateService.ShouldComputeEstimate(desiredAmount, preferredTermMonths, purpose);
+            bool result = desiredAmount > PositiveThreshold &&
+                          preferredTermMonths > PositiveThreshold &&
+                          !string.IsNullOrWhiteSpace(purpose);
             return Ok(result);
         }
     }

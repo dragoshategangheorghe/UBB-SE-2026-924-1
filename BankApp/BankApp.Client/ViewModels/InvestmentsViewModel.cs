@@ -1,6 +1,3 @@
-﻿using BankApp.Client.Utilities;
-using BankApp.Models.Features.Investments;
-using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
+using BankApp.Models.Entities;
+using BankApp.Client.Services.Interfaces;
+using BankApp.Client.Utilities;
+using BankApp.Models.Entities;
 
 namespace BankApp.Client.ViewModels
 {
@@ -22,19 +25,20 @@ namespace BankApp.Client.ViewModels
         private bool isPortfolioLoading;
         private Portfolio userPortfolio;
 
-        public InvestmentsViewModel()
+        private readonly IInvestmentsService investmentsService;
+
+        public InvestmentsViewModel(IInvestmentsService investmentsService)
         {
             this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             this.SelectFilterCommand = new RelayCommand<string>(this.ApplyFilter);
 
+            this.investmentsService = investmentsService;
             this.userPortfolio = new Portfolio();
             this.displayedHoldings = new ObservableCollection<InvestmentHolding>();
         }
 
         public ICommand SelectFilterCommand { get; }
-
         public bool IsEmptyStateVisible => !this.IsPortfolioLoading && !this.DisplayedHoldings.Any();
-
         public bool IsHoldingsVisible => !this.IsEmptyStateVisible;
 
         public string ActiveFilterType
@@ -42,7 +46,11 @@ namespace BankApp.Client.ViewModels
             get => this.activeFilterType;
             set
             {
-                if (this.activeFilterType == value) return;
+                if (this.activeFilterType == value)
+                {
+                    return;
+                }
+
                 this.activeFilterType = value;
                 this.RefreshDisplayedHoldings();
                 this.OnPropertyChanged();
@@ -85,7 +93,11 @@ namespace BankApp.Client.ViewModels
 
         public void EnsureInitialized()
         {
-            if (this.hasLoaded) return;
+            if (this.hasLoaded)
+            {
+                return;
+            }
+
             this.hasLoaded = true;
             this.LoadUserPortfolio();
         }
@@ -96,10 +108,9 @@ namespace BankApp.Client.ViewModels
 
             try
             {
+                var portfolio = await investmentsService.GetPortfolioForCurrentUserAsync();
 
-                var portfolio = await App.ApiService.GetAsync<Portfolio>($"/api/investments/portfolio/1");
-
-                if (portfolio != null)
+                if (this.UserPortfolio is not null)
                 {
                     this.UserPortfolio = portfolio;
                     this.RefreshDisplayedHoldings();

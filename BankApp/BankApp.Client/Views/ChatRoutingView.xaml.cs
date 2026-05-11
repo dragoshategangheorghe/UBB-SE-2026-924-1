@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BankApp.Client.Services.Interfaces;
+using BankApp.Models.DTOs.Chat;
 using BankApp.Models.Features.Chat;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,18 +11,18 @@ namespace BankApp.Client.Views
 {
     public sealed partial class ChatRoutingView : Page
     {
-        private readonly IChatApiService chatApiService;
+        private readonly IChatService chatService;
 
         public ChatRoutingView()
         {
             InitializeComponent();
-            chatApiService = App.ChatApiService;
+            chatService = App.ChatService;
             Loaded += ChatRoutingView_Loaded;
         }
 
         private async void ChatRoutingView_Loaded(object sender, RoutedEventArgs e)
         {
-            List<ChatSession>? sessions = await chatApiService.GetSessionsAsync();
+            List<ChatSession>? sessions = await chatService.GetSessionsAsync();
             List<ChatSession> safeSessions = sessions ?? new List<ChatSession>();
             foreach (ChatSession session in safeSessions)
             {
@@ -34,14 +35,28 @@ namespace BankApp.Client.Views
 
         private async void StartNewChat_Click(object sender, RoutedEventArgs e)
         {
-            string issueCategory = IssueCategoryComboBox.SelectedItem?.ToString() ?? "General";
-            CreateChatSessionResponse? response = await chatApiService.CreateSessionAsync(issueCategory);
-            if (response == null || !response.Success || response.SessionId <= 0)
+            try
             {
-                return;
-            }
+                string issueCategory = IssueCategoryComboBox.SelectedItem?.ToString() ?? "General";
+                CreateChatSessionResponse? response = await chatService.CreateSessionAsync(issueCategory);
+                if (response == null || !response.Success || response.SessionId <= 0)
+                {
+                    return;
+                }
 
-            Frame?.Navigate(typeof(ChatView), response.SessionId);
+                Frame?.Navigate(typeof(ChatView), response.SessionId);
+            }
+            catch (Exception ex)
+            {
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "Could not start chat",
+                    Content = ex.Message,
+                    CloseButtonText = "OK",
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
         }
 
         private void SessionsList_ItemClick(object sender, ItemClickEventArgs e)

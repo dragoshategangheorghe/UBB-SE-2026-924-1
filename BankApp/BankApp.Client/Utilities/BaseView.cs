@@ -1,6 +1,6 @@
-﻿namespace BankApp.Client.Utilities
+namespace BankApp.Client.Utilities
 {
-    public abstract class BaseView<T> : Observer<T>
+    public abstract class BaseView<T> : IAppObserver<T>
     {
         public void Update(T value)
         {

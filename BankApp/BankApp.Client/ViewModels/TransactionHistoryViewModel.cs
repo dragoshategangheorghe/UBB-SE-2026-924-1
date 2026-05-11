@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Client.Commands;
 using BankApp.Client.Services.Interfaces;
-using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Transactions;
+using BankApp.Client.Utilities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -15,7 +15,7 @@ namespace BankApp.Client.ViewModels
 {
     public class TransactionHistoryViewModel : BaseViewModel
     {
-        private readonly ITransactionApiService _transactionApiService;
+        private readonly ITransactionHistoryService _transactionHistoryService;
         private readonly ITransactionHistorySessionState _sessionState;
         private readonly AsyncRelayCommand _refreshCommand;
         private readonly AsyncRelayCommand _resetFiltersCommand;
@@ -43,9 +43,9 @@ namespace BankApp.Client.ViewModels
         private TransactionHistoryItemDto? _selectedTransaction;
         private string _lastExportPath = string.Empty;
 
-        public TransactionHistoryViewModel(ITransactionApiService transactionApiService, ITransactionHistorySessionState sessionState)
+        public TransactionHistoryViewModel(ITransactionHistoryService transactionHistoryService, ITransactionHistorySessionState sessionState)
         {
-            _transactionApiService = transactionApiService;
+            _transactionHistoryService = transactionHistoryService;
             _sessionState = sessionState;
 
             Transactions = new ObservableCollection<TransactionHistoryItemDto>();
@@ -274,7 +274,7 @@ namespace BankApp.Client.ViewModels
                 }
 
                 IsLoading = true;
-                TransactionHistoryResponse? response = await _transactionApiService.GetHistoryAsync(request);
+                TransactionHistoryResponse? response = await _transactionHistoryService.GetHistoryAsync(request);
                 if (response == null || !response.Success)
                 {
                     ShowStatus("Failed to load transaction history.", InfoBarSeverity.Error);
@@ -329,7 +329,7 @@ namespace BankApp.Client.ViewModels
 
         private async Task LoadMetadataAsync()
         {
-            TransactionFilterMetadataResponse? metadata = await _transactionApiService.GetFilterMetadataAsync();
+            TransactionFilterMetadataResponse? metadata = await _transactionHistoryService.GetFilterMetadataAsync();
             if (metadata == null || !metadata.Success)
             {
                 ShowStatus("Failed to load transaction filters.", InfoBarSeverity.Warning);
@@ -353,7 +353,7 @@ namespace BankApp.Client.ViewModels
                     return;
                 }
 
-                ExportedFileResult? exportResult = await _transactionApiService.ExportTransactionsAsync(new TransactionExportRequest
+                ExportedFileResult? exportResult = await _transactionHistoryService.ExportTransactionsAsync(new TransactionExportRequest
                 {
                     SearchTerm = baseRequest.SearchTerm,
                     FromDate = baseRequest.FromDate,
@@ -394,7 +394,7 @@ namespace BankApp.Client.ViewModels
 
             try
             {
-                ExportedFileResult? exportResult = await _transactionApiService.ExportReceiptAsync(SelectedTransaction.Id);
+                ExportedFileResult? exportResult = await _transactionHistoryService.ExportReceiptAsync(SelectedTransaction.Id);
                 if (exportResult == null)
                 {
                     ShowStatus("Failed to download transaction receipt.", InfoBarSeverity.Error);

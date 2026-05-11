@@ -1,19 +1,19 @@
+using System;
+using System.Threading.Tasks;
+using Windows.UI;
 using BankApp.Client.Utilities;
 using BankApp.Client.ViewModels;
-using BankApp.Models.Enums;
 using BankApp.Models.Entities;
+using BankApp.Models.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using System;
-using Windows.UI;
-using System.Threading.Tasks;
 
 namespace BankApp.Client.Views
 {
-    public sealed partial class DashboardView : Page, Observer<DashboardState>
+    public sealed partial class DashboardView : Page, IAppObserver<DashboardState>
     {
         private readonly DashboardViewModel _viewModel;
         private int _currentCardIndex = 0;
@@ -22,7 +22,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            _viewModel = new DashboardViewModel(App.ApiService);
+            _viewModel = new DashboardViewModel(App.DashboardService);
             _viewModel.State.AddObserver(this);
             _viewModel.LoadDashboard();
         }
@@ -39,11 +39,13 @@ namespace BankApp.Client.Views
                 switch (state)
                 {
                     case DashboardState.Loading:
+                        DashboardErrorInfoBar.IsOpen = false;
                         ShowLoading();
                         break;
 
                     case DashboardState.Success:
                         HideLoading();
+                        DashboardErrorInfoBar.IsOpen = false;
                         RefreshUI();
                         break;
 
@@ -54,7 +56,6 @@ namespace BankApp.Client.Views
                 }
             });
         }
-
 
         private void RefreshUI()
         {
@@ -67,7 +68,10 @@ namespace BankApp.Client.Views
         private void ShowCard(int index)
         {
             var cards = _viewModel.Cards;
-            if (cards == null || cards.Count == 0) return;
+            if (cards == null || cards.Count == 0)
+            {
+                return;
+            }
 
             index = Math.Clamp(index, 0, cards.Count - 1);
             _currentCardIndex = index;
@@ -122,14 +126,18 @@ namespace BankApp.Client.Views
         private void PrevCardButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentCardIndex > 0)
+            {
                 ShowCard(_currentCardIndex - 1);
+            }
         }
 
         private void NextCardButton_Click(object sender, RoutedEventArgs e)
         {
             var count = _viewModel.Cards?.Count ?? 0;
             if (_currentCardIndex < count - 1)
+            {
                 ShowCard(_currentCardIndex + 1);
+            }
         }
 
         private async void TransferButton_Click(object sender, RoutedEventArgs e)
@@ -154,7 +162,8 @@ namespace BankApp.Client.Views
 
         private void ShowError(string msg)
         {
-            // TODO: add an ErrorInfoBar to the XAML like LoginView has - for later
+            DashboardErrorInfoBar.Message = msg;
+            DashboardErrorInfoBar.IsOpen = true;
         }
 
         private async System.Threading.Tasks.Task ShowAlertAsync(string title, string message)
@@ -168,10 +177,14 @@ namespace BankApp.Client.Views
             };
             await dialog.ShowAsync();
         }
+
         private async void CardVisual_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var cards = _viewModel.Cards;
-            if (cards == null || cards.Count == 0) return;
+            if (cards == null || cards.Count == 0)
+            {
+                return;
+            }
 
             var card = cards[_currentCardIndex];
 

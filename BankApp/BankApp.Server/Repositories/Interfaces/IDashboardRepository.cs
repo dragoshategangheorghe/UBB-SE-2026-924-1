@@ -5,7 +5,7 @@ namespace BankApp.Server.Repositories.Interfaces
     {
         List<Account> GetAccountsByUser(int userId);
         List<Card> GetCardsByUser(int userId);
-        List<Transaction> GetRecentTransactions(int accountId, int limit = 10);
+        List<Transaction> GetRecentTransactions(int userId, int limit = 10);
         int GetUnreadNotificationCount(int userId);
     }
 }
