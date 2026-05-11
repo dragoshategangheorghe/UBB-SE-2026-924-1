@@ -163,6 +163,10 @@ namespace BankApp.Client.ViewModels
         [ObservableProperty]
         private bool closeHasPenalty;
 
+        private string _pendingTargetAmountText = string.Empty;
+
+        private bool _isBusy;
+
         // ── Constructor ──────────────────────────────────────────────────────
         public SavingsViewModel(ISavingsService savingsService)
         {
@@ -224,6 +228,10 @@ namespace BankApp.Client.ViewModels
         /// </summary>
         private async Task RefreshSelectedAccountDependentsAsync()
         {
+            if (_isBusy)
+            {
+                return;
+            }
             if (this.SelectedAccount == null)
             {
                 this.WithdrawHasEarlyRisk = false;
@@ -270,6 +278,10 @@ namespace BankApp.Client.ViewModels
         /// </summary>
         private async Task RefreshDepositPreviewAsync()
         {
+            if (_isBusy)
+            {
+                return;
+            }
             if (this.SelectedAccount == null)
             {
                 this.LivePreview = string.Empty;
@@ -294,6 +306,10 @@ namespace BankApp.Client.ViewModels
         /// </summary>
         private async Task RefreshWithdrawPenaltyAsync()
         {
+            if (_isBusy)
+            {
+                return;
+            }
             if (!this.WithdrawHasEarlyRisk)
             {
                 this.WithdrawEstimatedPenalty = ZeroAmount;
@@ -368,21 +384,7 @@ namespace BankApp.Client.ViewModels
             this.SelectedFundingSource = fundingSource;
             this.TargetAmount = null;
 
-            if (this.IsGoalSavings)
-            {
-                try
-                {
-                    // ParsePositiveAmountAsync is synchronous under the hood (Task.FromResult),
-                    // so .GetAwaiter().GetResult() is safe here — no actual async work.
-                    // If your implementation ever becomes truly async, move this into
-                    // CreateAccountAsync with a proper await instead.
-                    this.TargetAmount = this.savingsService.ParsePositiveAmountAsync(targetAmountText).GetAwaiter().GetResult();
-                }
-                catch
-                {
-                    this.TargetAmount = null;
-                }
-            }
+            this._pendingTargetAmountText = targetAmountText;
 
             this.TargetDate = this.IsGoalSavings ? targetDate : null;
             this.MaturityDate = this.SelectedSavingsType == "FixedDeposit" ? maturityDate : null;
@@ -391,66 +393,92 @@ namespace BankApp.Client.ViewModels
         [RelayCommand]
         public async Task CreateAccountAsync()
         {
-            this.FieldErrors.Clear();
-            this.ErrorMessage = string.Empty;
-            this.ShowCreateConfirmation = false;
-
-            var errors = await this.savingsService.ValidateCreateAccountAsync(new ValidateCreateAccountRequest
-            {
-                SelectedSavingsType = this.SelectedSavingsType,
-                AccountName = this.AccountName,
-                InitialDepositText = this.InitialDepositText,
-                HasFundingSource = this.SelectedFundingSource != null,
-                SelectedFrequency = this.SelectedFrequency,
-                TargetAmount = this.TargetAmount,
-                TargetDate = this.TargetDate,
-                IsGoalSavings = this.IsGoalSavings,
-            });
-
-            foreach (var error in errors)
-            {
-                this.FieldErrors[error.Key] = error.Value;
-            }
-
-            this.OnPropertyChanged(nameof(this.FieldErrors));
-            if (this.FieldErrors.Any())
+            if (_isBusy)
             {
                 return;
             }
+            _isBusy = true;
 
-            // Both of these were previously .GetAwaiter().GetResult() inside an async method —
-            // a needless deadlock risk. Simple await is correct here.
-            var deposit = await this.savingsService.ParsePositiveAmountAsync(this.InitialDepositText);
-
-            this.IsLoading = true;
             try
             {
-                var createSavingsAccountDto = new CreateSavingsAccountDto
+                this.FieldErrors.Clear();
+                this.ErrorMessage = string.Empty;
+                this.ShowCreateConfirmation = false;
+
+                if (this.IsGoalSavings && !string.IsNullOrWhiteSpace(this._pendingTargetAmountText))
                 {
-                    UserIdentificationNumber = CurrentUser.Id,
-                    SavingsType = this.SelectedSavingsType,
-                    AccountName = this.AccountName.Trim(),
-                    InitialDeposit = deposit,
-                    FundingAccountId = this.SelectedFundingSource!.Id,
-                    TargetAmount = this.IsGoalSavings ? this.TargetAmount : null,
-                    TargetDate = this.IsGoalSavings ? this.TargetDate?.DateTime : null,
-                    MaturityDate = this.MaturityDate?.DateTime,
-                    DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency)
-                        ? null
-                        : await this.savingsService.ParseDepositFrequencyAsync(this.SelectedFrequency),
-                };
-                await this.savingsService.CreateAccountAsync(createSavingsAccountDto);
-                this.ShowCreateConfirmation = true;
-                this.ResetCreateForm();
-                await this.LoadAccountsAsync();
-            }
-            catch (Exception exception)
-            {
-                this.ErrorMessage = exception.Message;
+                    try
+                    {
+                        this.TargetAmount = await this.savingsService
+                            .ParsePositiveAmountAsync(this._pendingTargetAmountText);
+                    }
+                    catch
+                    {
+                        this.TargetAmount = null;
+                    }
+                }
+
+                var errors = await this.savingsService.ValidateCreateAccountAsync(new ValidateCreateAccountRequest
+                {
+                    SelectedSavingsType = this.SelectedSavingsType,
+                    AccountName = this.AccountName,
+                    InitialDepositText = this.InitialDepositText,
+                    HasFundingSource = this.SelectedFundingSource != null,
+                    SelectedFrequency = this.SelectedFrequency,
+                    TargetAmount = this.TargetAmount,
+                    TargetDate = this.TargetDate,
+                    IsGoalSavings = this.IsGoalSavings,
+                });
+
+                foreach (var error in errors)
+                {
+                    this.FieldErrors[error.Key] = error.Value;
+                }
+
+                this.OnPropertyChanged(nameof(this.FieldErrors));
+                if (this.FieldErrors.Any())
+                {
+                    return;
+                }
+
+                // Both of these were previously .GetAwaiter().GetResult() inside an async method —
+                // a needless deadlock risk. Simple await is correct here.
+                var deposit = await this.savingsService.ParsePositiveAmountAsync(this.InitialDepositText);
+
+                this.IsLoading = true;
+                try
+                {
+                    var createSavingsAccountDto = new CreateSavingsAccountDto
+                    {
+                        UserIdentificationNumber = CurrentUser.Id,
+                        SavingsType = this.SelectedSavingsType,
+                        AccountName = this.AccountName.Trim(),
+                        InitialDeposit = deposit,
+                        FundingAccountId = this.SelectedFundingSource!.Id,
+                        TargetAmount = this.IsGoalSavings ? this.TargetAmount : null,
+                        TargetDate = this.IsGoalSavings ? this.TargetDate?.DateTime : null,
+                        MaturityDate = this.MaturityDate?.DateTime,
+                        DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency)
+                            ? null
+                            : await this.savingsService.ParseDepositFrequencyAsync(this.SelectedFrequency),
+                    };
+                    await this.savingsService.CreateAccountAsync(createSavingsAccountDto);
+                    this.ShowCreateConfirmation = true;
+                    this.ResetCreateForm();
+                    await this.LoadAccountsAsync();
+                }
+                catch (Exception exception)
+                {
+                    this.ErrorMessage = exception.Message;
+                }
+                finally
+                {
+                    this.IsLoading = false;
+                }
             }
             finally
             {
-                this.IsLoading = false;
+                _isBusy = false;
             }
         }
 
@@ -468,53 +496,66 @@ namespace BankApp.Client.ViewModels
         [RelayCommand]
         public async Task DepositAsync()
         {
-            this.ErrorMessage = string.Empty;
-            this.ShowDepositSuccess = false;
-
-            if (this.SelectedAccount == null)
+            if (_isBusy)
             {
-                this.ErrorMessage = "No account selected.";
                 return;
             }
+            _isBusy = true;
 
-            decimal amount;
             try
             {
-                amount = await this.savingsService.ParsePositiveAmountAsync(this.DepositAmountText);
-            }
-            catch
-            {
-                this.ErrorMessage = "Please enter a valid positive amount.";
-                return;
-            }
+                this.ErrorMessage = string.Empty;
+                this.ShowDepositSuccess = false;
 
-            this.depositCancelationTokenSource?.Cancel();
-            this.depositCancelationTokenSource = new CancellationTokenSource();
+                if (this.SelectedAccount == null)
+                {
+                    this.ErrorMessage = "No account selected.";
+                    return;
+                }
 
-            this.IsLoading = true;
-            try
-            {
-                var depositResponseDto = await this.savingsService.DepositAsync(
-                    this.SelectedAccount.IdentificationNumber,
-                    amount,
-                    this.DepositSource,
-                    CurrentUser.Id);
+                decimal amount;
+                try
+                {
+                    amount = await this.savingsService.ParsePositiveAmountAsync(this.DepositAmountText);
+                }
+                catch
+                {
+                    this.ErrorMessage = "Please enter a valid positive amount.";
+                    return;
+                }
 
-                this.DepositSuccessMessage = $"Deposit successful! New balance: ${depositResponseDto.NewBalance:N2}";
-                this.ShowDepositSuccess = true;
-                this.DepositAmountText = string.Empty;
-                await this.LoadAccountsAsync();
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception exception)
-            {
-                this.ErrorMessage = exception.Message;
+                this.depositCancelationTokenSource?.Cancel();
+                this.depositCancelationTokenSource = new CancellationTokenSource();
+
+                this.IsLoading = true;
+                try
+                {
+                    var depositResponseDto = await this.savingsService.DepositAsync(
+                        this.SelectedAccount.IdentificationNumber,
+                        amount,
+                        this.DepositSource,
+                        CurrentUser.Id);
+
+                    this.DepositSuccessMessage = $"Deposit successful! New balance: ${depositResponseDto.NewBalance:N2}";
+                    this.ShowDepositSuccess = true;
+                    this.DepositAmountText = string.Empty;
+                    await this.LoadAccountsAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception exception)
+                {
+                    this.ErrorMessage = exception.Message;
+                }
+                finally
+                {
+                    this.IsLoading = false;
+                }
             }
             finally
             {
-                this.IsLoading = false;
+                _isBusy = false;
             }
         }
 
@@ -645,52 +686,65 @@ namespace BankApp.Client.ViewModels
 
         public async Task<bool> ConfirmWithdrawAsync()
         {
-            this.WithdrawResultMessage = string.Empty;
-            this.WithdrawSuccess = false;
-            decimal amount;
+            if (_isBusy)
+            {
+                return;
+            }
+            _isBusy = true;
+
             try
             {
-                amount = await this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText);
-            }
-            catch
-            {
-                this.WithdrawResultMessage = "Please enter a valid positive amount.";
-                return false;
-            }
-
-            var withdrawValidation = await this.savingsService.ValidateWithdrawRequestAsync(amount, this.WithdrawDestination);
-            if (!withdrawValidation.IsValid)
-            {
-                this.WithdrawResultMessage = withdrawValidation.ErrorMessage;
-                return false;
-            }
-
-            this.IsLoading = true;
-            try
-            {
-                var withdrawResponseDto = await this.savingsService.WithdrawAsync(
-                    this.SelectedAccount!.IdentificationNumber,
-                    amount,
-                    this.WithdrawDestination.DisplayName,
-                    CurrentUser.Id);
-                this.WithdrawSuccess = withdrawResponseDto.Success;
-                this.WithdrawResultMessage = await this.savingsService.BuildWithdrawResultMessageAsync(withdrawResponseDto);
-                if (withdrawResponseDto.Success)
+                this.WithdrawResultMessage = string.Empty;
+                this.WithdrawSuccess = false;
+                decimal amount;
+                try
                 {
-                    this.WithdrawAmountText = string.Empty;
-                    await this.LoadAccountsAsync();
+                    amount = await this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText);
+                }
+                catch
+                {
+                    this.WithdrawResultMessage = "Please enter a valid positive amount.";
+                    return false;
                 }
 
-                return withdrawResponseDto.Success;
-            }
-            catch (Exception exception)
-            {
-                this.WithdrawResultMessage = exception.Message;
-                return false;
+                var withdrawValidation = await this.savingsService.ValidateWithdrawRequestAsync(amount, this.WithdrawDestination);
+                if (!withdrawValidation.IsValid)
+                {
+                    this.WithdrawResultMessage = withdrawValidation.ErrorMessage;
+                    return false;
+                }
+
+                this.IsLoading = true;
+                try
+                {
+                    var withdrawResponseDto = await this.savingsService.WithdrawAsync(
+                        this.SelectedAccount!.IdentificationNumber,
+                        amount,
+                        this.WithdrawDestination.DisplayName,
+                        CurrentUser.Id);
+                    this.WithdrawSuccess = withdrawResponseDto.Success;
+                    this.WithdrawResultMessage = await this.savingsService.BuildWithdrawResultMessageAsync(withdrawResponseDto);
+                    if (withdrawResponseDto.Success)
+                    {
+                        this.WithdrawAmountText = string.Empty;
+                        await this.LoadAccountsAsync();
+                    }
+
+                    return withdrawResponseDto.Success;
+                }
+                catch (Exception exception)
+                {
+                    this.WithdrawResultMessage = exception.Message;
+                    return false;
+                }
+                finally
+                {
+                    this.IsLoading = false;
+                }
             }
             finally
             {
-                this.IsLoading = false;
+                _isBusy = false;
             }
         }
 
