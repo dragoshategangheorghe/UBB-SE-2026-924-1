@@ -46,6 +46,7 @@ namespace BankApp.Client
         public static IDashboardService DashboardService { get; private set; } = new DashboardService(DashboardHttpRepo);
         public static IAuthService AuthService { get; private set; } = new AuthService(AuthHttpRepo);
         public static IProfileService ProfileService { get; private set; } = new ProfileService(ProfileHttpRepo);
+        public static INotificationClientService NotificationClientService { get; private set; } = new NotificationClientService();
         public static IInvestmentsService InvestmentsService { get; private set; } = new InvestmentsService(InvestmentsHttpRepo);
 
         // Integrated Account Service

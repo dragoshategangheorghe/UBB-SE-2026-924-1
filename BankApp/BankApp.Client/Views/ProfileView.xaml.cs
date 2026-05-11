@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
 using BankApp.Client.ViewModels;
 using BankApp.Models.Entities;
@@ -17,6 +19,7 @@ namespace BankApp.Client.Views
     public sealed partial class ProfileView : Page, IAppObserver<ProfileState>
     {
         private ProfileViewModel _viewModel;
+        private readonly NotificationPreferencesViewModel _notificationPreferencesViewModel;
 
         private string _verifiedPassword = string.Empty;
         private string _pending2FAType = string.Empty;
@@ -31,6 +34,7 @@ namespace BankApp.Client.Views
 
             _viewModel = new ProfileViewModel(App.ProfileService);
             _viewModel.State.AddObserver(this);
+            _notificationPreferencesViewModel = new NotificationPreferencesViewModel(App.NotificationClientService);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -40,6 +44,7 @@ namespace BankApp.Client.Views
             ShowLoading(true);
 
             await _viewModel.LoadProfile();
+            await _notificationPreferencesViewModel.LoadAsync();
 
             ShowLoading(false);
 
@@ -61,6 +66,11 @@ namespace BankApp.Client.Views
         {
             var user = _viewModel.ProfileInfo;
 
+            if (user == null)
+            {
+                return;
+            }
+
             ProfileCardName.Text = user.FullName ?? string.Empty;
             ProfileCardEmail.Text = user.Email ?? string.Empty;
             ProfileCardPhone.Text = user.PhoneNumber ?? string.Empty;
@@ -80,7 +90,7 @@ namespace BankApp.Client.Views
             _isPopulating = false;
 
             PopulateOAuthLinks(_viewModel.OAuthLinks);
-            PopulateNotificationPreferences(_viewModel.NotificationPreferences);
+            PopulateNotificationPreferences(_notificationPreferencesViewModel.Preferences);
             Update2FAVisuals();
         }
 
@@ -118,50 +128,54 @@ namespace BankApp.Client.Views
         {
             var deferral = args.GetDeferral();
 
-            if (string.IsNullOrWhiteSpace(VerifyCurrentPasswordBox.Password))
+            try
             {
-                VerifyErrorInfoBar.Message = "Enter your password.";
-                VerifyErrorInfoBar.IsOpen = true;
-                args.Cancel = true;
-                deferral.Complete();
-                return;
-            }
-
-            bool verified = await _viewModel.VerifyPassword(VerifyCurrentPasswordBox.Password);
-
-            if (!verified)
-            {
-                VerifyErrorInfoBar.Message = "Incorrect password.";
-                VerifyErrorInfoBar.IsOpen = true;
-                args.Cancel = true;
-                deferral.Complete();
-                return;
-            }
-
-            // Success logic
-            _verifiedPassword = VerifyCurrentPasswordBox.Password;
-            VerifyErrorInfoBar.IsOpen = false;
-
-            // Complete the deferral so the FIRST dialog closes
-            deferral.Complete();
-
-            // Now, trigger the NEXT step based on the flow
-            if (_isChangingPasswordFlow)
-            {
-                // We MUST use the Dispatcher to wait until the first dialog is gone
-                DispatcherQueue.TryEnqueue(async () =>
+                if (string.IsNullOrWhiteSpace(VerifyCurrentPasswordBox.Password))
                 {
-                    NewPasswordBox.Password = string.Empty;
-                    ConfirmPasswordBox.Password = string.Empty;
-                    NewPasswordErrorInfoBar.IsOpen = false;
-                    await NewPasswordDialog.ShowAsync();
-                });
+                    VerifyErrorInfoBar.Message = "Enter your password.";
+                    VerifyErrorInfoBar.IsOpen = true;
+                    args.Cancel = true;
+                    return;
+                }
+
+                bool verified = await _viewModel.VerifyPassword(VerifyCurrentPasswordBox.Password);
+
+                if (!verified)
+                {
+                    VerifyErrorInfoBar.Message = "Incorrect password.";
+                    VerifyErrorInfoBar.IsOpen = true;
+                    args.Cancel = true;
+                    return;
+                }
+
+                _verifiedPassword = VerifyCurrentPasswordBox.Password;
+                VerifyErrorInfoBar.IsOpen = false;
+
+                if (_isChangingPasswordFlow)
+                {
+                    DispatcherQueue.TryEnqueue(async () =>
+                    {
+                        NewPasswordBox.Password = string.Empty;
+                        ConfirmPasswordBox.Password = string.Empty;
+                        NewPasswordErrorInfoBar.IsOpen = false;
+                        await NewPasswordDialog.ShowAsync();
+                    });
+                }
+                else if (!_is2FAFlow)
+                {
+                    SetEditingEnabled(true);
+                    ShowSuccess("You can now edit your profile.");
+                }
             }
-            else if (!_is2FAFlow)
+            catch (Exception ex)
             {
-                // Normal profile edit flow
-                SetEditingEnabled(true);
-                ShowSuccess("You can now edit your profile.");
+                VerifyErrorInfoBar.Message = $"Verification failed: {ex.Message}";
+                VerifyErrorInfoBar.IsOpen = true;
+                args.Cancel = true;
+            }
+            finally
+            {
+                deferral.Complete();
             }
         }
 
@@ -207,77 +221,77 @@ namespace BankApp.Client.Views
         {
             var deferral = args.GetDeferral();
 
-            string newPwd = NewPasswordBox.Password;
-            string confirmPwd = ConfirmPasswordBox.Password;
-
-            // 1. Basic Validation
-            if (newPwd.Length < 8)
+            try
             {
-                NewPasswordErrorInfoBar.Message = "Minimum 8 characters required.";
+                string newPwd = NewPasswordBox.Password;
+                string confirmPwd = ConfirmPasswordBox.Password;
+
+                if (newPwd.Length < 8)
+                {
+                    NewPasswordErrorInfoBar.Message = "Minimum 8 characters required.";
+                    NewPasswordErrorInfoBar.IsOpen = true;
+                    args.Cancel = true;
+                    return;
+                }
+
+                if (newPwd != confirmPwd)
+                {
+                    NewPasswordErrorInfoBar.Message = "Passwords do not match.";
+                    NewPasswordErrorInfoBar.IsOpen = true;
+                    args.Cancel = true;
+                    return;
+                }
+
+                bool success = await _viewModel.ChangePassword(_verifiedPassword, newPwd);
+
+                if (success)
+                {
+                    _verifiedPassword = string.Empty;
+                    NewPasswordErrorInfoBar.IsOpen = false;
+                    ShowSuccess("Your password has been changed successfully.");
+                }
+                else
+                {
+                    NewPasswordErrorInfoBar.Message = "The password change was rejected.";
+                    NewPasswordErrorInfoBar.IsOpen = true;
+                    args.Cancel = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                NewPasswordErrorInfoBar.Message = $"Password change failed: {ex.Message}";
                 NewPasswordErrorInfoBar.IsOpen = true;
                 args.Cancel = true;
-                deferral.Complete();
-                return;
             }
-
-            if (newPwd != confirmPwd)
+            finally
             {
-                NewPasswordErrorInfoBar.Message = "Passwords do not match.";
-                NewPasswordErrorInfoBar.IsOpen = true;
-                args.Cancel = true;
-                deferral.Complete();
-                return;
-            }
-
-            // 2. Call ViewModel
-            // Note: We use the _verifiedPassword we saved from Dialog 1 as the 'old' password
-            bool success = await _viewModel.ChangePassword(_verifiedPassword, newPwd);
-
-            if (success)
-            {
-                _verifiedPassword = string.Empty; // Clear security sensitive data
-                NewPasswordErrorInfoBar.IsOpen = false;
-
-                deferral.Complete();
-                ShowSuccess("Your password has been changed successfully.");
-            }
-            else
-            {
-                NewPasswordErrorInfoBar.Message = "The server rejected the change. Please check your connection.";
-                NewPasswordErrorInfoBar.IsOpen = true;
-                args.Cancel = true;
                 deferral.Complete();
             }
         }
 
         private async void Handle2FAAction_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            _pending2FAType = btn.Tag.ToString(); // "Phone" or "Email"
+            if (sender is not Button btn)
+            {
+                return;
+            }
 
-            if (btn.Content.ToString() == "Remove")
+            _pending2FAType = btn.Tag as string ?? string.Empty;
+
+            if (string.Equals(btn.Content?.ToString(), "Remove", StringComparison.OrdinalIgnoreCase))
             {
-                // Logic for removal
+                return;
             }
-            else
-            {
-                // Logic for Add/Verify
-                _is2FAFlow = true;
-                VerifyCurrentPasswordBox.Password = string.Empty;
-                await VerifyPasswordDialog.ShowAsync();
-            }
+
+            _is2FAFlow = true;
+            VerifyCurrentPasswordBox.Password = string.Empty;
+            await VerifyPasswordDialog.ShowAsync();
         }
 
         private async void SaveTwoFactorSettings_Click(object sender, RoutedEventArgs e)
         {
-            // bool success = await _viewModel.UpdateTwoFactorContacts(
-            //     TwoFactorPhoneBox.Text.Trim(),
-            //     TwoFactorEmailBox.Text.Trim());
-            //
-            // if (success)
-            //     ShowSuccess("2FA settings saved.");
-            // else
-            //     ShowError("Failed to save 2FA settings.");
+            // intentionally left blank; security settings are controlled above
+            await Task.CompletedTask;
         }
 
         private async void TwoFactorToggle_Toggled(object sender, RoutedEventArgs e)
@@ -309,12 +323,7 @@ namespace BankApp.Client.Views
 
         private async void TwoFactorEmailToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            // bool success = TwoFactorEmailToggle.IsOn
-            //     ? await _viewModel.EnableTwoFactor(TwoFactorMethod.Email)
-            //     : await _viewModel.DisableTwoFactor(TwoFactorMethod.Email);
-            //
-            // if (!success)
-            //     ShowError("2FA email update failed.");
+            await Task.CompletedTask;
         }
 
         private async void RemoveConnectedAccount_Click(object sender, RoutedEventArgs e)
@@ -340,36 +349,43 @@ namespace BankApp.Client.Views
 
         private async void NotificationToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            // 1. Ignore the event if we are just drawing the UI
             if (_isPopulating)
             {
                 return;
             }
 
-            if (sender is ToggleSwitch toggle && toggle.Tag is NotificationPreference pref)
+            if (sender is not ToggleSwitch toggle || toggle.Tag is not NotificationPreferenceItemViewModel pref)
             {
-                pref.EmailEnabled = toggle.IsOn;
+                return;
+            }
 
-                // 2. Set the flag to block the UI from fully refreshing
-                _isUpdatingToggle = true;
+            _isUpdatingToggle = true;
 
-                bool success = await _viewModel.UpdateNotificationPreferences(_viewModel.NotificationPreferences);
-
-                // 3. Clear the flag when the API call finishes
-                _isUpdatingToggle = false;
+            try
+            {
+                bool success = await _notificationPreferencesViewModel.UpdatePreferenceAsync(
+                    pref,
+                    NotificationChannel.Email,
+                    toggle.IsOn);
 
                 if (!success)
                 {
-                    // Optional: If the API fails, visually flip the switch back to its old state
                     _isPopulating = true;
                     toggle.IsOn = !toggle.IsOn;
-                    pref.EmailEnabled = toggle.IsOn;
                     _isPopulating = false;
+                    ShowError("Failed to save notification preferences.");
                 }
-                else
-                {
-                    toggle.IsOn = pref.EmailEnabled; // force sync (important)
-                }
+            }
+            catch (Exception ex)
+            {
+                _isPopulating = true;
+                toggle.IsOn = !toggle.IsOn;
+                _isPopulating = false;
+                ShowError($"Failed to save notification preferences: {ex.Message}");
+            }
+            finally
+            {
+                _isUpdatingToggle = false;
             }
         }
 
@@ -387,6 +403,11 @@ namespace BankApp.Client.Views
         {
             var user = _viewModel.ProfileInfo;
 
+            if (user == null)
+            {
+                return;
+            }
+
             // Check Phone Status
             if (string.IsNullOrEmpty(user.PhoneNumber))
             {
@@ -395,7 +416,6 @@ namespace BankApp.Client.Views
             }
             else
             {
-                // When IsPhoneVerified exists on the profile model, branch between Verify vs Remove here.
                 TwoFactorPhoneDisplay.Text = user.PhoneNumber;
                 ConfigureActionButton(ActionPhoneBtn, PhoneStatusBadge, PhoneStatusText, "Verify", "#FFF7ED", "#C2410C", "Unverified");
             }
@@ -433,7 +453,6 @@ namespace BankApp.Client.Views
         {
             DispatcherQueue.TryEnqueue(() =>
             {
-                // --- INTERCEPTOR: Block full-page reloads if we are just toggling a switch ---
                 if (_isUpdatingToggle)
                 {
                     if (state == ProfileState.Error)
@@ -441,7 +460,6 @@ namespace BankApp.Client.Views
                         ShowError("Failed to save notification preferences.");
                     }
 
-                    // Ignore Loading and UpdateSuccess so the screen doesn't wipe and redraw!
                     return;
                 }
 
@@ -519,7 +537,7 @@ namespace BankApp.Client.Views
             }
         }
 
-        private void PopulateNotificationPreferences(List<NotificationPreference> prefs)
+        private void PopulateNotificationPreferences(IEnumerable<NotificationPreferenceItemViewModel> prefs)
         {
             _isPopulating = true;
 
@@ -540,34 +558,66 @@ namespace BankApp.Client.Views
 
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
                 var text = new TextBlock
                 {
-                    Text = NotificationTypeExtensions.ToDisplayName(pref.Category),
+                    Text = pref.DisplayName,
                     VerticalAlignment = VerticalAlignment.Center,
                     FontSize = 13,
                     Foreground = (Brush)this.Resources["TextPrimary"]
                 };
 
-                var toggle = new ToggleSwitch
-                {
-                    IsOn = pref.EmailEnabled,
-                    Tag = pref,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                toggle.Toggled += NotificationToggle_Toggled;
+                var emailToggle = BuildNotificationToggle(pref, "Email", pref.EmailEnabled, 1);
+                var smsToggle = BuildNotificationToggle(pref, "SMS", pref.SmsEnabled, 2);
+                var pushToggle = BuildNotificationToggle(pref, "Push", pref.PushEnabled, 3);
 
                 Grid.SetColumn(text, 0);
-                Grid.SetColumn(toggle, 1);
 
                 row.Children.Add(text);
-                row.Children.Add(toggle);
+                row.Children.Add(emailToggle);
+                row.Children.Add(smsToggle);
+                row.Children.Add(pushToggle);
 
                 NotificationPreferencesPanel.Children.Add(row);
             }
 
             _isPopulating = false;
+        }
+
+        private ToggleSwitch BuildNotificationToggle(NotificationPreferenceItemViewModel pref, string label, bool isOn, int column)
+        {
+            var toggle = new ToggleSwitch
+            {
+                IsOn = isOn,
+                Tag = pref,
+                OnContent = label,
+                OffContent = label,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(10, 0, 0, 0)
+            };
+
+            toggle.Toggled += async (_, __) =>
+            {
+                if (_isPopulating)
+                {
+                    return;
+                }
+
+                NotificationChannel channel = label switch
+                {
+                    "SMS" => NotificationChannel.Sms,
+                    "Push" => NotificationChannel.Push,
+                    _ => NotificationChannel.Email
+                };
+
+                await _notificationPreferencesViewModel.UpdatePreferenceAsync(pref, channel, toggle.IsOn);
+            };
+
+            Grid.SetColumn(toggle, column);
+            return toggle;
         }
     }
 }
