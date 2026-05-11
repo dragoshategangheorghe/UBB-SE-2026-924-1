@@ -116,11 +116,6 @@ namespace BankApp.Client.Views
                 return;
             }
 
-            if (DefaultChatbotResponses.TryGetValue(content, out string? responseText))
-            {
-                await chatService.CreateMessageAsync(sessionId, "Bot", responseText);
-            }
-
             if (pendingAttachment != null)
             {
                 BasicProperties props = await pendingAttachment.GetBasicPropertiesAsync();
