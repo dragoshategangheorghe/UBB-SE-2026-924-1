@@ -29,7 +29,7 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public List<Transaction> FindRecentByUserId(int userId, int limit = 10)
         {
-            return dbContext.Transactions
+            return _dbContext.Transactions
                 .Include(t => t.Account)
                 .Include(t => t.Card)
                 .Include(t => t.Category)

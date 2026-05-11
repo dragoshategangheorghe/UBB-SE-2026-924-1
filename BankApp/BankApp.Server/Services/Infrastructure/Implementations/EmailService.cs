@@ -1,6 +1,6 @@
-﻿using BankApp.Server.Services.Infrastructure.Interfaces;
-using System.Net;
+﻿using System.Net;
 using System.Net.Mail;
+using BankApp.Server.Services.Infrastructure.Interfaces;
 
 namespace BankApp.Server.Services.Infrastructure.Implementations
 {

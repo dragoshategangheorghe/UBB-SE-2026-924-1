@@ -1,8 +1,8 @@
-﻿using BankApp.Server.Services.Infrastructure.Interfaces;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BankApp.Server.Services.Infrastructure.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BankApp.Server.Services.Infrastructure.Implementations
 {

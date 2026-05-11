@@ -182,7 +182,7 @@ namespace BankApp.Server.Services.Implementations
                 return CreateCommandFailure("Failed to update card settings.");
             }
 
-            Card refreshedCard = _cardRepository.GetCardById(cardId)!;
+            Card refreshedCard = _cardRepository.GetCardById(cardId) !;
             return new CardCommandResponse
             {
                 Success = true,
@@ -236,7 +236,7 @@ namespace BankApp.Server.Services.Implementations
                 return CreateCommandFailure("Failed to update card status.");
             }
 
-            Card refreshedCard = _cardRepository.GetCardById(cardId)!;
+            Card refreshedCard = _cardRepository.GetCardById(cardId) !;
             return new CardCommandResponse
             {
                 Success = true,

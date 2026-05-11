@@ -1,15 +1,15 @@
-using BankApp.Models.DTOs.Transactions;
-using BankApp.Server.Services.Interfaces;
 using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
+using BankApp.Models.DTOs.Transactions;
+using BankApp.Server.Services.Interfaces;
 
 namespace BankApp.Server.Services.Implementations
 {
     public class TransactionExportService : ITransactionExportService
     {
-        private static readonly DateTimeOffset _zipEntryTimestamp = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        private static readonly DateTimeOffset _zipEntryTimestamp = new (1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         public TransactionExportResult ExportStatement(IReadOnlyCollection<TransactionHistoryItemDto> transactions, TransactionHistoryRequest request, string format)
         {
@@ -71,7 +71,7 @@ namespace BankApp.Server.Services.Implementations
 
         private static IReadOnlyCollection<string[]> CreateStatementRows(IEnumerable<TransactionHistoryItemDto> transactions)
         {
-            List<string[]> rows = new()
+            List<string[]> rows = new ()
             {
                 new[]
                 {
@@ -146,7 +146,7 @@ namespace BankApp.Server.Services.Implementations
 
         private static string BuildCsv(IReadOnlyCollection<string[]> rows)
         {
-            StringBuilder builder = new();
+            StringBuilder builder = new ();
             foreach (string[] row in rows)
             {
                 builder.AppendLine(string.Join(",", row.Select(EscapeCsv)));
@@ -167,7 +167,7 @@ namespace BankApp.Server.Services.Implementations
                 .SelectMany(line => WrapLine(line, 90))
                 .ToList();
 
-            StringBuilder content = new();
+            StringBuilder content = new ();
             content.AppendLine("BT");
             content.AppendLine("/F1 10 Tf");
             content.AppendLine("72 760 Td");
@@ -187,7 +187,7 @@ namespace BankApp.Server.Services.Implementations
             content.AppendLine("ET");
 
             string stream = content.ToString();
-            List<string> objects = new()
+            List<string> objects = new ()
             {
                 "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
                 "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
@@ -196,10 +196,10 @@ namespace BankApp.Server.Services.Implementations
                 $"5 0 obj\n<< /Length {Encoding.ASCII.GetByteCount(stream)} >>\nstream\n{stream}endstream\nendobj\n"
             };
 
-            StringBuilder pdf = new();
+            StringBuilder pdf = new ();
             pdf.Append("%PDF-1.4\n");
 
-            List<int> offsets = new() { 0 };
+            List<int> offsets = new () { 0 };
             foreach (string pdfObject in objects)
             {
                 offsets.Add(Encoding.ASCII.GetByteCount(pdf.ToString()));
@@ -247,8 +247,8 @@ namespace BankApp.Server.Services.Implementations
 
         private static byte[] BuildXlsx(IReadOnlyCollection<string[]> rows)
         {
-            using MemoryStream stream = new();
-            using (ZipArchive archive = new(stream, ZipArchiveMode.Create, true))
+            using MemoryStream stream = new ();
+            using (ZipArchive archive = new (stream, ZipArchiveMode.Create, true))
             {
                 WriteEntry(archive, "[Content_Types].xml", CreateContentTypesXml());
                 WriteEntry(archive, "_rels/.rels", CreateRootRelsXml());
@@ -265,14 +265,14 @@ namespace BankApp.Server.Services.Implementations
         {
             ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.NoCompression);
             entry.LastWriteTime = _zipEntryTimestamp;
-            using StreamWriter writer = new(entry.Open(), new UTF8Encoding(false));
+            using StreamWriter writer = new (entry.Open(), new UTF8Encoding(false));
             writer.Write(content);
         }
 
         private static string CreateContentTypesXml()
         {
             XNamespace ns = "http://schemas.openxmlformats.org/package/2006/content-types";
-            XDocument document = new(
+            XDocument document = new (
                 new XElement(ns + "Types",
                     new XElement(ns + "Default",
                         new XAttribute("Extension", "rels"),
@@ -296,7 +296,7 @@ namespace BankApp.Server.Services.Implementations
         private static string CreateRootRelsXml()
         {
             XNamespace ns = "http://schemas.openxmlformats.org/package/2006/relationships";
-            XDocument document = new(
+            XDocument document = new (
                 new XElement(ns + "Relationships",
                     new XElement(ns + "Relationship",
                         new XAttribute("Id", "rId1"),
@@ -311,7 +311,7 @@ namespace BankApp.Server.Services.Implementations
             XNamespace spreadsheetNs = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
             XNamespace relationshipNs = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
-            XDocument document = new(
+            XDocument document = new (
                 new XElement(spreadsheetNs + "workbook",
                     new XAttribute(XNamespace.Xmlns + "r", relationshipNs),
                     new XElement(spreadsheetNs + "sheets",
@@ -326,7 +326,7 @@ namespace BankApp.Server.Services.Implementations
         private static string CreateWorkbookRelsXml()
         {
             XNamespace ns = "http://schemas.openxmlformats.org/package/2006/relationships";
-            XDocument document = new(
+            XDocument document = new (
                 new XElement(ns + "Relationships",
                     new XElement(ns + "Relationship",
                         new XAttribute("Id", "rId1"),
@@ -343,7 +343,7 @@ namespace BankApp.Server.Services.Implementations
         private static string CreateStylesXml()
         {
             XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-            XDocument document = new(
+            XDocument document = new (
                 new XElement(ns + "styleSheet",
                     new XElement(ns + "fonts", new XAttribute("count", "1"),
                         new XElement(ns + "font",
@@ -378,12 +378,12 @@ namespace BankApp.Server.Services.Implementations
         private static string CreateWorksheetXml(IReadOnlyCollection<string[]> rows)
         {
             XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-            XElement sheetData = new(ns + "sheetData");
+            XElement sheetData = new (ns + "sheetData");
 
             int rowIndex = 1;
             foreach (string[] rowValues in rows)
             {
-                XElement row = new(ns + "row", new XAttribute("r", rowIndex));
+                XElement row = new (ns + "row", new XAttribute("r", rowIndex));
                 for (int columnIndex = 0; columnIndex < rowValues.Length; columnIndex++)
                 {
                     string cellReference = $"{GetColumnName(columnIndex + 1)}{rowIndex}";
@@ -397,7 +397,7 @@ namespace BankApp.Server.Services.Implementations
                 rowIndex++;
             }
 
-            XDocument document = new(
+            XDocument document = new (
                 new XElement(ns + "worksheet", sheetData));
 
             return document.Declaration + document.ToString(SaveOptions.DisableFormatting);
@@ -405,7 +405,7 @@ namespace BankApp.Server.Services.Implementations
 
         private static string GetColumnName(int columnNumber)
         {
-            StringBuilder builder = new();
+            StringBuilder builder = new ();
             while (columnNumber > 0)
             {
                 int remainder = (columnNumber - 1) % 26;
