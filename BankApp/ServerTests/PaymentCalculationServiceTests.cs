@@ -7,20 +7,18 @@ namespace BankApp.Server.Tests
     [TestFixture]
     public class PaymentCalculationServiceTests
     {
-#pragma warning disable SX1309 // Field names should begin with underscore
-        private PaymentCalculationService paymentCalculationService;
-#pragma warning restore SX1309 // Field names should begin with underscore
+        private PaymentCalculationService _paymentCalculationService;
 
         [SetUp]
         public void SetUp()
         {
-            paymentCalculationService = new PaymentCalculationService();
+            _paymentCalculationService = new PaymentCalculationService();
         }
 
         [Test]
         public void CalculatePaymentPreview_StandardPayment_ReducesBalanceAndMonthsCorrectly()
         {
-            var (balance, months) = paymentCalculationService.CalculatePaymentPreview(
+            var (balance, months) = _paymentCalculationService.CalculatePaymentPreview(
                 monthlyInstallment: 500m,
                 outstandingBalance: 2000m,
                 remainingMonths: 4,
@@ -36,7 +34,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void CalculatePaymentPreview_CustomPaymentLargerThanInstallment_CalculatesCorrectly()
         {
-            var (balance, months) = paymentCalculationService.CalculatePaymentPreview(
+            var (balance, months) = _paymentCalculationService.CalculatePaymentPreview(
                 monthlyInstallment: 500m,
                 outstandingBalance: 2000m,
                 remainingMonths: 4,
@@ -53,7 +51,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void CalculatePaymentPreview_FullPayoff_SetsBalanceAndMonthsToZero()
         {
-            var (balance, months) = paymentCalculationService.CalculatePaymentPreview(
+            var (balance, months) = _paymentCalculationService.CalculatePaymentPreview(
                 monthlyInstallment: 500m,
                 outstandingBalance: 2000m,
                 remainingMonths: 4,
@@ -70,7 +68,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void ParsePaymentAmount_ValidString_ReturnsParsedDecimal()
         {
-            var (success, amount) = paymentCalculationService.ParsePaymentAmount("150.50");
+            var (success, amount) = _paymentCalculationService.ParsePaymentAmount("150.50");
 
             using (Assert.EnterMultipleScope())
             {
@@ -82,7 +80,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void ParsePaymentAmount_InvalidString_ReturnsFalse()
         {
-            var (success, amount) = paymentCalculationService.ParsePaymentAmount("invalid_number");
+            var (success, amount) = _paymentCalculationService.ParsePaymentAmount("invalid_number");
 
             using (Assert.EnterMultipleScope())
             {
@@ -94,7 +92,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void ValidatePaymentAmount_AmountLessThanZero_ReturnsInvalid()
         {
-            var (isValid, message) = paymentCalculationService.ValidatePaymentAmount(0m, 1000m);
+            var (isValid, message) = _paymentCalculationService.ValidatePaymentAmount(0m, 1000m);
 
             using (Assert.EnterMultipleScope())
             {
@@ -106,7 +104,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void ValidatePaymentAmount_AmountExceedsBalance_ReturnsInvalid()
         {
-            var (isValid, message) = paymentCalculationService.ValidatePaymentAmount(1500m, 1000m);
+            var (isValid, message) = _paymentCalculationService.ValidatePaymentAmount(1500m, 1000m);
 
             using (Assert.EnterMultipleScope())
             {
@@ -118,7 +116,7 @@ namespace BankApp.Server.Tests
         [Test]
         public void GetInitialCustomAmount_CustomAmountExceedsBalance_CapsAtOutstandingBalance()
         {
-            decimal result = paymentCalculationService.GetInitialCustomAmount(
+            decimal result = _paymentCalculationService.GetInitialCustomAmount(
                 monthlyInstallment: 500m,
                 outstandingBalance: 1000m,
                 currentCustomAmount: 1500d);

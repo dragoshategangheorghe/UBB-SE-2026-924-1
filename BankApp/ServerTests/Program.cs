@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 
 namespace BankApp.Server.Tests;
@@ -6,6 +7,8 @@ public static class Program
 {
     public static int Main()
     {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         IReadOnlyList<TestCase> testCases = DiscoverTests();
         int passedCount = 0;
         List<string> failures = new ();

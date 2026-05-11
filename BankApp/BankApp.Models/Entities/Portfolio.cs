@@ -1,10 +1,11 @@
-﻿namespace BankApp.Models.Entities
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.ComponentModel.DataAnnotations;
+namespace BankApp.Models.Entities
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
     public class Portfolio
     {
+        [Key]
         public int IdentificationNumber { get; set; }
         public int UserId { get; set; }
         public virtual User User { get; set; } = null!;

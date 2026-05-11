@@ -1,3 +1,4 @@
+using System.Globalization;
 using BankApp.Client.Master;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Implementations;
@@ -73,6 +74,10 @@ namespace BankApp.Client
         public App()
         {
             InitializeComponent();
+            CultureInfo culture = CultureInfo.InvariantCulture;
+
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)

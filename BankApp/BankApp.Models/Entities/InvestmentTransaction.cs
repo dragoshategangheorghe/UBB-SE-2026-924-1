@@ -1,9 +1,10 @@
-﻿namespace BankApp.Models.Entities
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+namespace BankApp.Models.Entities
 {
-    using System;
-
     public class InvestmentTransaction
     {
+        [Key]
         public int IdentificationNumber { get; set; }
         public int HoldingId { get; set; }
         public virtual InvestmentHolding Holding { get; set; } = null!;
