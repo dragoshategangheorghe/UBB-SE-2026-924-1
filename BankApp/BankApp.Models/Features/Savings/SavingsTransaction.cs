@@ -16,13 +16,11 @@ namespace BankApp.Models.Features.Savings
         /// </summary>
         public int Id { get; set; }
 
-        /*
         /// <summary>
         /// Gets or sets the foreign key from SavingsAccount
         /// </summary>
         [Column("savingsAccountId")]
         public int SavingsAccountId { get; set; }
-        */
 
         /// <summary>
         ///     Gets or sets the savings account involved in the transaction.

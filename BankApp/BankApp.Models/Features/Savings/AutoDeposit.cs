@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ namespace BankApp.Models.Features.Savings
         /// Gets or sets the linked savings account.
         /// </summary>
         [ForeignKey("SavingsAccountId")]
+        [JsonIgnore]
         public virtual SavingsAccount SavingsAccount { get; set; } = null!;
 
         /// <summary>

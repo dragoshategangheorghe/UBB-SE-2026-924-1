@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Globalization;
+using System;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -19,7 +21,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<string> GetDepositPreview(string depositAmountText, SavingsAccount selectedAccount)
         {
-            return await _apiService.PostAsync<SavingsAccount, string>($"/api/savings-ui-rules/deposit-preview?depositAmountText={depositAmountText}", selectedAccount);
+            return await _apiService.PostAsync<SavingsAccount, string>($"/api/savings-ui-rules/deposit-preview?depositAmountText={Uri.EscapeDataString(depositAmountText)}", selectedAccount);
         }
 
         public async Task<int> GetTotalPages(int totalCount, int pageSize)
@@ -29,17 +31,19 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<decimal> GetWithdrawNetAmount(decimal requestedAmount, decimal penalty)
         {
-            return await _apiService.GetAsync<decimal>($"/api/savings-ui-rules/withdraw-net-amount?requestedAmount={requestedAmount}&penalty={penalty}");
+            var requestedAmountText = requestedAmount.ToString(CultureInfo.InvariantCulture);
+            var penaltyText = penalty.ToString(CultureInfo.InvariantCulture);
+            return await _apiService.GetAsync<decimal>($"/api/savings-ui-rules/withdraw-net-amount?requestedAmount={requestedAmountText}&penalty={penaltyText}");
         }
 
         public async Task<DepositFrequency> ParseDepositFrequency(string frequencyText)
         {
-            return await _apiService.GetAsync<DepositFrequency>($"/api/savings-ui-rules/parse-deposit-frequency?frequencyText={frequencyText}");
+            return await _apiService.GetAsync<DepositFrequency>($"/api/savings-ui-rules/parse-deposit-frequency?frequencyText={Uri.EscapeDataString(frequencyText)}");
         }
 
         public async Task<decimal> ParsePositiveAmount(string text)
         {
-            return await _apiService.GetAsync<decimal>($"/api/savings-ui-rules/parse-positive-amount?text={text}");
+            return await _apiService.GetAsync<decimal>($"/api/savings-ui-rules/parse-positive-amount?text={Uri.EscapeDataString(text)}");
         }
 
         public async Task<Dictionary<string, string>> ValidateCreateAccount(ValidateCreateAccountRequest request)

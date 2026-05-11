@@ -231,19 +231,18 @@ namespace BankApp.Server.DataAccess
 
                 entity.HasMany(s => s.Transactions)
                     .WithOne(t => t.SavingsAccount)
-                    .HasForeignKey(t => t.AccountId)
+                    .HasForeignKey(t => t.SavingsAccountId)
                     .IsRequired()
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            /*
             modelBuilder.Entity<SavingsTransaction>(entity =>
             {
                 entity.HasOne(t => t.Account)
                     .WithMany()
+                    .HasForeignKey(t => t.AccountId)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
-            */
 
             modelBuilder.Entity<ChatSession>(entity =>
             {

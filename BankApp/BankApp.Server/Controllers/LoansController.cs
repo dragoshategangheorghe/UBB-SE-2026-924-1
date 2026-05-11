@@ -35,12 +35,7 @@ namespace BankApp.Server.Controllers
         public async Task<ActionResult<List<Loan>>> GetLoansByUserAsync([FromRoute] int userId)
         {
             var result = await _loanRepository.GetLoansByUserAsync(userId);
-            if (result == null || !result.Any())
-            {
-                return BadRequest();
-            }
-
-            return Ok(result);
+            return Ok(result ?? new List<Loan>());
         }
 
         [HttpGet("by-status/{loanStatus}")]

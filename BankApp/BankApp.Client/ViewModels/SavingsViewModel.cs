@@ -688,7 +688,7 @@ namespace BankApp.Client.ViewModels
         {
             if (_isBusy)
             {
-                return;
+                return false;
             }
             _isBusy = true;
 
@@ -806,6 +806,7 @@ namespace BankApp.Client.ViewModels
             var autoDeposit = new AutoDeposit
             {
                 Id = this.currentAutoDeposit?.Id ?? default,
+                SavingsAccountId = this.SelectedAccount!.IdentificationNumber,
                 SavingsAccount = this.SelectedAccount!,
                 Amount = amount,
                 Frequency = frequency,

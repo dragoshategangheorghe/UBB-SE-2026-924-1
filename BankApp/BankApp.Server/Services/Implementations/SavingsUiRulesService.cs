@@ -13,7 +13,31 @@ namespace BankApp.Server.Services.Implementations
 
         public bool TryParsePositiveAmount(string text, out decimal amount)
         {
-            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out amount) && amount > PositiveAmountThreshold)
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                amount = PositiveAmountThreshold;
+                return false;
+            }
+
+            var normalizedText = text.Trim();
+            if (normalizedText.Contains(',') && !normalizedText.Contains('.'))
+            {
+                var commaDecimalText = normalizedText.Replace(',', '.');
+                if (decimal.TryParse(commaDecimalText, NumberStyles.Number, CultureInfo.InvariantCulture, out amount) &&
+                    amount > PositiveAmountThreshold)
+                {
+                    return true;
+                }
+            }
+
+            if (decimal.TryParse(normalizedText, NumberStyles.Number, CultureInfo.InvariantCulture, out amount) &&
+                amount > PositiveAmountThreshold)
+            {
+                return true;
+            }
+
+            if (decimal.TryParse(normalizedText, NumberStyles.Number, CultureInfo.CurrentCulture, out amount) &&
+                amount > PositiveAmountThreshold)
             {
                 return true;
             }

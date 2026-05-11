@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// Represents a single row from a loan amortization schedule.
@@ -23,6 +24,7 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets the associated loan.
         /// </summary>
+        [JsonIgnore]
         public virtual Loan Loan { get; set; } = null!;
 
         /// <summary>

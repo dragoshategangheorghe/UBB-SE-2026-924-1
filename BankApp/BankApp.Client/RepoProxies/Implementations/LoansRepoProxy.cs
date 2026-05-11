@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -65,8 +66,10 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task UpdateLoanAfterPaymentAsync(int loanId, decimal newBalance, int newRemainingMonths, LoanStatus newStatus)
         {
+            var newBalanceText = newBalance.ToString(CultureInfo.InvariantCulture);
+
             await _apiService.PutAsync<object, object>(
-                $"/api/loans/{loanId}/after-payment?newBalance={newBalance}&newRemainingMonths={newRemainingMonths}&newStatus={newStatus}",
+                $"/api/loans/{loanId}/after-payment?newBalance={newBalanceText}&newRemainingMonths={newRemainingMonths}&newStatus={newStatus}",
                 new { });
         }
 

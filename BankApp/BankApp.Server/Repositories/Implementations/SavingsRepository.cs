@@ -131,7 +131,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 var savingsTransaction = new SavingsTransaction
                 {
-                    // SavingsAccount = account,
+                    SavingsAccount = account,
                     Account = account.FundingAccount,
                     Amount = amount,
                     Type = TransactionType.Deposit,
@@ -197,7 +197,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 _context.SavingsTransactions.Add(new SavingsTransaction
                 {
-                    // SavingsAccount = sourceAccount,
+                    SavingsAccount = sourceAccount,
                     Account = sourceAccount.FundingAccount,
                     Amount = transferAmount,
                     Type = TransactionType.Deposit,
@@ -271,7 +271,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 _context.SavingsTransactions.Add(new SavingsTransaction
                 {
-                    // SavingsAccount = account,
+                    SavingsAccount = account,
                     Account = account.FundingAccount,
                     Amount = amount,
                     Type = TransactionType.Withdrawal,
