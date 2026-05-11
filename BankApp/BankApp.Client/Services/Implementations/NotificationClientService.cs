@@ -106,7 +106,9 @@ namespace BankApp.Client.Services.Implementations
                 ApplicationData.Current.LocalSettings.Values[StorageKey] = json;
                 return Task.FromResult(true);
             }
-            catch
+            catch (Exception exception) when (
+            exception is NotSupportedException
+            || exception is ArgumentException)
             {
                 return Task.FromResult(false);
             }

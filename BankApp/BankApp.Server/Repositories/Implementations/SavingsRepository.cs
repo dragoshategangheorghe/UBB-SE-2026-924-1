@@ -146,7 +146,7 @@ namespace BankApp.Server.Repositories.Implementations
                     Timestamp = DateTime.UtcNow,
                 };
             }
-            catch
+            catch (InvalidOperationException)
             {
                 await transaction.RollbackAsync();
                 throw;

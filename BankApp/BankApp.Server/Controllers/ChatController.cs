@@ -11,20 +11,22 @@ namespace BankApp.Server.Controllers
     [Route("api/[controller]")]
     public class ChatController : ControllerBase
     {
-        private const int MaxAttachmentSizeBytes = 10 * 1024 * 1024;
-    protected static readonly Dictionary<string, string> DefaultChatbotResponses = new Dictionary<string, string>
-    {
-        ["How do I reset my password?"] =
-            "You can reset your password from the login screen by choosing Forgot password and following the verification steps.",
-        ["Why was my card declined?"] =
-            "A card can be declined because of insufficient funds, an expired card, a blocked card, or a merchant validation issue. Please check the card status in the app first.",
-        ["How long does a transfer take?"] =
-            "Internal transfers are usually immediate, while interbank transfers can take up to one business day depending on the destination bank.",
-        ["How do I upload documents for support?"] =
-            "Use the Attach File button in this chat after contacting the team. Your selected file will be included with the support request summary.",
-        ["I found a technical problem in the app."] =
-            "Please contact the team from this chat and include a short description of what happened. Screenshots or PDFs can help the team investigate faster.",
-    };
+        private const int TenMB = 10 * 1024 * 1024;
+        private const int MaxAttachmentSizeBytes = TenMB;
+
+        protected static readonly Dictionary<string, string> DefaultChatbotResponses = new Dictionary<string, string>
+        {
+            ["How do I reset my password?"] =
+                "You can reset your password from the login screen by choosing Forgot password and following the verification steps.",
+            ["Why was my card declined?"] =
+                "A card can be declined because of insufficient funds, an expired card, a blocked card, or a merchant validation issue. Please check the card status in the app first.",
+            ["How long does a transfer take?"] =
+                "Internal transfers are usually immediate, while interbank transfers can take up to one business day depending on the destination bank.",
+            ["How do I upload documents for support?"] =
+                "Use the Attach File button in this chat after contacting the team. Your selected file will be included with the support request summary.",
+            ["I found a technical problem in the app."] =
+                "Please contact the team from this chat and include a short description of what happened. Screenshots or PDFs can help the team investigate faster.",
+        };
 
         private readonly IChatRepository chatRepository;
         private readonly ChatMessageRepository chatMessageRepository;

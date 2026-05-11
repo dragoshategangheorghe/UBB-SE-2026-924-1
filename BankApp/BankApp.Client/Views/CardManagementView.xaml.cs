@@ -14,6 +14,7 @@ namespace BankApp.Client.Views
 {
     public sealed partial class CardManagementView : Page
     {
+        private const int MinimumCardNumberMaskLength = 4;
         public CardManagementView()
         {
             InitializeComponent();
@@ -144,7 +145,7 @@ namespace BankApp.Client.Views
             }
 
             string digitsOnly = new string(cardNumber.Where(char.IsDigit).ToArray());
-            if (digitsOnly.Length < 4)
+            if (digitsOnly.Length < MinimumCardNumberMaskLength)
             {
                 return "****";
             }

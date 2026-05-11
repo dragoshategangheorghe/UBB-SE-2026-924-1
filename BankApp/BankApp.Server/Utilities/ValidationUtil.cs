@@ -5,6 +5,8 @@ namespace BankApp.Server.Utilities
 {
     public static class ValidationUtil
     {
+        private const int MinimumPasswordLength = 8;
+        private const int OneTimePasswordExpectedLength = 6;
         public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -19,7 +21,10 @@ namespace BankApp.Server.Utilities
                 MailAddress addr = new MailAddress(email);
                 return addr.Address == email;
             }
-            catch
+            catch (Exception ex) when (
+            ex is ArgumentException
+            || ex is ArgumentNullException
+            || ex is FormatException)
             {
                 return false;
             }
@@ -31,7 +36,7 @@ namespace BankApp.Server.Utilities
             {
                 return false;
             }
-            return password.Length >= 8
+            return password.Length >= MinimumPasswordLength
                 && password.Any(char.IsUpper)
                 && password.Any(char.IsLower)
                 && password.Any(char.IsDigit)
@@ -40,7 +45,7 @@ namespace BankApp.Server.Utilities
 
         public static bool IsValidOTP(string otp)
         {
-            return !string.IsNullOrWhiteSpace(otp) && otp.Length == 6 && otp.All(char.IsDigit);
+            return !string.IsNullOrWhiteSpace(otp) && otp.Length == OneTimePasswordExpectedLength && otp.All(char.IsDigit);
         }
 
         public static bool PasswordsMatch(string a, string b)

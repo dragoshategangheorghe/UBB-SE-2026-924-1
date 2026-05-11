@@ -97,7 +97,10 @@ namespace BankApp.Server.Repositories.Implementations
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
-            catch
+            catch (Exception ex) when (
+            ex is OperationCanceledException
+            || ex is DbUpdateException
+            || ex is DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync();
                 throw;

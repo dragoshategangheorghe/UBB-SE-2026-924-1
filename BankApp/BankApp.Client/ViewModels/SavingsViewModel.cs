@@ -325,7 +325,7 @@ namespace BankApp.Client.ViewModels
             {
                 amount = await this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText);
             }
-            catch
+            catch (InvalidOperationException)
             {
                 // Invalid/empty text — reset penalty fields silently.
                 this.WithdrawEstimatedPenalty = ZeroAmount;
@@ -390,6 +390,83 @@ namespace BankApp.Client.ViewModels
             this.MaturityDate = this.SelectedSavingsType == "FixedDeposit" ? maturityDate : null;
         }
 
+        private async Task<bool> ValidationCreateAccount()
+        {
+            if (this.IsGoalSavings && !string.IsNullOrWhiteSpace(this._pendingTargetAmountText))
+            {
+                try
+                {
+                    this.TargetAmount = await this.savingsService
+                        .ParsePositiveAmountAsync(this._pendingTargetAmountText);
+                }
+                catch (InvalidOperationException)
+                {
+                    this.TargetAmount = null;
+                }
+            }
+
+            var errors = await this.savingsService.ValidateCreateAccountAsync(new ValidateCreateAccountRequest
+            {
+                SelectedSavingsType = this.SelectedSavingsType,
+                AccountName = this.AccountName,
+                InitialDepositText = this.InitialDepositText,
+                HasFundingSource = this.SelectedFundingSource != null,
+                SelectedFrequency = this.SelectedFrequency,
+                TargetAmount = this.TargetAmount,
+                TargetDate = this.TargetDate,
+                IsGoalSavings = this.IsGoalSavings,
+            });
+
+            foreach (var error in errors)
+            {
+                this.FieldErrors[error.Key] = error.Value;
+            }
+
+            this.OnPropertyChanged(nameof(this.FieldErrors));
+
+            return !this.FieldErrors.Any();
+        }
+
+        private async Task ExecuteCreateAccountAsync()
+        {
+            this.IsLoading = true;
+            try
+            {
+                var deposit = await this.savingsService.ParsePositiveAmountAsync(this.InitialDepositText);
+
+                var createSavingsAccountDto = new CreateSavingsAccountDto
+                {
+                    UserIdentificationNumber = CurrentUser.Id,
+                    SavingsType = this.SelectedSavingsType,
+                    AccountName = this.AccountName.Trim(),
+                    InitialDeposit = deposit,
+                    FundingAccountId = this.SelectedFundingSource!.Id,
+                    TargetAmount = this.IsGoalSavings ? this.TargetAmount : null,
+                    TargetDate = this.IsGoalSavings ? this.TargetDate?.DateTime : null,
+                    MaturityDate = this.MaturityDate?.DateTime,
+                    DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency)
+                        ? null
+                        : await this.savingsService.ParseDepositFrequencyAsync(this.SelectedFrequency),
+                };
+
+                await this.savingsService.CreateAccountAsync(createSavingsAccountDto);
+
+                this.ShowCreateConfirmation = true;
+                this.ResetCreateForm();
+                await this.LoadAccountsAsync();
+            }
+            catch (Exception exception) when (
+            exception is InvalidOperationException
+            || exception is ArgumentException)
+            {
+                this.ErrorMessage = exception.Message;
+            }
+            finally
+            {
+                this.IsLoading = false;
+            }
+        }
+
         [RelayCommand]
         public async Task CreateAccountAsync()
         {
@@ -405,76 +482,12 @@ namespace BankApp.Client.ViewModels
                 this.ErrorMessage = string.Empty;
                 this.ShowCreateConfirmation = false;
 
-                if (this.IsGoalSavings && !string.IsNullOrWhiteSpace(this._pendingTargetAmountText))
-                {
-                    try
-                    {
-                        this.TargetAmount = await this.savingsService
-                            .ParsePositiveAmountAsync(this._pendingTargetAmountText);
-                    }
-                    catch
-                    {
-                        this.TargetAmount = null;
-                    }
-                }
-
-                var errors = await this.savingsService.ValidateCreateAccountAsync(new ValidateCreateAccountRequest
-                {
-                    SelectedSavingsType = this.SelectedSavingsType,
-                    AccountName = this.AccountName,
-                    InitialDepositText = this.InitialDepositText,
-                    HasFundingSource = this.SelectedFundingSource != null,
-                    SelectedFrequency = this.SelectedFrequency,
-                    TargetAmount = this.TargetAmount,
-                    TargetDate = this.TargetDate,
-                    IsGoalSavings = this.IsGoalSavings,
-                });
-
-                foreach (var error in errors)
-                {
-                    this.FieldErrors[error.Key] = error.Value;
-                }
-
-                this.OnPropertyChanged(nameof(this.FieldErrors));
-                if (this.FieldErrors.Any())
+                if (!await ValidationCreateAccount())
                 {
                     return;
                 }
 
-                // Both of these were previously .GetAwaiter().GetResult() inside an async method —
-                // a needless deadlock risk. Simple await is correct here.
-                var deposit = await this.savingsService.ParsePositiveAmountAsync(this.InitialDepositText);
-
-                this.IsLoading = true;
-                try
-                {
-                    var createSavingsAccountDto = new CreateSavingsAccountDto
-                    {
-                        UserIdentificationNumber = CurrentUser.Id,
-                        SavingsType = this.SelectedSavingsType,
-                        AccountName = this.AccountName.Trim(),
-                        InitialDeposit = deposit,
-                        FundingAccountId = this.SelectedFundingSource!.Id,
-                        TargetAmount = this.IsGoalSavings ? this.TargetAmount : null,
-                        TargetDate = this.IsGoalSavings ? this.TargetDate?.DateTime : null,
-                        MaturityDate = this.MaturityDate?.DateTime,
-                        DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency)
-                            ? null
-                            : await this.savingsService.ParseDepositFrequencyAsync(this.SelectedFrequency),
-                    };
-                    await this.savingsService.CreateAccountAsync(createSavingsAccountDto);
-                    this.ShowCreateConfirmation = true;
-                    this.ResetCreateForm();
-                    await this.LoadAccountsAsync();
-                }
-                catch (Exception exception)
-                {
-                    this.ErrorMessage = exception.Message;
-                }
-                finally
-                {
-                    this.IsLoading = false;
-                }
+                await ExecuteCreateAccountAsync();
             }
             finally
             {
@@ -541,10 +554,7 @@ namespace BankApp.Client.ViewModels
                     this.DepositAmountText = string.Empty;
                     await this.LoadAccountsAsync();
                 }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception exception)
+                catch (InvalidOperationException exception)
                 {
                     this.ErrorMessage = exception.Message;
                 }
@@ -587,7 +597,9 @@ namespace BankApp.Client.ViewModels
                     await this.savingsService.GetNumberOfAccountsTextAsync(this.SavingsAccounts.Count);
                 this.BestInterestRate = await this.savingsService.GetBestInterestRateAsync(this.SavingsAccounts);
             }
-            catch (Exception exception)
+            catch (Exception exception) when (
+            exception is ArgumentException
+            || exception is InvalidOperationException)
             {
                 this.ErrorMessage = exception.Message;
             }
@@ -673,9 +685,61 @@ namespace BankApp.Client.ViewModels
 
                 return result.Success;
             }
-            catch (Exception exception)
+            catch (InvalidOperationException exception)
             {
                 this.CloseResultMessage = exception.Message;
+                return false;
+            }
+            finally
+            {
+                this.IsLoading = false;
+            }
+        }
+
+        private async Task<(bool IsValid, decimal Amount)> ValidateWithdrawInputAsync()
+        {
+            try
+            {
+                decimal amount = await this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText);
+
+                var validation = await this.savingsService.ValidateWithdrawRequestAsync(amount, this.WithdrawDestination);
+
+                if (!validation.IsValid)
+                {
+                    this.WithdrawResultMessage = validation.ErrorMessage;
+                    return (false, 0);
+                }
+                return (true, amount);
+            }
+            catch
+            {
+                this.WithdrawResultMessage = "Please enter a valid positive amount.";
+                return (false, 0);
+            }
+        }
+
+        private async Task<bool> RunWithdrawalTransactionAsync(decimal amount)
+        {
+            this.IsLoading = true;
+            try
+            {
+                var response = await this.savingsService.WithdrawAsync(
+                    this.SelectedAccount!.IdentificationNumber,
+                    amount,
+                    this.WithdrawDestination.DisplayName,
+                    CurrentUser.Id);
+                this.WithdrawSuccess = response.Success;
+                this.WithdrawResultMessage = await this.savingsService.BuildWithdrawResultMessageAsync(response);
+                if (response.Success)
+                {
+                    this.WithdrawAmountText = string.Empty;
+                    await this.LoadAccountsAsync();
+                }
+                return response.Success;
+            }
+            catch (ArgumentException exception)
+            {
+                this.WithdrawResultMessage = exception.Message;
                 return false;
             }
             finally
@@ -688,59 +752,21 @@ namespace BankApp.Client.ViewModels
         {
             if (_isBusy)
             {
-                return;
+                return false;
             }
             _isBusy = true;
-
             try
             {
                 this.WithdrawResultMessage = string.Empty;
-                this.WithdrawSuccess = false;
-                decimal amount;
-                try
+
+                var (isValid, amount) = await ValidateWithdrawInputAsync();
+
+                if (!isValid)
                 {
-                    amount = await this.savingsService.ParsePositiveAmountAsync(this.WithdrawAmountText);
-                }
-                catch
-                {
-                    this.WithdrawResultMessage = "Please enter a valid positive amount.";
                     return false;
                 }
 
-                var withdrawValidation = await this.savingsService.ValidateWithdrawRequestAsync(amount, this.WithdrawDestination);
-                if (!withdrawValidation.IsValid)
-                {
-                    this.WithdrawResultMessage = withdrawValidation.ErrorMessage;
-                    return false;
-                }
-
-                this.IsLoading = true;
-                try
-                {
-                    var withdrawResponseDto = await this.savingsService.WithdrawAsync(
-                        this.SelectedAccount!.IdentificationNumber,
-                        amount,
-                        this.WithdrawDestination.DisplayName,
-                        CurrentUser.Id);
-                    this.WithdrawSuccess = withdrawResponseDto.Success;
-                    this.WithdrawResultMessage = await this.savingsService.BuildWithdrawResultMessageAsync(withdrawResponseDto);
-                    if (withdrawResponseDto.Success)
-                    {
-                        this.WithdrawAmountText = string.Empty;
-                        await this.LoadAccountsAsync();
-                    }
-
-                    return withdrawResponseDto.Success;
-                }
-                catch (Exception exception)
-                {
-                    this.WithdrawResultMessage = exception.Message;
-                    return false;
-                }
-                finally
-                {
-                    this.IsLoading = false;
-                }
+                return await RunWithdrawalTransactionAsync(amount);
             }
             finally
             {
@@ -780,7 +806,7 @@ namespace BankApp.Client.ViewModels
             {
                 amount = await this.savingsService.ParsePositiveAmountAsync(this.AutoDepositAmountText);
             }
-            catch
+            catch (InvalidOperationException)
             {
                 this.ErrorMessage = "Auto deposit amount must be positive.";
                 return;
@@ -797,7 +823,7 @@ namespace BankApp.Client.ViewModels
             {
                 frequency = await this.savingsService.ParseDepositFrequencyAsync(this.AutoDepositFrequency);
             }
-            catch
+            catch (InvalidOperationException)
             {
                 this.ErrorMessage = "Invalid frequency.";
                 return;
@@ -837,7 +863,9 @@ namespace BankApp.Client.ViewModels
 
                 this.totalPages = await this.savingsService.GetTotalPagesAsync(result.TotalCount, DefaultTransactionPageSize);
             }
-            catch (Exception exception)
+            catch (Exception exception) when (
+            exception is InvalidOperationException
+            || exception is ArgumentException)
             {
                 this.ErrorMessage = exception.Message;
             }

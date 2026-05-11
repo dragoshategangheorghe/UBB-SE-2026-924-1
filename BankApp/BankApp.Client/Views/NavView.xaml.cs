@@ -12,6 +12,8 @@ namespace BankApp.Client.Views
         private readonly List<Button> _navButtons;
         private Button _activeNavButton;
 
+        private const int NotificationCountThreshold = 99;
+
         public NavView()
         {
             this.InitializeComponent();
@@ -33,7 +35,7 @@ namespace BankApp.Client.Views
                 return;
             }
 
-            NotificationBadgeText.Text = count > 99 ? "99+" : count.ToString();
+            NotificationBadgeText.Text = count > NotificationCountThreshold ? "99+" : count.ToString();
             NotificationBadge.Visibility = Visibility.Visible;
         }
 
