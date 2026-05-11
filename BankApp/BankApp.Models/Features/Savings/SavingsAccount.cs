@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +14,6 @@ namespace BankApp.Models.Features.Savings
     /// </summary>
     public class SavingsAccount
     {
-        public int Id { get; set; }
         private const decimal MonthsInYear = 12m;
         private const decimal PercentageScale = 100m;
         private const decimal MinimumTargetAmountExclusive = 0m;
@@ -21,6 +22,8 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the unique identifier for the savings account.
         /// </summary>
+        [Key]
+        [Column("id")]
         public int IdentificationNumber { get; set; }
 
         /// <summary>
@@ -48,6 +51,7 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the annual percentage yield (APY) for the savings account.
         /// </summary>
+        [Column("apy")]
         public decimal AnnualPercentageYield { get; set; }
 
         /// <summary>

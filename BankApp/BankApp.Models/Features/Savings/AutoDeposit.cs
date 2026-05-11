@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,8 +19,15 @@ namespace BankApp.Models.Features.Savings
         public int Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the foreign key from SavingsAccount
+        /// </summary>
+        [Column("savingsAccountId")]
+        public int SavingsAccountId { get; set; }
+
+        /// <summary>
         /// Gets or sets the linked savings account.
         /// </summary>
+        [ForeignKey("SavingsAccountId")]
         public virtual SavingsAccount SavingsAccount { get; set; } = null!;
 
         /// <summary>
@@ -41,5 +49,17 @@ namespace BankApp.Models.Features.Savings
         /// Gets or sets a value indicating whether scheduling is enabled.
         /// </summary>
         public bool IsActive { get; set; }
+
+        [Column("sourceAccountId")]
+        public int? SourceAccountId { get; set; }
+
+        [Column("dayOfMonth")]
+        public int? DayOfMonth { get; set; }
+
+        [Column("dayOfWeek")]
+        public int? DayOfWeek { get; set; }
+
+        [Column("updatedAt")]
+        public DateTime? UpdatedAt { get; set; }
     }
 }
