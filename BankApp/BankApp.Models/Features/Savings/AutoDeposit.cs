@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BankApp.Models.Enums;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace BankApp.Models.Features.Savings
 {
@@ -30,6 +31,7 @@ namespace BankApp.Models.Features.Savings
         /// </summary>
         [ForeignKey("SavingsAccountId")]
         [JsonIgnore]
+        [ValidateNever]
         public virtual SavingsAccount SavingsAccount { get; set; } = null!;
 
         /// <summary>

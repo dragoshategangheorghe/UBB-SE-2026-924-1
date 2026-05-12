@@ -857,7 +857,7 @@ namespace BankApp.Client.ViewModels
                 {
                     Id = this.currentAutoDeposit?.Id ?? default,
                     SavingsAccountId = this.SelectedAccount!.IdentificationNumber,
-                    SavingsAccount = this.SelectedAccount!,
+                    // SavingsAccount = this.SelectedAccount!,
                     Amount = amount,
                     Frequency = frequency,
                     NextRunDate = this.AutoDepositStartDate?.DateTime ?? DateTime.Now.AddDays(InitialAutoDepositDelayDays),

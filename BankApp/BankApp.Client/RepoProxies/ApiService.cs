@@ -100,6 +100,12 @@ namespace BankApp.Client.RepoProxies
                 response.StatusCode);
         }
 
+        public async Task PostVoidAsync<TRequest>(string endpoint, TRequest data)
+        {
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);
+            await EnsureSuccessAsync(response, endpoint);
+        }
+
         private static T? DeserializeWebJson<T>(string json)
         {
             if (string.IsNullOrWhiteSpace(json))

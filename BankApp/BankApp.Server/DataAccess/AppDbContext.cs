@@ -230,6 +230,12 @@ namespace BankApp.Server.DataAccess
                     .IsRequired();
             });
 
+            modelBuilder.Entity<AutoDeposit>(entity =>
+            {
+                entity.Property(a => a.Frequency)
+                    .HasConversion<string>();
+            });
+
             modelBuilder.Entity<SavingsTransaction>(entity =>
             {
                 entity.HasOne(t => t.Account)
