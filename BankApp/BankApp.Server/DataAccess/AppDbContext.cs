@@ -213,6 +213,21 @@ namespace BankApp.Server.DataAccess
                 entity.HasMany(l => l.AmortizationRows)
                     .WithOne(a => a.Loan)
                     .IsRequired();
+
+                entity.Property(l => l.LoanType)
+                    .HasConversion<string>();
+
+                entity.Property(l => l.LoanStatus)
+                    .HasConversion<string>();
+            });
+
+            modelBuilder.Entity<LoanApplication>(entity =>
+            {
+                entity.Property(la => la.LoanType)
+                    .HasConversion<string>();
+
+                entity.Property(la => la.ApplicationStatus)
+                    .HasConversion<string>();
             });
 
             modelBuilder.Entity<SavingsAccount>(entity =>

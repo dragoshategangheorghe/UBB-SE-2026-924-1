@@ -7,6 +7,8 @@ namespace BankApp.Client.Master
         private Frame? _frame;
         private Frame? _contentFrame;
 
+        public Frame? GetFrame() => _frame;
+
         public void SetFrame(Frame frame)
         {
             _frame = frame;

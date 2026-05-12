@@ -53,7 +53,7 @@ namespace BankApp.Client.RepoProxies.Implementations
         public async Task UpdateLoanApplicationStatusAsync(int applicationId, LoanApplicationStatus status, string? reason)
         {
             string reasonParam = reason == null ? string.Empty : $"&reason={Uri.EscapeDataString(reason)}";
-            await _apiService.PutAsync<object, object>(
+            await _apiService.PutVoidAsync<object>(
                 $"/api/loans/applications/{applicationId}/status?status={status}{reasonParam}",
                 new { });
         }
@@ -68,7 +68,7 @@ namespace BankApp.Client.RepoProxies.Implementations
         {
             var newBalanceText = newBalance.ToString(CultureInfo.InvariantCulture);
 
-            await _apiService.PutAsync<object, object>(
+            await _apiService.PutVoidAsync<object>(
                 $"/api/loans/{loanId}/after-payment?newBalance={newBalanceText}&newRemainingMonths={newRemainingMonths}&newStatus={newStatus}",
                 new { });
         }
@@ -80,7 +80,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task SaveAmortizationAsync(int loanId, List<AmortizationRow> rows)
         {
-            await _apiService.PostAsync<List<AmortizationRow>, object>($"/api/loans/{loanId}/amortization-schedule", rows);
+            await _apiService.PostVoidAsync<List<AmortizationRow>>($"/api/loans/{loanId}/amortization-schedule", rows);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace BankApp.Models.Features.Loans
     public class LoanEstimate : IEquatable<LoanEstimate>
     {
         public int Id { get; set; }
+
         /// <summary>
         /// Gets or sets the indicative annual interest rate.
         /// </summary>

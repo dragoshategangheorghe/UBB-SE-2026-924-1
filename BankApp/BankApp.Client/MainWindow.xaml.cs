@@ -1,10 +1,13 @@
-using Microsoft.UI.Xaml;
 using BankApp.Client.Views;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace BankApp.Client
 {
     public sealed partial class MainWindow : Window
     {
+        public Frame PublicRootFrame => RootFrame;
+
         public MainWindow()
         {
             this.InitializeComponent();

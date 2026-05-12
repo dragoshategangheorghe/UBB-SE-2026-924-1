@@ -85,15 +85,15 @@ namespace BankApp.Client.Views
                     this.ViewModel.SelectedLoan = loan;
                     await this.ViewModel.LoadAmortizationAsync();
 
-                    Frame? mainFrame = GetParentFrame();
+                    if (!string.IsNullOrEmpty(this.ViewModel.ErrorMessage))
+                    {
+                        return;
+                    }
 
+                    Frame? mainFrame = GetParentFrame();
                     if (mainFrame != null)
                     {
                         mainFrame.Navigate(typeof(AmortizationScheduleView), loan.Loan);
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Nu s-a putut gasi un Frame pentru navigare.");
                     }
                 }
             }
@@ -106,18 +106,16 @@ namespace BankApp.Client.Views
         private Frame? GetParentFrame()
         {
             DependencyObject current = this;
-
             while (current != null)
             {
                 if (current is Frame frame)
                 {
                     return frame;
                 }
-
                 current = VisualTreeHelper.GetParent(current);
             }
 
-            return null;
+            return App.NavigationService.GetFrame();
         }
 
         private void OnFilterAll(object sender, RoutedEventArgs e)

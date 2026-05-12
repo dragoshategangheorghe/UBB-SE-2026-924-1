@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 /// <summary>
@@ -17,7 +18,6 @@ namespace BankApp.Models.Features.Loans
         /// Gets or sets the row identifier.
         /// </summary>
         [Key]
-
         public int Id { get; set; }
         public int LoanId { get; set; }
 
@@ -55,6 +55,7 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets a value indicating whether this row is the current installment.
         /// </summary>
+        [NotMapped]
         public bool IsCurrent { get; set; }
     }
 }

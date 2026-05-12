@@ -139,6 +139,12 @@ namespace BankApp.Client.RepoProxies
             return await ReadJsonAsync<TResponse>(response);
         }
 
+        public async Task PutVoidAsync<TRequest>(string endpoint, TRequest data)
+        {
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(endpoint, data, JsonWriteOptions);
+            await EnsureSuccessAsync(response, endpoint);
+        }
+
         public async Task<DownloadResponse?> PostDownloadAsync<TRequest>(string endpoint, TRequest data)
         {
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);

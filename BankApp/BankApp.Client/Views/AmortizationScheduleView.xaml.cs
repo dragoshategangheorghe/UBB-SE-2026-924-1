@@ -26,14 +26,13 @@ namespace BankApp.Client.Views
 
         private Loan? loan;
 
-        public AmortizationScheduleView(LoansViewModel loansViewModel)
+        public AmortizationScheduleView()
         {
             this.InitializeComponent();
 
-            this.ViewModel = loansViewModel;
+            this.ViewModel = new LoansViewModel(App.LoansService);
             this.DataContext = this.ViewModel;
 
-            // Highlight the current installment row after containers are created.
             this.AmortizationListView.ContainerContentChanging += this.OnRowContainerContentChanging;
         }
 
