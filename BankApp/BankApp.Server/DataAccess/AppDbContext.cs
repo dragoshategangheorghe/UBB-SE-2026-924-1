@@ -228,12 +228,6 @@ namespace BankApp.Server.DataAccess
                     .WithOne(a => a.SavingsAccount)
                     .HasForeignKey(a => a.SavingsAccountId)
                     .IsRequired();
-
-                /*entity.HasMany(s => s.Transactions
-                    .WithOne(t => t.SavingsAccount)
-                    .HasForeignKey(t => t.SavingsAccountId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.NoAction);*/
             });
 
             modelBuilder.Entity<SavingsTransaction>(entity =>
@@ -241,7 +235,12 @@ namespace BankApp.Server.DataAccess
                 entity.HasOne(t => t.Account)
                     .WithMany()
                     .HasForeignKey(t => t.AccountId)
-                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.AccountId).HasColumnName("accountId");
+                entity.Property(t => t.Type).HasColumnName("transactionType");
             });
 
             modelBuilder.Entity<ChatSession>(entity =>

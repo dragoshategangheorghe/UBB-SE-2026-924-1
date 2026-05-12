@@ -25,7 +25,7 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the savings account involved in the transaction.
         /// </summary>
-        public virtual SavingsAccount? SavingsAccount { get; set; }
+        // public virtual SavingsAccount? SavingsAccount { get; set; }
 
         /// <summary>
         ///     Gets or sets the amount of money involved in the transaction.
