@@ -18,6 +18,7 @@
   <ItemGroup>
     <None Remove="Views\AccountView.xaml" />
     <None Remove="Views\AmortizationScheduleView.xaml" />
+    <None Remove="Views\CryptoTradingView.xaml" />
     <None Remove="views\DashboardView.xaml" />
     <None Remove="Views\InvestmentsView.xaml" />
     <None Remove="Views\InvestmentsView.xaml" />
@@ -75,6 +76,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CryptoTradingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\AccountView.xaml">

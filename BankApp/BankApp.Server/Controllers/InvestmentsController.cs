@@ -9,31 +9,44 @@
     [Route("api/[controller]")]
     public class InvestmentsController : ControllerBase
     {
-        private readonly IInvestmentRepository _investmentRepository;
+        private readonly IInvestmentRepository _repo;
+        public InvestmentsController(IInvestmentRepository repo) => _repo = repo;
 
-        public InvestmentsController(IInvestmentRepository investmentRepository)
-        {
-            _investmentRepository = investmentRepository;
-        }
-
-        /// <summary>
-        /// Retrieves the portfolio for a specific user.
-        /// </summary>
-        [HttpGet("portfolio/{userId}")]
-        public IActionResult GetPortfolio(int userId)
-        {
-            var portfolio = _investmentRepository.GetPortfolio(userId);
-            return Ok(portfolio);
-        }
-
-        /// <summary>
-        /// Placeholder for executing a trade (POST request).
-        /// </summary>
         [HttpPost("trade")]
-        public async Task<IActionResult> Trade([FromBody] dynamic tradeData)
+        public async Task<IActionResult> ExecuteTrade([FromBody] TradeRequest request)
         {
-            // Note: Your teammates can expand the DTO/Logic here for Assignment 4
-            return await Task.FromResult(Ok(new { message = "Trade received" }));
+            // 1. Calculate the math (Fees, etc.)
+            decimal feeRate = 0.015m;
+            decimal tradeValue = request.quantity * request.price;
+            decimal fees = Math.Round(tradeValue * feeRate, 2);
+
+            // 2. Fetch current portfolio to get totals
+            var portfolio = _repo.GetPortfolio(request.userId);
+            var holding = portfolio.Holdings.FirstOrDefault(h => h.Ticker == request.ticker);
+
+            decimal currentQty = holding?.Quantity ?? 0;
+            decimal currentAvgPrice = holding?.AveragePurchasePrice ?? 0;
+
+            // 3. Calculate new totals
+            decimal finalQty = request.action == "BUY" ? currentQty + request.quantity : currentQty - request.quantity;
+            decimal finalAvgPrice = request.action == "BUY"
+                ? ((currentQty * currentAvgPrice) + (request.quantity * request.price)) / finalQty
+                : currentAvgPrice;
+
+            // 4. Save to DB
+            await _repo.RecordCryptoTradeAsync(
+                portfolio.IdentificationNumber,
+                request.ticker,
+                request.action,
+                request.quantity,
+                request.price,
+                fees,
+                finalQty,
+                finalAvgPrice);
+
+            return Ok(true);
         }
     }
+
+    public record TradeRequest(int userId, string ticker, string action, decimal quantity, decimal price);
 }

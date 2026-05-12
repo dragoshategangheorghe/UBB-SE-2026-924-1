@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using BankApp.Client.Master;
 using BankApp.Client.RepoProxies;
@@ -6,16 +7,16 @@ using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Implementations;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.State;
+using BankApp.Client.ViewModels; // Added for the new ViewModel
 using BankApp.Models.Entities;
+using Microsoft.Extensions.DependencyInjection; // Required for IServiceProvider
 using Microsoft.UI.Xaml;
 
 namespace BankApp.Client
 {
     public partial class App : Application
     {
-        /// <summary>
-        /// HTTP transport: composition root only. Views and view models use App.*Service.
-        /// </summary>
+        // --- Static Repositories (Composition Root) ---
         private static readonly ApiService HttpApi = new ApiService();
 
         private static readonly ILoansRepoProxy LoansHttpRepo = new LoansRepoProxy(HttpApi);
@@ -37,10 +38,9 @@ namespace BankApp.Client
         private static readonly IDashboardRepoProxy DashboardHttpRepo = new DashboardRepoProxy(HttpApi);
         private static readonly IProfileRepoProxy ProfileHttpRepo = new ProfileRepoProxy(HttpApi);
         private static readonly IInvestmentsRepoProxy InvestmentsHttpRepo = new InvestmentsRepoProxy(HttpApi);
-
-        // Integrated Account Proxy
         private static readonly IAccountRepoProxy AccountHttpRepo = new AccountRepoProxy(HttpApi);
 
+        // --- Static Services (Accessible via App.ServiceName) ---
         public static Window? MainAppWindow { get; private set; }
         public static NavigationService NavigationService { get; private set; } = new NavigationService();
 
@@ -49,8 +49,6 @@ namespace BankApp.Client
         public static IProfileService ProfileService { get; private set; } = new ProfileService(ProfileHttpRepo);
         public static INotificationClientService NotificationClientService { get; private set; } = new NotificationClientService();
         public static IInvestmentsService InvestmentsService { get; private set; } = new InvestmentsService(InvestmentsHttpRepo);
-
-        // Integrated Account Service
         public static IAccountService AccountService { get; private set; } = new AccountService(AccountHttpRepo);
 
         public static ILoansService LoansService { get; private set; } =
@@ -71,22 +69,37 @@ namespace BankApp.Client
         public static ITransactionHistorySessionState TransactionHistorySessionState { get; private set; } =
             new TransactionHistorySessionState();
 
-        private Window? _window;
+        // --- Dependency Injection Provider ---
+        // This fixes the CS1061 error in the CryptoTradingView.xaml.cs
+        public IServiceProvider Services { get; }
 
         public App()
         {
-            InitializeComponent();
-            CultureInfo culture = CultureInfo.InvariantCulture;
+            this.InitializeComponent();
 
+            // 1. Setup Dependency Injection for modern ViewModels
+            var serviceCollection = new ServiceCollection();
+
+            // Register the Services so they can be injected into ViewModels
+            serviceCollection.AddSingleton<IInvestmentsService>(InvestmentsService);
+            serviceCollection.AddSingleton<IAccountService>(AccountService);
+
+            // Register ViewModels
+            serviceCollection.AddTransient<CryptoTradingViewModel>();
+            serviceCollection.AddTransient<InvestmentsViewModel>();
+
+            Services = serviceCollection.BuildServiceProvider();
+
+            // 2. Setup Culture
+            CultureInfo culture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            _window = new MainWindow();
-            MainAppWindow = _window;
-            _window.Activate();
+            MainAppWindow = new MainWindow();
+            MainAppWindow.Activate();
         }
     }
 }

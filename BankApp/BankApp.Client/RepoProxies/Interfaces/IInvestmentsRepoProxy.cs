@@ -5,8 +5,7 @@ namespace BankApp.Client.RepoProxies.Interfaces
 
     public interface IInvestmentsRepoProxy
     {
-        Task<Portfolio?> GetPortfolioAsync(int userId);
-
-        Task<Portfolio?> GetPortfolioForCurrentUserAsync();
+        Task<TResponse?> GetAsync<TResponse>(string endpoint);
+        Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest data);
     }
 }

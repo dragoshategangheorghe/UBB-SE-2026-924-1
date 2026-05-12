@@ -7,21 +7,36 @@ namespace BankApp.Client.Services.Implementations
 
     public class InvestmentsService : IInvestmentsService
     {
-        private readonly IInvestmentsRepoProxy investmentsRepo;
+        private readonly IInvestmentsRepoProxy _investmentsRepo;
 
         public InvestmentsService(IInvestmentsRepoProxy investmentsRepo)
         {
-            this.investmentsRepo = investmentsRepo;
+            this._investmentsRepo = investmentsRepo;
         }
 
-        public Task<Portfolio?> GetPortfolioAsync(int userId)
+        public async Task<Portfolio?> GetPortfolioAsync(int userId)
         {
-            return this.investmentsRepo.GetPortfolioAsync(userId);
+            return await this._investmentsRepo.GetAsync<Portfolio>($"/api/investments/portfolio/{userId}");
         }
 
-        public Task<Portfolio?> GetPortfolioForCurrentUserAsync()
+        public async Task<Portfolio?> GetPortfolioForCurrentUserAsync()
         {
-            return this.investmentsRepo.GetPortfolioForCurrentUserAsync();
+            // Points to Vlad (ID 1) as requested for current setup
+            return await this.GetPortfolioAsync(1);
+        }
+
+        public async Task<bool> ExecuteTradeAsync(int userId, string ticker, string action, decimal quantity, decimal price)
+        {
+            var request = new
+            {
+                UserId = userId,
+                Ticker = ticker,
+                Action = action,
+                Quantity = quantity,
+                Price = price
+            };
+
+            return await this._investmentsRepo.PostAsync<object, bool>("/api/investments/trade", request);
         }
     }
 }

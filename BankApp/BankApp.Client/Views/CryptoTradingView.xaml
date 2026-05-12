@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="BankApp.Client.Views.CryptoTradingView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="using:BankApp.Client.Utilities"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <utils:DecimalToCurrencyConverter x:Key="CurrencyConverter" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="24" MaxWidth="600" HorizontalAlignment="Left">
+            <TextBlock Text="Crypto Trading" FontSize="28" FontWeight="Bold" />
+
+            <Border Background="#FFF4CE" BorderBrush="#FFD666" BorderThickness="1" CornerRadius="8" Padding="16">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="⚠️" FontSize="20" VerticalAlignment="Center" />
+                    <StackPanel>
+                        <TextBlock Text="High Volatility Warning" FontWeight="SemiBold" Foreground="#8A6D3B" />
+                        <TextBlock
+                            Text="Cryptocurrency prices are highly volatile. You may lose all or part of your invested capital."
+                            TextWrapping="Wrap" Foreground="#8A6D3B" FontSize="12" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Select Asset" FontWeight="SemiBold" />
+                <ComboBox SelectedItem="{Binding SelectedTicker, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                    <x:String>BTC</x:String>
+                    <x:String>ETH</x:String>
+                    <x:String>SOL</x:String>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Action" FontWeight="SemiBold" />
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <RadioButton Content="Buy" Tag="BUY" IsChecked="True" Checked="OnActionTypeChecked" />
+                    <RadioButton Content="Sell" Tag="SELL" Checked="OnActionTypeChecked" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Quantity" FontWeight="SemiBold" />
+                <TextBox PlaceholderText="0.00"
+                         Text="{Binding QuantityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Foreground="DarkBlue" />
+
+            <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8"
+                    Padding="16">
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <TextBlock Text="Available Wallet Balance:" Foreground="Gray" />
+                        <TextBlock Text="{Binding CurrentBalance, Converter={StaticResource CurrencyConverter}}"
+                                   HorizontalAlignment="Right" FontWeight="SemiBold" />
+                    </Grid>
+                    <Grid>
+                        <TextBlock Text="Estimated Fee (1.5%):" Foreground="Gray" />
+                        <TextBlock Text="{Binding EstimatedFee, Converter={StaticResource CurrencyConverter}}"
+                                   HorizontalAlignment="Right" FontWeight="SemiBold" />
+                    </Grid>
+                    <Grid>
+                        <TextBlock Text="Total Estimated Amount:" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding TotalAmount, Converter={StaticResource CurrencyConverter}}"
+                                   HorizontalAlignment="Right" FontWeight="Bold"
+                                   Foreground="{ThemeResource SystemControlForegroundAccentBrush}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Button Content="Execute Trade" Command="{Binding ExecuteTradeCommand}"
+                    Style="{StaticResource AccentButtonStyle}" Width="150" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

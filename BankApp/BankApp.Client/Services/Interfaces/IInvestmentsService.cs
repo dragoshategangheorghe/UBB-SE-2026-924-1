@@ -6,7 +6,7 @@ namespace BankApp.Client.Services.Interfaces
     public interface IInvestmentsService
     {
         Task<Portfolio?> GetPortfolioAsync(int userId);
-
         Task<Portfolio?> GetPortfolioForCurrentUserAsync();
+        Task<bool> ExecuteTradeAsync(int userId, string ticker, string action, decimal quantity, decimal price);
     }
 }
