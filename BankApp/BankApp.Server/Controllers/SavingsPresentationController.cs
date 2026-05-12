@@ -37,7 +37,7 @@ namespace BankApp.Server.Controllers
         public ActionResult<bool> CheckClosePenaltyRisk([FromBody] SavingsAccountSummaryDto selectedAccount)
         {
             var hasRisk = _savingsService.HasClosePenaltyRisk(selectedAccount);
-            return Ok(new { HasClosePenaltyRisk = hasRisk });
+            return Ok(hasRisk);
         }
     }
 }
