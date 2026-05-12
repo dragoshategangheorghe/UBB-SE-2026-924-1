@@ -11,24 +11,26 @@
 
     public class InvestmentRepository : IInvestmentRepository
     {
-        private readonly AppDbContext _dbContext;
+        private readonly AppDbContext _db;
 
-        public InvestmentRepository(AppDbContext dbContext) => this._dbContext = dbContext;
+        public InvestmentRepository(AppDbContext db)
+        {
+            this._db = db;
+        }
 
         public Portfolio GetPortfolio(int userId)
         {
             // We search for the portfolio
-            var portfolio = this.db.Portfolios
+            var portfolio = this._db.Portfolios
                 .Include(p => p.Holdings)
                 .FirstOrDefault(p => p.UserId == userId);
 
             // If it doesn't exist, we create AND SAVE it immediately.
-            // This prevents "Foreign Key" crashes when adding holdings later.
             if (portfolio == null)
             {
                 portfolio = new Portfolio { UserId = userId };
-                this.db.Portfolios.Add(portfolio);
-                this.db.SaveChanges();
+                this._db.Portfolios.Add(portfolio);
+                this._db.SaveChanges();
             }
 
             return portfolio;
@@ -36,35 +38,37 @@
 
         public async Task<List<InvestmentTransaction>> GetInvestmentLogsAsync(int portfolioId, DateTime? startDate, DateTime? endDate, string? ticker)
         {
-            var query = this.db.InvestmentTransactions
+            // Use _db.InvestmentTransactions explicitly to ensure the type is known
+            var query = this._db.InvestmentTransactions
                 .AsNoTracking()
-                .Where(investmentTransaction => investmentTransaction.Holding.PortfolioId == portfolioId);
+                .Include(x => x.Holding)
+                .Where(x => x.Holding.PortfolioId == portfolioId);
 
             if (startDate.HasValue)
             {
-                query = query.Where(investmentTransaction => investmentTransaction.ExecutedAt >= startDate.Value);
+                query = query.Where(x => x.ExecutedAt >= startDate.Value);
             }
 
             if (endDate.HasValue)
             {
-                query = query.Where(investmentTransaction => investmentTransaction.ExecutedAt <= endDate.Value);
+                query = query.Where(x => x.ExecutedAt <= endDate.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(ticker))
             {
-                query = query.Where(investmentTransaction => investmentTransaction.Ticker == ticker);
+                query = query.Where(x => x.Ticker == ticker);
             }
 
-            return await query.OrderByDescending(investmentTransaction => investmentTransaction.ExecutedAt).ToListAsync();
+            return await query.OrderByDescending(x => x.ExecutedAt).ToListAsync();
         }
 
         public async Task RecordCryptoTradeAsync(int portfolioId, string ticker, string actionType, decimal quantity,
             decimal pricePerUnit, decimal fees, decimal finalQuantity, decimal finalAveragePrice)
         {
-            await using var transaction = await this._dbContext.Database.BeginTransactionAsync();
+            await using var transaction = await this._db.Database.BeginTransactionAsync();
             try
             {
-                var holding = await this.db.InvestmentHoldings
+                var holding = await this._db.InvestmentHoldings
                     .FirstOrDefaultAsync(h => h.PortfolioId == portfolioId && h.Ticker == ticker);
 
                 if (holding != null)
@@ -84,11 +88,11 @@
                         AveragePurchasePrice = finalAveragePrice,
                         CurrentPrice = pricePerUnit
                     };
-                    this.db.InvestmentHoldings.Add(holding);
-                    await this.db.SaveChangesAsync();
+                    this._db.InvestmentHoldings.Add(holding);
+                    await this._db.SaveChangesAsync();
                 }
 
-                this.db.InvestmentTransactions.Add(new InvestmentTransaction
+                this._db.InvestmentTransactions.Add(new InvestmentTransaction
                 {
                     HoldingId = holding.IdentificationNumber,
                     Ticker = ticker,
@@ -99,10 +103,10 @@
                     ExecutedAt = DateTime.UtcNow
                 });
 
-                await this._dbContext.SaveChangesAsync();
+                await this._db.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 throw;
