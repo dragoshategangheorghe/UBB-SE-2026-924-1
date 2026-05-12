@@ -83,12 +83,6 @@ namespace BankApp.Client.Views
                 if (sender is Button btn && btn.Tag is LoanViewModel loan)
                 {
                     this.ViewModel.SelectedLoan = loan;
-                    await this.ViewModel.LoadAmortizationAsync();
-
-                    if (!string.IsNullOrEmpty(this.ViewModel.ErrorMessage))
-                    {
-                        return;
-                    }
 
                     Frame? mainFrame = GetParentFrame();
                     if (mainFrame != null)

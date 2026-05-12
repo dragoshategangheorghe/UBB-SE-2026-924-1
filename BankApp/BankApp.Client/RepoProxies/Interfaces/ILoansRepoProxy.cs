@@ -30,7 +30,7 @@ namespace BankApp.Client.RepoProxies.Interfaces
 
         Task UpdateLoanAfterPaymentAsync(int loanId, decimal newBalance, int newRemainingMonths, LoanStatus newStatus);
 
-        Task<List<AmortizationRow>> GetAmortizationAsync(int loanId);
+        Task<List<AmortizationRow>?> GetAmortizationAsync(int loanId);
 
         Task SaveAmortizationAsync(int loanId, List<AmortizationRow> rows);
     }

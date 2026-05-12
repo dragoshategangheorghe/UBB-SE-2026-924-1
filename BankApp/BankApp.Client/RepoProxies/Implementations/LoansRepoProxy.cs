@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -73,14 +74,22 @@ namespace BankApp.Client.RepoProxies.Implementations
                 new { });
         }
 
-        public Task<List<AmortizationRow>> GetAmortizationAsync(int loanId)
+        public Task<List<AmortizationRow>?> GetAmortizationAsync(int loanId)
         {
             return _apiService.GetAsync<List<AmortizationRow>>($"/api/loans/{loanId}/amortization-schedule");
         }
 
         public async Task SaveAmortizationAsync(int loanId, List<AmortizationRow> rows)
         {
-            await _apiService.PostVoidAsync<List<AmortizationRow>>($"/api/loans/{loanId}/amortization-schedule", rows);
+            var dtos = rows.Select(r => new AmortizationRowDto
+            {
+                InstallmentNumber = r.InstallmentNumber,
+                DueDate = r.DueDate,
+                PrincipalPortion = r.PrincipalPortion,
+                InterestPortion = r.InterestPortion,
+                RemainingBalance = r.RemainingBalance,
+            }).ToList();
+            await _apiService.PostVoidAsync<List<AmortizationRowDto>>($"/api/loans/{loanId}/amortization-schedule", dtos);
         }
     }
 }
