@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -163,6 +164,11 @@ namespace BankApp.Client.RepoProxies
 
             string contentType = response.Content.Headers.ContentType?.MediaType ?? "(none)";
             string body = await response.Content.ReadAsStringAsync();
+
+            Debug.WriteLine($"EnsureSuccessAsync FAILED: {endpoint}");
+            Debug.WriteLine($"Status: {(int)response.StatusCode} {response.StatusCode}");
+            Debug.WriteLine($"Body: {(body.Length > 500 ? body[..500] : body)}");
+
             if (body.Length > 2000)
             {
                 body = body[..2000] + "…";
@@ -176,6 +182,19 @@ namespace BankApp.Client.RepoProxies
 
         private static async Task<T?> ReadJsonAsync<T>(HttpResponseMessage response)
         {
+            Debug.WriteLine($"ReadJsonAsync called with T={typeof(T).Name}");
+            Debug.WriteLine($"Content-Type: {response.Content.Headers.ContentType?.MediaType}");
+
+            if (typeof(T) == typeof(string))
+            {
+                var text = await response.Content.ReadAsStringAsync();
+                if (text.StartsWith("\"") && text.EndsWith("\""))
+                {
+                    text = text[1..^1];
+                }
+                return (T)(object)text;
+            }
+
             try
             {
                 return await response.Content.ReadFromJsonAsync<T>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
