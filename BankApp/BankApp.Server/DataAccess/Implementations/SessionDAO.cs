@@ -8,14 +8,14 @@ namespace BankApp.Server.DataAccess
     {
         private readonly AppDbContext _dbContext;
 
-        public SessionDAO(AppDbContext db)
+        public SessionDAO(AppDbContext dbContext)
         {
-            this._dbContext = db;
+            this._dbContext = dbContext;
         }
 
         public Session Create(int userId, string token, string? deviceInfo, string? browser, string? ip)
         {
-            var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+            var user = _dbContext.Users.Local.FirstOrDefault(user => user.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
             if (_dbContext.Entry(user).State == EntityState.Detached)
             {
                 _dbContext.Attach(user);
@@ -41,15 +41,15 @@ namespace BankApp.Server.DataAccess
         public Session? FindByToken(string token)
         {
             return _dbContext.Sessions
-                .Include(s => s.User)
-                .FirstOrDefault(s => s.Token == token && !s.IsRevoked && s.ExpiresAt > DateTime.UtcNow);
+                .Include(session => session.User)
+                .FirstOrDefault(session => session.Token == token && !session.IsRevoked && session.ExpiresAt > DateTime.UtcNow);
         }
 
         public List<Session> FindByUserId(int userId)
         {
             return _dbContext.Sessions
-                .Include(s => s.User)
-                .Where(s => s.User.Id == userId && !s.IsRevoked && s.ExpiresAt > DateTime.UtcNow)
+                .Include(session => session.User)
+                .Where(session => session.User.Id == userId && !session.IsRevoked && session.ExpiresAt > DateTime.UtcNow)
                 .ToList();
         }
 
@@ -60,7 +60,7 @@ namespace BankApp.Server.DataAccess
 
         public void RevokeAll(int userId)
         {
-            _dbContext.Sessions.Where(s => s.User.Id == userId && !s.IsRevoked).ExecuteUpdate(s => s.SetProperty(sess => sess.IsRevoked, true));
+            _dbContext.Sessions.Where(session => session.User.Id == userId && !session.IsRevoked).ExecuteUpdate(s => s.SetProperty(session => session.IsRevoked, true));
         }
     }
 }

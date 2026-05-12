@@ -23,7 +23,7 @@ namespace BankApp.Server.Repositories.Implementations
         private const string PrimaryFundingSourceName = "Checking Account One";
         private const string SecondaryFundingSourceName = "Checking Account Two";
 
-        private readonly AppDbContext _context;
+        private readonly AppDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SavingsRepository"/> class.
@@ -31,7 +31,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// <param name="dbContext">The application's EF Core database _dbContext.</param>
         public SavingsRepository(AppDbContext dbContext)
         {
-            _context = dbContext;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -41,20 +41,19 @@ namespace BankApp.Server.Repositories.Implementations
             int userIdentificationNumber,
             bool includesClosedAccounts = false)
         {
-            var query = _context.SavingsAccounts
+            var query = _dbContext.SavingsAccounts
                 .AsNoTracking()
-                .Include(a => a.User)
-                .Include(a => a.FundingAccount)
-                .Include(a => a.AutoDeposits)
-                .Include(a => a.Transactions)
-                .Where(a => a.User.Id == userIdentificationNumber);
-
+                .Include(savingsAccount => savingsAccount.User)
+                .Include(savingsAccount => savingsAccount.FundingAccount)
+                .Include(savingsAccount => savingsAccount.AutoDeposits)
+                .Include(savingsAccount => savingsAccount.Transactions)
+                .Where(savingsAccount => savingsAccount.User.Id == userIdentificationNumber);
             if (!includesClosedAccounts)
             {
-                query = query.Where(a => a.AccountStatus != "Closed");
+                query = query.Where(openSavingsAccount => openSavingsAccount.AccountStatus != "Closed");
             }
 
-            return await query.OrderByDescending(a => a.Balance).ToListAsync();
+            return await query.OrderByDescending(savingsAccount => savingsAccount.Balance).ToListAsync();
         }
 
         /// <summary>
@@ -62,9 +61,9 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<SavingsAccount> CreateSavingsAccountAsync(CreateSavingsAccountDto dataTransferObject, decimal annualPercentageYield)
         {
-            var user = await _context.Users
-                .Include(u => u.Accounts)
-                .FirstOrDefaultAsync(u => u.Id == dataTransferObject.UserIdentificationNumber);
+            var user = await _dbContext.Users
+                .Include(user => user.Accounts)
+                .FirstOrDefaultAsync(user => user.Id == dataTransferObject.UserIdentificationNumber);
 
             if (user == null)
             {
@@ -73,8 +72,8 @@ namespace BankApp.Server.Repositories.Implementations
 
             var fundingAccount = dataTransferObject.FundingAccountId == NoFundingAccountId
                 ? null
-                : await _context.Accounts
-                    .Include(a => a.User)
+                : await _dbContext.Accounts
+                    .Include(account => account.User)
                     .FirstOrDefaultAsync(a => a.Id == dataTransferObject.FundingAccountId);
 
             var account = new SavingsAccount
@@ -93,8 +92,8 @@ namespace BankApp.Server.Repositories.Implementations
                 MaturityDate = dataTransferObject.MaturityDate,
             };
 
-            _context.SavingsAccounts.Add(account);
-            await _context.SaveChangesAsync();
+            _dbContext.SavingsAccounts.Add(account);
+            await _dbContext.SaveChangesAsync();
             return account;
         }
 
@@ -103,13 +102,13 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<DepositResponseDto> DepositAsync(int accountIdentificationNumber, decimal amount, string source)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                var account = await _context.SavingsAccounts
-                    .Include(x => x.User)
-                    .Include(x => x.FundingAccount)
-                    .FirstOrDefaultAsync(x => x.IdentificationNumber == accountIdentificationNumber);
+                var account = await _dbContext.SavingsAccounts
+                    .Include(savingsAccount => savingsAccount.User)
+                    .Include(savingsAccount => savingsAccount.FundingAccount)
+                    .FirstOrDefaultAsync(savingsAccount => savingsAccount.IdentificationNumber == accountIdentificationNumber);
 
                 if (account == null)
                 {
@@ -135,8 +134,8 @@ namespace BankApp.Server.Repositories.Implementations
                     CreatedAt = DateTime.UtcNow,
                 };
 
-                _context.SavingsTransactions.Add(savingsTransaction);
-                await _context.SaveChangesAsync();
+                _dbContext.SavingsTransactions.Add(savingsTransaction);
+                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return new DepositResponseDto
@@ -162,19 +161,19 @@ namespace BankApp.Server.Repositories.Implementations
             decimal transferAmount,
             decimal earlyClosurePenalty)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var sourceAccount = await _context.SavingsAccounts
-                    .Include(x => x.FundingAccount)
-                    .Include(x => x.User)
-                    .FirstOrDefaultAsync(x => x.IdentificationNumber == accountIdentificationNumber);
+                var sourceAccount = await _dbContext.SavingsAccounts
+                    .Include(savingsAccount => savingsAccount.FundingAccount)
+                    .Include(savingsAccount => savingsAccount.User)
+                    .FirstOrDefaultAsync(savingsAccount => savingsAccount.IdentificationNumber == accountIdentificationNumber);
 
-                var destinationAccount = await _context.SavingsAccounts
-                    .Include(x => x.FundingAccount)
-                    .Include(x => x.User)
-                    .FirstOrDefaultAsync(x => x.IdentificationNumber == destinationAccountIdentificationNumber);
+                var destinationAccount = await _dbContext.SavingsAccounts
+                    .Include(savingsAccount => savingsAccount.FundingAccount)
+                    .Include(savingsAccount => savingsAccount.User)
+                    .FirstOrDefaultAsync(savingsAccount => savingsAccount.IdentificationNumber == destinationAccountIdentificationNumber);
 
                 if (sourceAccount == null || destinationAccount == null)
                 {
@@ -190,7 +189,7 @@ namespace BankApp.Server.Repositories.Implementations
                 sourceAccount.AccountStatus = "Closed";
                 destinationAccount.Balance += transferAmount;
 
-                _context.SavingsTransactions.Add(new SavingsTransaction
+                _dbContext.SavingsTransactions.Add(new SavingsTransaction
                 {
                     // SavingsAccount = sourceAccount,
                     Account = sourceAccount.FundingAccount,
@@ -202,7 +201,7 @@ namespace BankApp.Server.Repositories.Implementations
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return new ClosureResultDto
@@ -238,14 +237,14 @@ namespace BankApp.Server.Repositories.Implementations
             string destinationLabel,
             decimal earlyWithdrawalPenalty)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var account = await _context.SavingsAccounts
-                    .Include(x => x.User)
-                    .Include(x => x.FundingAccount)
-                    .FirstOrDefaultAsync(x => x.IdentificationNumber == accountId);
+                var account = await _dbContext.SavingsAccounts
+                    .Include(savingsAccount => savingsAccount.User)
+                    .Include(savingsAccount => savingsAccount.FundingAccount)
+                    .FirstOrDefaultAsync(savingsAccount => savingsAccount.IdentificationNumber == accountId);
 
                 if (account == null)
                 {
@@ -264,7 +263,7 @@ namespace BankApp.Server.Repositories.Implementations
                     ? $"To: {destinationLabel} | Early withdrawal penalty: {earlyWithdrawalPenalty:C2}"
                     : $"To: {destinationLabel}";
 
-                _context.SavingsTransactions.Add(new SavingsTransaction
+                _dbContext.SavingsTransactions.Add(new SavingsTransaction
                 {
                     // SavingsAccount = account,
                     Account = account.FundingAccount,
@@ -276,7 +275,7 @@ namespace BankApp.Server.Repositories.Implementations
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return new WithdrawResponseDto
@@ -308,12 +307,12 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<AutoDeposit?> GetAutoDepositAsync(int accountId)
         {
-            return await _context.AutoDeposits
+            return await _dbContext.AutoDeposits
                 .AsNoTracking()
-                .Include(x => x.SavingsAccount)
-                .ThenInclude(x => x.User)
+                .Include(autoDeposit => autoDeposit.SavingsAccount)
+                .ThenInclude(savingsAccount => savingsAccount.User)
                 // .FirstOrDefaultAsync(x => x.SavingsAccount.IdentificationNumber == accountId);
-                .FirstOrDefaultAsync(x => x.SavingsAccountId == accountId);
+                .FirstOrDefaultAsync(autoDeposit => autoDeposit.SavingsAccountId == accountId);
         }
 
         /// <summary>
@@ -323,14 +322,14 @@ namespace BankApp.Server.Repositories.Implementations
         {
             if (autoDeposit.Id == NewAutoDepositId)
             {
-                _context.AutoDeposits.Add(autoDeposit);
+                _dbContext.AutoDeposits.Add(autoDeposit);
             }
             else
             {
-                _context.AutoDeposits.Update(autoDeposit);
+                _dbContext.AutoDeposits.Update(autoDeposit);
             }
 
-            await _context.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -355,11 +354,11 @@ namespace BankApp.Server.Repositories.Implementations
             int page,
             int pageSize)
         {
-            var query = _context.SavingsTransactions
+            var query = _dbContext.SavingsTransactions
                 .AsNoTracking()
-                .Include(x => x.Account)
-                .Where(x => x.SavingsAccount != null &&
-                            x.SavingsAccount.IdentificationNumber == accountId);
+                .Include(savingsTransaction => savingsTransaction.Account)
+                .Where(savingsTransaction => savingsTransaction.SavingsAccount != null &&
+                                             savingsTransaction.SavingsAccount.IdentificationNumber == accountId);
 
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
             {
@@ -371,7 +370,7 @@ namespace BankApp.Server.Repositories.Implementations
 
             var totalCount = await query.CountAsync();
             var items = await query
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(savingsTransaction => savingsTransaction.CreatedAt)
                 .Skip((page - FirstPageNumber) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

@@ -16,12 +16,12 @@ namespace BankApp.Server.DataAccess.Implementations
         /// <summary>
         /// Loads a card with its related account and user navigation properties.
         /// </summary>
-        public Card? FindById(int id)
+        public Card? FindById(int cardId)
         {
             return _dbContext.Cards
-                .Include(c => c.Account)
-                .Include(c => c.User)
-                .FirstOrDefault(c => c.Id == id);
+                .Include(card => card.Account)
+                .Include(card => card.User)
+                .FirstOrDefault(card => card.Id == cardId);
         }
 
         /// <summary>
@@ -30,31 +30,30 @@ namespace BankApp.Server.DataAccess.Implementations
         public List<Card> FindByUserId(int userId)
         {
             return _dbContext.Cards
-                .Include(c => c.Account)
-                .Include(c => c.User)
-                .Where(c => c.User.Id == userId)
-                .OrderBy(c => c.SortOrder)
-                .ThenBy(c => c.CreatedAt)
+                .Include(card => card.Account)
+                .Include(card => card.User)
+                .Where(card => card.User.Id == userId)
+                .OrderBy(card => card.SortOrder)
+                .ThenBy(card => card.CreatedAt)
                 .ToList();
         }
 
-        public bool UpdateStatus(int cardId, string status)
+        public bool UpdateStatus(int cardId, string newStatus)
         {
             var rowsAffected = _dbContext.Cards
-                .Where(c => c.Id == cardId)
-                .ExecuteUpdate(s => s.SetProperty(c => c.Status, status));
-
+                .Where(card => card.Id == cardId)
+                .ExecuteUpdate(setters => setters.SetProperty(card => card.Status, newStatus));
             return rowsAffected > 0;
         }
 
         public bool UpdateSettings(int cardId, decimal? spendingLimit, bool isOnlinePaymentsEnabled, bool isContactlessPaymentsEnabled)
         {
             var rowsAffected = _dbContext.Cards
-                .Where(c => c.Id == cardId)
-                .ExecuteUpdate(s => s
-                    .SetProperty(c => c.MonthlySpendingCap, spendingLimit)
-                    .SetProperty(c => c.IsOnlineEnabled, isOnlinePaymentsEnabled)
-                    .SetProperty(c => c.IsContactlessEnabled, isContactlessPaymentsEnabled));
+                .Where(card => card.Id == cardId)
+                .ExecuteUpdate(setters => setters
+                    .SetProperty(card => card.MonthlySpendingCap, spendingLimit)
+                    .SetProperty(card => card.IsOnlineEnabled, isOnlinePaymentsEnabled)
+                    .SetProperty(card => card.IsContactlessEnabled, isContactlessPaymentsEnabled));
 
             return rowsAffected > 0;
         }

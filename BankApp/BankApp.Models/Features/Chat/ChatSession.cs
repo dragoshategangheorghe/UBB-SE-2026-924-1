@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using BankApp.Models.Entities;
@@ -16,6 +14,8 @@ namespace BankApp.Models.Features.Chat
 
         [Key]
         public int Id { get; set; }
+
+        //public int UserId { get; set; }
 
         [JsonIgnore]
         public virtual User User { get; set; } = null!;

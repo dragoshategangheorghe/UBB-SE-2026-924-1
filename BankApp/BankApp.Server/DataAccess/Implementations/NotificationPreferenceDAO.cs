@@ -7,21 +7,21 @@ namespace BankApp.Server.DataAccess
 {
     internal class NotificationPreferenceDAO : INotificationPreferenceDAO
     {
-        private AppDbContext appDbContext;
+        private AppDbContext _dbContext;
 
-        public NotificationPreferenceDAO(AppDbContext appDbContext)
+        public NotificationPreferenceDAO(AppDbContext dbContext)
         {
-            this.appDbContext = appDbContext;
+            this._dbContext = dbContext;
         }
 
         public bool Create(int userId, string category)
         {
             try
             {
-                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
-                if (appDbContext.Entry(user).State == EntityState.Detached)
+                var user = _dbContext.Users.Local.FirstOrDefault(user => user.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (_dbContext.Entry(user).State == EntityState.Detached)
                 {
-                    appDbContext.Attach(user);
+                    _dbContext.Attach(user);
                 }
 
                 var preference = new NotificationPreference
@@ -33,14 +33,14 @@ namespace BankApp.Server.DataAccess
                     SmsEnabled = false
                 };
 
-                appDbContext.NotificationPreferences.Add(preference);
-                var rows = appDbContext.SaveChanges();
+                _dbContext.NotificationPreferences.Add(preference);
+                var rows = _dbContext.SaveChanges();
 
                 return rows > 0;
             }
-            catch (Exception ex) when (
-            ex is DbUpdateConcurrencyException
-            || ex is DbUpdateException)
+            catch (Exception exception) when (
+            exception is DbUpdateConcurrencyException
+            || exception is DbUpdateException)
             {
                 return false;
             }
@@ -48,31 +48,31 @@ namespace BankApp.Server.DataAccess
 
         public List<NotificationPreference> FindByUserId(int userId)
         {
-            return appDbContext.NotificationPreferences
-                .Include(p => p.User)
-                .Where(p => p.User.Id == userId)
+            return _dbContext.NotificationPreferences
+                .Include(notificationPreference => notificationPreference.User)
+                .Where(notificationPreference => notificationPreference.User.Id == userId)
                 .ToList();
         }
 
-        public bool Update(int userId, List<NotificationPreference> prefs)
+        public bool Update(int userId, List<NotificationPreference> notificationPreferences)
         {
             try
             {
-                var existing = appDbContext.NotificationPreferences
-                    .Where(p => p.User.Id == userId)
+                var existing = _dbContext.NotificationPreferences
+                    .Where(notificationPreference => notificationPreference.User.Id == userId)
                     .ToList();
 
-                appDbContext.NotificationPreferences.RemoveRange(existing);
+                _dbContext.NotificationPreferences.RemoveRange(existing);
 
-                var user = appDbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? appDbContext.Users.Find(userId) ?? new User { Id = userId };
-                if (appDbContext.Entry(user).State == EntityState.Detached)
+                var user = _dbContext.Users.Local.FirstOrDefault(user => user.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+                if (_dbContext.Entry(user).State == EntityState.Detached)
                 {
-                    appDbContext.Attach(user);
+                    _dbContext.Attach(user);
                 }
 
-                foreach (var preference in prefs)
+                foreach (var preference in notificationPreferences)
                 {
-                    appDbContext.NotificationPreferences.Add(new NotificationPreference
+                    _dbContext.NotificationPreferences.Add(new NotificationPreference
                     {
                         User = user,
                         Category = preference.Category,
@@ -83,12 +83,12 @@ namespace BankApp.Server.DataAccess
                     });
                 }
 
-                appDbContext.SaveChanges();
+                _dbContext.SaveChanges();
                 return true;
             }
-            catch (Exception ex) when (
-            ex is DbUpdateException
-            || ex is DbUpdateConcurrencyException)
+            catch (Exception exception) when (
+            exception is DbUpdateException
+            || exception is DbUpdateConcurrencyException)
             {
                 return false;
             }

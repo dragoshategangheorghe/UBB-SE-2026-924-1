@@ -7,7 +7,7 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
 {
     public class OTPService : IOTPService
     {
-        private static readonly Dictionary<int, (string Code, DateTime ExpiryTime)> TemporarySmsStorage = new ();
+        private static readonly Dictionary<int, (string Code, DateTime ExpiryTime)> _temporarySmsStorage = new ();
         private const int SmsOtpExpiryMinutes = 5;
         private const int TotpWindowSeconds = 300;
 
@@ -19,7 +19,7 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
         {
             string code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
             DateTime expiryTime = DateTime.UtcNow.AddMinutes(SmsOtpExpiryMinutes);
-            TemporarySmsStorage[userId] = (code, expiryTime);
+            _temporarySmsStorage[userId] = (code, expiryTime);
             return code;
         }
 
@@ -31,7 +31,7 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
 
         public void InvalidateOTP(int userId)
         {
-            TemporarySmsStorage.Remove(userId);
+            _temporarySmsStorage.Remove(userId);
         }
 
         public bool IsExpired(DateTime expiredAt)
@@ -41,7 +41,7 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
 
         public bool VerifySMSOTP(int userId, string code)
         {
-            if (TemporarySmsStorage.TryGetValue(userId, out var storedData))
+            if (_temporarySmsStorage.TryGetValue(userId, out var storedData))
             {
                 if (DateTime.UtcNow > storedData.ExpiryTime)
                 {
