@@ -17,6 +17,7 @@ namespace BankApp.Server.Controllers
     {
         private const string ActiveCardStatus = "Active";
         private const string FrozenCardStatus = "Frozen";
+        private const int MinimumCardNumberMaskLength = 4;
 
         private readonly ICardRepository cardRepository;
         private readonly IUserRepository userRepository;
@@ -315,12 +316,12 @@ namespace BankApp.Server.Controllers
 
         private static string MaskCardNumber(string cardNumber)
         {
-            if (string.IsNullOrWhiteSpace(cardNumber) || cardNumber.Length < 4)
+            if (string.IsNullOrWhiteSpace(cardNumber) || cardNumber.Length < MinimumCardNumberMaskLength)
             {
                 return "****";
             }
 
-            return $"**** {cardNumber[^4..]}";
+            return $"**** {cardNumber[^MinimumCardNumberMaskLength..]}";
         }
 
         private static CardCommandResponse CreateCommandFailure(string message)

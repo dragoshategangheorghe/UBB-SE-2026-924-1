@@ -38,7 +38,9 @@ namespace BankApp.Server.DataAccess
 
                 return rows > 0;
             }
-            catch
+            catch (Exception ex) when (
+            ex is DbUpdateConcurrencyException
+            || ex is DbUpdateException)
             {
                 return false;
             }
@@ -84,7 +86,9 @@ namespace BankApp.Server.DataAccess
                 appDbContext.SaveChanges();
                 return true;
             }
-            catch
+            catch (Exception ex) when (
+            ex is DbUpdateException
+            || ex is DbUpdateConcurrencyException)
             {
                 return false;
             }

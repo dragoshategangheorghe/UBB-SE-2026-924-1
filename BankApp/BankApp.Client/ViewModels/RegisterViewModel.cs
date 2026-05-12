@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Auth;
@@ -17,6 +18,8 @@ namespace BankApp.Client.ViewModels
         /// Server or network message for <see cref="RegisterState.Error"/> (shown in the UI when set).
         /// </summary>
         public string? RegistrationErrorDetail { get; private set; }
+
+        private const int MinimumPasswordLength = 8;
 
         public RegisterViewModel(BankApp.Client.Services.Interfaces.IAuthService authService)
         {
@@ -115,7 +118,7 @@ namespace BankApp.Client.ViewModels
                     SetState(State, RegisterState.AutoLoggedIn);
                 }
             }
-            catch (Exception)
+            catch (HttpRequestException)
             {
                 SetState(State, RegisterState.Error);
             }
@@ -133,7 +136,7 @@ namespace BankApp.Client.ViewModels
                 return RegisterState.InvalidEmail;
             }
 
-            if (string.IsNullOrWhiteSpace(password) || password.Length < 8
+            if (string.IsNullOrWhiteSpace(password) || password.Length < MinimumPasswordLength
                 || !password.Any(char.IsUpper)
                 || !password.Any(char.IsLower)
                 || !password.Any(char.IsDigit))

@@ -7,7 +7,9 @@ namespace BankApp.Client.Utilities
 {
     public class LoopbackHttpListener : IDisposable
     {
-        private const int DefaultTimeout = 60 * 5;
+        private const int FiveMinutes = 60 * 5;
+        private const int DefaultTimeout = FiveMinutes;
+
         private readonly HttpListener _listener;
         private readonly string _url;
 
@@ -33,6 +35,8 @@ namespace BankApp.Client.Utilities
 
         public async Task<string> WaitForCallbackAsync(int timeoutInSeconds = DefaultTimeout)
         {
+            int timeoutInMilliseconds = 1000 * timeoutInSeconds;
+
             TaskCompletionSource<string> source = new TaskCompletionSource<string>();
 
             _listener.BeginGetContext(async result =>
@@ -59,7 +63,7 @@ namespace BankApp.Client.Utilities
                 }
             }, _listener);
 
-            await Task.WhenAny(source.Task, Task.Delay(timeoutInSeconds * 1000));
+            await Task.WhenAny(source.Task, Task.Delay(timeoutInMilliseconds));
 
             if (!source.Task.IsCompleted)
             {

@@ -21,6 +21,8 @@ namespace BankApp.Client.RepoProxies
         private string? _token;
         private int? _currentUserId;
 
+        private const int JsonTruncateLength = 2000;
+
         public ApiService(string baseUrl = "http://localhost:5024")
         {
             _httpClient = new HttpClient
@@ -92,7 +94,7 @@ namespace BankApp.Client.RepoProxies
                 return parsed;
             }
 
-            string truncated = json.Length > 2000 ? json[..2000] + "…" : json;
+            string truncated = json.Length > JsonTruncateLength ? json[..JsonTruncateLength] + "…" : json;
             throw new HttpRequestException(
                 $"Request to '{endpoint}' failed: {(int)response.StatusCode} {response.StatusCode}. Body: {truncated}",
                 null,
@@ -163,9 +165,9 @@ namespace BankApp.Client.RepoProxies
 
             string contentType = response.Content.Headers.ContentType?.MediaType ?? "(none)";
             string body = await response.Content.ReadAsStringAsync();
-            if (body.Length > 2000)
+            if (body.Length > JsonTruncateLength)
             {
-                body = body[..2000] + "…";
+                body = body[..JsonTruncateLength] + "…";
             }
 
             throw new HttpRequestException(
@@ -183,9 +185,9 @@ namespace BankApp.Client.RepoProxies
             catch (Exception jsonEx)
             {
                 string body = await response.Content.ReadAsStringAsync();
-                if (body.Length > 2000)
+                if (body.Length > JsonTruncateLength)
                 {
-                    body = body[..2000] + "…";
+                    body = body[..JsonTruncateLength] + "…";
                 }
 
                 throw new InvalidOperationException(

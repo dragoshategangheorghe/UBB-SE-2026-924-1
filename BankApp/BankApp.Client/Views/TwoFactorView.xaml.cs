@@ -13,6 +13,8 @@ namespace BankApp.Client.Views
         private DispatcherTimer _countdownTimer;
         private int _secondsRemaining = 30;
 
+        private const int OneTimePasswordExpectedLength = 6;
+
         public TwoFactorView()
         {
             this.InitializeComponent();
@@ -93,7 +95,7 @@ namespace BankApp.Client.Views
         {
             var otp = OtpBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(otp) || otp.Length != 6)
+            if (string.IsNullOrWhiteSpace(otp) || otp.Length != OneTimePasswordExpectedLength)
             {
                 ShowError("Please enter a valid 6-digit code.");
                 return;

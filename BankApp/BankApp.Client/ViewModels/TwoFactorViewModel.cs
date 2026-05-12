@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Auth;
@@ -53,7 +54,7 @@ namespace BankApp.Client.ViewModels
                     SetState(State, TwoFactorState.InvalidOTP);
                 }
             }
-            catch (Exception)
+            catch (HttpRequestException)
             {
                 SetState(State, TwoFactorState.InvalidOTP);
             }

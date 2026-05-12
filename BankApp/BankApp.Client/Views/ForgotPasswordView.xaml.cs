@@ -11,6 +11,8 @@ namespace BankApp.Client.Views
     {
         private readonly ForgotPasswordViewModel _viewModel;
 
+        private const int MinimumPasswordLength = 8;
+
         public ForgotPasswordView()
         {
             this.InitializeComponent();
@@ -113,7 +115,7 @@ namespace BankApp.Client.Views
                 return;
             }
 
-            if (newPassword.Length < 8 ||
+            if (newPassword.Length < MinimumPasswordLength ||
                 !System.Linq.Enumerable.Any(newPassword, char.IsUpper) ||
                 !System.Linq.Enumerable.Any(newPassword, char.IsLower) ||
                 !System.Linq.Enumerable.Any(newPassword, char.IsDigit) ||

@@ -1,4 +1,5 @@
-using System;
+    using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BankApp.Client.Utilities;
 using BankApp.Models.DTOs.Auth;
@@ -52,7 +53,7 @@ namespace BankApp.Client.ViewModels
 
                 SetState(State, LoginState.Success);
             }
-            catch (Exception)
+            catch (HttpRequestException)
             {
                 SetState(State, LoginState.Error);
             }
@@ -111,7 +112,7 @@ namespace BankApp.Client.ViewModels
                     SetState(State, LoginState.Success);
                 }
             }
-            catch (Exception ex)
+            catch (HttpRequestException)
             {
                 SetState(State, LoginState.Error);
             }

@@ -110,7 +110,6 @@ namespace BankApp.Client.ViewModels
         {
             this.loanService = loanService ?? throw new ArgumentNullException(nameof(loanService));
             this.pdfExporter = new PdfExporter();
-            _ = this.LoadLoansAsync();
         }
 
         public IEnumerable<LoanType> LoanTypes => Enum.GetValues<LoanType>();

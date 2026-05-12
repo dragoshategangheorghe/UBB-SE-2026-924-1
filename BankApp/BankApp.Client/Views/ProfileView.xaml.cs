@@ -28,6 +28,8 @@ namespace BankApp.Client.Views
         private bool _isPopulating = false;
         private bool _isUpdatingToggle = false;
 
+        private const int MinimumPasswordLength = 8;
+
         public ProfileView()
         {
             this.InitializeComponent();
@@ -226,7 +228,7 @@ namespace BankApp.Client.Views
                 string newPwd = NewPasswordBox.Password;
                 string confirmPwd = ConfirmPasswordBox.Password;
 
-                if (newPwd.Length < 8)
+                if (newPwd.Length < MinimumPasswordLength)
                 {
                     NewPasswordErrorInfoBar.Message = "Minimum 8 characters required.";
                     NewPasswordErrorInfoBar.IsOpen = true;

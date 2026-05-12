@@ -48,7 +48,7 @@ namespace BankApp.Server.Services.Infrastructure.Implementations
 
                 return principal;
             }
-            catch
+            catch (Exception)
             {
                 return null;
             }
