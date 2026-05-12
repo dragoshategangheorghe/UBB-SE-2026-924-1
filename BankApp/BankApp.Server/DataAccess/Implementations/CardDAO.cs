@@ -32,7 +32,7 @@ namespace BankApp.Server.DataAccess.Implementations
             return _dbContext.Cards
                 .Include(card => card.Account)
                 .Include(card => card.User)
-                .Where(card => card.User.Id == userId)
+                .Where(card => card.UserId == userId)
                 .OrderBy(card => card.SortOrder)
                 .ThenBy(card => card.CreatedAt)
                 .ToList();

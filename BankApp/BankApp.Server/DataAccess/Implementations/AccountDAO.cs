@@ -32,7 +32,7 @@ namespace BankApp.Server.DataAccess.Implementations
         {
             return _dbContext.Accounts
                 .Include(account => account.User)
-                .Where(account => account.User.Id == userId)
+                .Where(account => account.UserId == userId)
                 .ToList();
         }
     }
