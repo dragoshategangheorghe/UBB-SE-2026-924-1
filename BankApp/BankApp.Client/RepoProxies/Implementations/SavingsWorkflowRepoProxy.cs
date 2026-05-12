@@ -32,9 +32,9 @@ namespace BankApp.Client.RepoProxies.Implementations
             return await _apiService.GetAsync<bool>($"/api/savings-workflow/can-move-previous?currentPage={currentPage}");
         }
 
-        public async Task<int> GetDefaultCloseDestinationId(IEnumerable<SavingsAccount> destinationAccounts)
+        public async Task<int> GetDefaultCloseDestinationId(IEnumerable<int> ids)
         {
-            return await _apiService.PostAsync<IEnumerable<SavingsAccount>, int>("/api/savings-workflow/default-close-destination", destinationAccounts);
+            return await _apiService.PostAsync<IEnumerable<int>, int>("/api/savings-workflow/default-close-destination", ids);
         }
 
         public async Task<FundingSourceOption> GetDefaultFundingSource(IEnumerable<FundingSourceOption> fundingSources)

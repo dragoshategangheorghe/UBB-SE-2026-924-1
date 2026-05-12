@@ -291,8 +291,11 @@ namespace BankApp.Client.Services.Implementations
         public Task<FundingSourceOption> GetDefaultFundingSourceAsync(IEnumerable<FundingSourceOption> fundingSources) =>
             _savingsWorkflow.GetDefaultFundingSource(fundingSources);
 
-        public Task<int> GetDefaultCloseDestinationIdAsync(IEnumerable<SavingsAccount> destinationAccounts) =>
-            _savingsWorkflow.GetDefaultCloseDestinationId(destinationAccounts);
+        public Task<int> GetDefaultCloseDestinationIdAsync(IEnumerable<SavingsAccount> destinationAccounts)
+        {
+            var ids = destinationAccounts.Select(account => account.IdentificationNumber).ToList();
+            return _savingsWorkflow.GetDefaultCloseDestinationId(ids);
+        }
 
         public Task<ValidationResponse> ValidateWithdrawRequestAsync(decimal amount, FundingSourceOption? destination) =>
             _savingsWorkflow.ValidateWithdrawRequest(amount, destination);

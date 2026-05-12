@@ -31,14 +31,14 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("default-close-destination")]
-        public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<SavingsAccount> destinationAccounts)
+        public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<int> ids)
         {
-            if (destinationAccounts == null)
+            if (ids == null)
             {
                 return BadRequest("List of accounts cannot be null.");
             }
 
-            var destinationId = _workflowService.GetDefaultCloseDestinationId(destinationAccounts);
+            var destinationId = _workflowService.GetDefaultCloseDestinationId(ids);
             return Ok(destinationId);
         }
 
