@@ -40,7 +40,7 @@ namespace BankApp.Server.Controllers
                 return BadRequest("List of accounts cannot be null.");
             }
 
-            var destinationId = _workflowService.GetDefaultCloseDestinationId(ids);
+            var destinationId = ids.FirstOrDefault();
             return Ok(destinationId);
         }
 

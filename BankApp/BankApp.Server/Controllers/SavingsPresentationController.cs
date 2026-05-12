@@ -39,7 +39,9 @@ namespace BankApp.Server.Controllers
         [HttpPost("close-penalty-risk")]
         public ActionResult<bool> CheckClosePenaltyRisk([FromBody] SavingsAccountSummaryDto selectedAccount)
         {
-            var hasRisk = _savingsService.HasClosePenaltyRisk(selectedAccount);
+            var hasRisk = selectedAccount?.SavingsType == "FixedDeposit" &&
+                   selectedAccount.MaturityDate.HasValue &&
+                   selectedAccount.MaturityDate.Value > DateTime.UtcNow;
             return Ok(hasRisk);
         }
     }
