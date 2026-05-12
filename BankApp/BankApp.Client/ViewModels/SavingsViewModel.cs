@@ -3,6 +3,7 @@ namespace BankApp.Client.ViewModels
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Threading;
@@ -11,11 +12,11 @@ namespace BankApp.Client.ViewModels
     using BankApp.Client.Utilities;
     using BankApp.Models.DTOs.Savings;
     using BankApp.Models.Entities;
+    using BankApp.Models.Enums;
     using BankApp.Models.Features.Investments;
     using BankApp.Models.Features.Savings;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
-    using BankApp.Models.Enums;
 
     public partial class SavingsViewModel : BaseViewModel
     {
@@ -354,20 +355,32 @@ namespace BankApp.Client.ViewModels
         // ── Commands: Create Account ─────────────────────────────────────────
         public async Task LoadFundingSourcesAsync()
         {
+            if (_isBusy)
+            {
+                return;
+            }
+            _isBusy = true;
             try
             {
-                var fundingSourcesList = await this.savingsService.GetFundingSourcesAsync(CurrentUser.Id);
-                this.FundingSources.Clear();
-                foreach (var fundingSource in fundingSourcesList)
+                try
                 {
-                    this.FundingSources.Add(fundingSource);
-                }
+                    var fundingSourcesList = await this.savingsService.GetFundingSourcesAsync(CurrentUser.Id);
+                    this.FundingSources.Clear();
+                    foreach (var fundingSource in fundingSourcesList)
+                    {
+                        this.FundingSources.Add(fundingSource);
+                    }
 
-                this.SelectedFundingSource = await this.savingsService.GetDefaultFundingSourceAsync(this.FundingSources);
+                    this.SelectedFundingSource = await this.savingsService.GetDefaultFundingSourceAsync(this.FundingSources);
+                }
+                catch (Exception exception)
+                {
+                    this.ErrorMessage = exception.Message;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                this.ErrorMessage = exception.Message;
+                _isBusy = false;
             }
         }
 
@@ -465,7 +478,7 @@ namespace BankApp.Client.ViewModels
                     await this.savingsService.CreateAccountAsync(createSavingsAccountDto);
                     this.ShowCreateConfirmation = true;
                     this.ResetCreateForm();
-                    await this.LoadAccountsAsync();
+                    await this.LoadAccountsCoreAsync();
                 }
                 catch (Exception exception)
                 {
@@ -539,7 +552,7 @@ namespace BankApp.Client.ViewModels
                     this.DepositSuccessMessage = $"Deposit successful! New balance: ${depositResponseDto.NewBalance:N2}";
                     this.ShowDepositSuccess = true;
                     this.DepositAmountText = string.Empty;
-                    await this.LoadAccountsAsync();
+                    await this.LoadAccountsCoreAsync();
                 }
                 catch (OperationCanceledException)
                 {
@@ -568,6 +581,23 @@ namespace BankApp.Client.ViewModels
         [RelayCommand]
         public async Task LoadAccountsAsync()
         {
+            if (_isBusy)
+            {
+                return;
+            }
+            _isBusy = true;
+            try
+            {
+                await LoadAccountsCoreAsync();
+            }
+            finally
+            {
+                _isBusy = false;
+            }
+        }
+
+        private async Task LoadAccountsCoreAsync()
+        {
             this.IsLoading = true;
             this.ErrorMessage = string.Empty;
             this.HasError = false;
@@ -579,13 +609,11 @@ namespace BankApp.Client.ViewModels
                 {
                     this.SavingsAccounts.Add(account);
                 }
-
                 this.OnPropertyChanged(nameof(this.IsEmpty));
                 this.OnPropertyChanged(nameof(this.ShowAccountsList));
 
                 this.TotalSavedAmount = await this.savingsService.GetTotalSavedAmountAsync(this.SavingsAccounts);
-                this.NumberOfAccountsText =
-                    await this.savingsService.GetNumberOfAccountsTextAsync(this.SavingsAccounts.Count);
+                this.NumberOfAccountsText = await this.savingsService.GetNumberOfAccountsTextAsync(this.SavingsAccounts.Count);
                 this.BestInterestRate = await this.savingsService.GetBestInterestRateAsync(this.SavingsAccounts);
             }
             catch (Exception exception)
@@ -650,44 +678,56 @@ namespace BankApp.Client.ViewModels
 
         public async Task<bool> ConfirmCloseAsync()
         {
-            var closeValidation = await this.savingsService.ValidateCloseConfirmationAsync(
-                this.CloseUserConfirmed,
-                this.SelectedCloseDestinationId);
-            if (!closeValidation.IsValid)
+            if (_isBusy)
             {
-                this.CloseResultMessage = closeValidation.ErrorMessage;
                 return false;
             }
-
-            this.IsLoading = true;
+            _isBusy = true;
             try
             {
-                var result = await this.savingsService.CloseAccountAsync(
-                    this.SelectedAccount!.IdentificationNumber,
-                    this.SelectedCloseDestinationId,
-                    CurrentUser.Id);
-                this.CloseSuccess = result.Success;
-                this.CloseResultMessage = result.Success ? "Account closed successfully." : result.Message;
-                if (result.Success)
+                var closeValidation = await this.savingsService.ValidateCloseConfirmationAsync(
+                    this.CloseUserConfirmed,
+                    this.SelectedCloseDestinationId);
+                if (!closeValidation.IsValid)
                 {
-                    await this.LoadAccountsAsync();
+                    this.CloseResultMessage = closeValidation.ErrorMessage;
+                    return false;
                 }
 
-                return result.Success;
-            }
-            catch (Exception exception)
-            {
-                this.CloseResultMessage = exception.Message;
-                return false;
+                this.IsLoading = true;
+                try
+                {
+                    var result = await this.savingsService.CloseAccountAsync(
+                        this.SelectedAccount!.IdentificationNumber,
+                        this.SelectedCloseDestinationId,
+                        CurrentUser.Id);
+                    this.CloseSuccess = result.Success;
+                    this.CloseResultMessage = result.Success ? "Account closed successfully." : result.Message;
+                    if (result.Success)
+                    {
+                        await this.LoadAccountsCoreAsync();
+                    }
+                    return result.Success;
+                }
+                catch (Exception exception)
+                {
+                    this.CloseResultMessage = exception.Message;
+                    return false;
+                }
+                finally
+                {
+                    this.IsLoading = false;
+                }
             }
             finally
             {
-                this.IsLoading = false;
+                _isBusy = false;
             }
         }
 
         public async Task<bool> ConfirmWithdrawAsync()
         {
+            Debug.WriteLine($"ConfirmWithdrawAsync called, _isBusy={_isBusy}");
             if (_isBusy)
             {
                 return false;
@@ -729,7 +769,7 @@ namespace BankApp.Client.ViewModels
                     if (withdrawResponseDto.Success)
                     {
                         this.WithdrawAmountText = string.Empty;
-                        await this.LoadAccountsAsync();
+                        await this.LoadAccountsCoreAsync();
                     }
 
                     return withdrawResponseDto.Success;
@@ -774,51 +814,64 @@ namespace BankApp.Client.ViewModels
 
         public async Task SaveAutoDepositAsync()
         {
-            this.ErrorMessage = string.Empty;
-            this.AutoDepositSaveMessage = string.Empty;
+            if (_isBusy)
+            {
+                return;
+            }
+            _isBusy = true;
 
-            decimal amount;
             try
             {
-                amount = await this.savingsService.ParsePositiveAmountAsync(this.AutoDepositAmountText);
-            }
-            catch
-            {
-                this.ErrorMessage = "Auto deposit amount must be positive.";
-                return;
-            }
+                this.ErrorMessage = string.Empty;
+                this.AutoDepositSaveMessage = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(this.AutoDepositFrequency))
-            {
-                this.ErrorMessage = "Please select a frequency.";
-                return;
-            }
+                decimal amount;
+                try
+                {
+                    amount = await this.savingsService.ParsePositiveAmountAsync(this.AutoDepositAmountText);
+                }
+                catch
+                {
+                    this.ErrorMessage = "Auto deposit amount must be positive.";
+                    return;
+                }
 
-            DepositFrequency frequency;
-            try
-            {
-                frequency = await this.savingsService.ParseDepositFrequencyAsync(this.AutoDepositFrequency);
-            }
-            catch
-            {
-                this.ErrorMessage = "Invalid frequency.";
-                return;
-            }
+                if (string.IsNullOrWhiteSpace(this.AutoDepositFrequency))
+                {
+                    this.ErrorMessage = "Please select a frequency.";
+                    return;
+                }
 
-            var autoDeposit = new AutoDeposit
-            {
-                Id = this.currentAutoDeposit?.Id ?? default,
-                SavingsAccountId = this.SelectedAccount!.IdentificationNumber,
-                SavingsAccount = this.SelectedAccount!,
-                Amount = amount,
-                Frequency = frequency,
-                NextRunDate = this.AutoDepositStartDate?.DateTime ?? DateTime.Now.AddDays(InitialAutoDepositDelayDays),
-                IsActive = this.AutoDepositIsActive,
-            };
+                DepositFrequency frequency;
+                try
+                {
+                    frequency = await this.savingsService.ParseDepositFrequencyAsync(this.AutoDepositFrequency);
+                }
+                catch
+                {
+                    this.ErrorMessage = "Invalid frequency.";
+                    return;
+                }
 
-            await this.savingsService.SaveAutoDepositAsync(autoDeposit);
-            this.AutoDepositSaveMessage = "Auto deposit saved successfully.";
-            await this.LoadAutoDepositAsync(this.SelectedAccount.IdentificationNumber);
+                var autoDeposit = new AutoDeposit
+                {
+                    Id = this.currentAutoDeposit?.Id ?? default,
+                    SavingsAccountId = this.SelectedAccount!.IdentificationNumber,
+                    SavingsAccount = this.SelectedAccount!,
+                    Amount = amount,
+                    Frequency = frequency,
+                    NextRunDate = this.AutoDepositStartDate?.DateTime ?? DateTime.Now.AddDays(InitialAutoDepositDelayDays),
+                    IsActive = this.AutoDepositIsActive,
+                };
+
+                await this.savingsService.SaveAutoDepositAsync(autoDeposit);
+                this.AutoDepositSaveMessage = "Auto deposit saved successfully.";
+                await this.LoadAutoDepositAsync(this.SelectedAccount.IdentificationNumber);
+            }
+            finally
+            {
+                _isBusy = false;
+            }
         }
 
         public async Task LoadTransactionsAsync(int accountId)
