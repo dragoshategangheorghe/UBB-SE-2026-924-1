@@ -11,7 +11,7 @@ namespace BankApp.Server.Tests
     [TestFixture]
     public class AuthServiceTests
     {
-        #pragma warning disable SX1309 // Field names should begin with underscore
+
         private Mock<IAuthRepository> authRepoMock;
         private Mock<IHashService> hashMock;
         private Mock<IJWTService> jwtMock;
@@ -19,7 +19,7 @@ namespace BankApp.Server.Tests
         private Mock<IEmailService> emailMock;
 
         private AuthService service;
-        #pragma warning restore SX1309 // Field names should begin with underscore
+
 
         [SetUp]
         public void SetUp()

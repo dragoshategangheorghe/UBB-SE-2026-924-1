@@ -1,3 +1,4 @@
+using System.Globalization;
 using BankApp.Client.Master;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Implementations;
@@ -38,6 +39,9 @@ namespace BankApp.Client
         private static readonly IProfileRepoProxy ProfileHttpRepo = new ProfileRepoProxy(HttpApi);
         private static readonly IInvestmentsRepoProxy InvestmentsHttpRepo = new InvestmentsRepoProxy(HttpApi);
 
+        // Integrated Account Proxy
+        private static readonly IAccountRepoProxy AccountHttpRepo = new AccountRepoProxy(HttpApi);
+
         public static Window? MainAppWindow { get; private set; }
         public static NavigationService NavigationService { get; private set; } = new NavigationService();
 
@@ -45,6 +49,9 @@ namespace BankApp.Client
         public static IAuthService AuthService { get; private set; } = new AuthService(AuthHttpRepo);
         public static IProfileService ProfileService { get; private set; } = new ProfileService(ProfileHttpRepo);
         public static IInvestmentsService InvestmentsService { get; private set; } = new InvestmentsService(InvestmentsHttpRepo);
+
+        // Integrated Account Service
+        public static IAccountService AccountService { get; private set; } = new AccountService(AccountHttpRepo);
 
         public static ILoansService LoansService { get; private set; } =
             new LoansService(LoansHttpRepo, LoanDialogHttp, LoanApplicationPresentationHttp);
@@ -71,6 +78,10 @@ namespace BankApp.Client
         public App()
         {
             InitializeComponent();
+            CultureInfo culture = CultureInfo.InvariantCulture;
+
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)

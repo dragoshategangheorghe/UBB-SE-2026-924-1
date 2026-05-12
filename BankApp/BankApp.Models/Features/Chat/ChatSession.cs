@@ -2,8 +2,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using BankApp.Models.Entities;
 
 namespace BankApp.Models.Features.Chat
@@ -15,6 +17,7 @@ namespace BankApp.Models.Features.Chat
         [Key]
         public int Id { get; set; }
 
+        [JsonIgnore]
         public virtual User User { get; set; } = null!;
 
         public string IssueCategory { get; set; } = string.Empty;
@@ -36,8 +39,10 @@ namespace BankApp.Models.Features.Chat
         private string teamContactMessage = string.Empty;
         private SelectedAttachment? attachment;
 
+        [JsonIgnore]
         public ObservableCollection<ChatMessage> Messages { get; set; } = new ObservableCollection<ChatMessage>();
 
+        [NotMapped]
         public string Title
         {
             get => $"Chat {Id}";
@@ -51,9 +56,10 @@ namespace BankApp.Models.Features.Chat
             }
         }
 
+        [NotMapped]
         public string LastPreview
         {
-            get => Messages.Count > NoMessagesCount ? Messages.Last().Content : "No messages yet.";
+            get => Messages != null && Messages.Count > NoMessagesCount ? Messages.Last().Content : "No messages yet.";
             set
             {
                 if (lastPreview != value)
@@ -64,6 +70,7 @@ namespace BankApp.Models.Features.Chat
             }
         }
 
+        [NotMapped]
         public DateTime LastUpdatedAt
         {
             get => lastUpdatedAt;
@@ -80,6 +87,7 @@ namespace BankApp.Models.Features.Chat
 
         public string LastUpdatedDisplay => LastUpdatedAt.ToString("g");
 
+        [NotMapped]
         public bool IsEscalatedToTeam
         {
             get => isEscalatedToTeam;
@@ -96,6 +104,7 @@ namespace BankApp.Models.Features.Chat
 
         public string SessionModeLabel => IsEscalatedToTeam ? "Team contact" : "Chatbot assistance";
 
+        [NotMapped]
         public string TeamContactMessage
         {
             get => teamContactMessage;
@@ -109,6 +118,7 @@ namespace BankApp.Models.Features.Chat
             }
         }
 
+        [NotMapped]
         public SelectedAttachment? Attachment
         {
             get => attachment;

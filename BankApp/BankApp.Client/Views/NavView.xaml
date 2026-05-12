@@ -279,6 +279,7 @@
                     Foreground="#102A43"
                     FontSize="22"
                     Content="&#xE8BD;"
+                    Visibility="Collapsed"
                     Click="FloatingChatButton_Click"/>
         </Grid>
 

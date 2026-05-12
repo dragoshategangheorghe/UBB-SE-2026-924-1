@@ -1,6 +1,7 @@
 ﻿namespace BankApp.Server.Services.Implementations
 {
     using System;
+    using System.Diagnostics;
     using System.Globalization;
 
     public class PaymentCalculationService
@@ -36,13 +37,15 @@
             {
                 return (false, ZeroAmount);
             }
+            Debug.WriteLine(CultureInfo.CurrentCulture.Name);
+            Debug.WriteLine(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
 
-            if (decimal.TryParse(input, NumberStyles.Number, CultureInfo.CurrentCulture, out var currentCultureResult))
+            if (decimal.TryParse(input, NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out var currentCultureResult))
             {
                 return (true, currentCultureResult);
             }
 
-            if (decimal.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out var invariantCultureResult))
+            if (decimal.TryParse(input, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var invariantCultureResult))
             {
                 return (true, invariantCultureResult);
             }

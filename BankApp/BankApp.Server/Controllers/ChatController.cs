@@ -1,4 +1,5 @@
 using System.Text;
+using BankApp.Models.Entities;
 using BankApp.Models.Features.Chat;
 using BankApp.Server.Repositories.Implementations;
 using BankApp.Server.Repositories.Interfaces;
@@ -27,14 +28,25 @@ namespace BankApp.Server.Controllers
 
         private readonly IChatRepository chatRepository;
         private readonly ChatMessageRepository chatMessageRepository;
+        private readonly IUserRepository userRepository;
 
-        public ChatController(IChatRepository chatRepository, ChatMessageRepository chatMessageRepository)
+        public ChatController(
+            IChatRepository chatRepository,
+            ChatMessageRepository chatMessageRepository,
+            IUserRepository userRepository)
         {
             this.chatRepository = chatRepository;
             this.chatMessageRepository = chatMessageRepository;
+            this.userRepository = userRepository;
         }
 
         private int GetAuthenticatedUserId() => (int)HttpContext.Items["UserId"] !;
+
+        private bool IsMissingOrNotOwnedSession(ChatSession? session)
+        {
+            int userId = GetAuthenticatedUserId();
+            return session == null || session.User?.Id != userId;
+        }
 
         [HttpGet("sessions")]
         public IActionResult GetSessions()
@@ -46,7 +58,7 @@ namespace BankApp.Server.Controllers
         public IActionResult GetSession(int sessionId)
         {
             ChatSession? session = chatRepository.GetById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
+            if (IsMissingOrNotOwnedSession(session))
             {
                 return NotFound();
             }
@@ -55,16 +67,23 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("sessions")]
-        public IActionResult CreateSession([FromBody] CreateChatSessionRequest request)
+        public IActionResult CreateSession([FromBody] CreateChatSessionRequest? request)
         {
-            if (string.IsNullOrWhiteSpace(request.IssueCategory))
+            if (request == null || string.IsNullOrWhiteSpace(request.IssueCategory))
             {
                 return BadRequest(new { message = "Issue category is required." });
             }
 
+            int userId = GetAuthenticatedUserId();
+            User? user = userRepository.FindById(userId);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             var session = new ChatSession
             {
-                Id = GetAuthenticatedUserId(),
+                User = user,
                 IssueCategory = request.IssueCategory,
                 SessionStatus = "Open",
                 StartedAt = DateTime.UtcNow
@@ -77,7 +96,7 @@ namespace BankApp.Server.Controllers
         public IActionResult UpdateStatus(int sessionId, [FromBody] UpdateChatSessionStatusRequest request)
         {
             ChatSession? session = chatRepository.GetById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
+            if (IsMissingOrNotOwnedSession(session))
             {
                 return NotFound();
             }
@@ -90,7 +109,7 @@ namespace BankApp.Server.Controllers
         public IActionResult SaveFeedback(int sessionId, [FromBody] SaveChatFeedbackRequest request)
         {
             ChatSession? session = chatRepository.GetById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
+            if (IsMissingOrNotOwnedSession(session))
             {
                 return NotFound();
             }
@@ -103,7 +122,7 @@ namespace BankApp.Server.Controllers
         public IActionResult GetMessages(int sessionId)
         {
             ChatSession? session = chatRepository.GetById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
+            if (IsMissingOrNotOwnedSession(session))
             {
                 return NotFound();
             }
@@ -112,24 +131,25 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("sessions/{sessionId:int}/messages")]
-        public IActionResult CreateMessage(int sessionId, [FromBody] CreateChatMessageRequest request)
+        public IActionResult CreateMessage(int sessionId, [FromBody] CreateChatMessageRequest? request)
         {
             ChatSession? session = chatRepository.GetById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
+            if (IsMissingOrNotOwnedSession(session))
             {
                 return NotFound();
             }
 
-            if (string.IsNullOrWhiteSpace(request.Content))
+            ChatSession ownedSession = session!;
+
+            if (request == null || string.IsNullOrWhiteSpace(request.Content))
             {
                 return BadRequest(new { message = "Message content is required." });
             }
 
             string senderType = string.IsNullOrWhiteSpace(request.SenderType) ? "User" : request.SenderType;
 
-            // In chatbot mode, user input is restricted to preset questions only.
             if (senderType.Equals("User", StringComparison.OrdinalIgnoreCase) &&
-                !session.SessionStatus.Equals("Escalated", StringComparison.OrdinalIgnoreCase))
+                !ownedSession.SessionStatus.Equals("Escalated", StringComparison.OrdinalIgnoreCase))
             {
                 bool isPresetQuestion = DefaultChatbotResponses.Keys
                     .Any(question => request.Content.Trim().Equals(question, StringComparison.OrdinalIgnoreCase));
@@ -141,7 +161,7 @@ namespace BankApp.Server.Controllers
 
             int messageId = chatMessageRepository.Create(new ChatMessage
             {
-                Id = sessionId,
+                SessionId = sessionId,
                 SenderType = senderType,
                 Content = request.Content,
                 SentAt = DateTime.UtcNow
@@ -151,15 +171,14 @@ namespace BankApp.Server.Controllers
                 return BadRequest(new { success = false });
             }
 
-            // Automated support (chatbot) before live agent.
             if (senderType.Equals("User", StringComparison.OrdinalIgnoreCase) &&
-                !session.SessionStatus.Equals("Escalated", StringComparison.OrdinalIgnoreCase) &&
-                !session.SessionStatus.Equals("Closed", StringComparison.OrdinalIgnoreCase))
+                !ownedSession.SessionStatus.Equals("Escalated", StringComparison.OrdinalIgnoreCase) &&
+                !ownedSession.SessionStatus.Equals("Closed", StringComparison.OrdinalIgnoreCase))
             {
                 string botReply = BuildBotReply(request.Content, out bool shouldEscalate);
                 chatMessageRepository.Create(new ChatMessage
                 {
-                    Id = sessionId,
+                    SessionId = sessionId,
                     SenderType = "Bot",
                     Content = botReply,
                     SentAt = DateTime.UtcNow
@@ -170,7 +189,7 @@ namespace BankApp.Server.Controllers
                     chatRepository.UpdateStatus(sessionId, "Escalated");
                     chatMessageRepository.Create(new ChatMessage
                     {
-                        Id = sessionId,
+                        SessionId = sessionId,
                         SenderType = "System",
                         Content = "I could not fully resolve this request. You have been escalated to a support agent and your chat context is preserved.",
                         SentAt = DateTime.UtcNow
@@ -196,7 +215,7 @@ namespace BankApp.Server.Controllers
 
             int attachmentId = chatMessageRepository.CreateAttachment(new ChatAttachment
             {
-                Id = messageId,
+                MessageId = messageId,
                 AttachmentName = request.AttachmentName,
                 FileType = request.FileType,
                 FileSizeBytes = request.FileSizeBytes,
@@ -210,18 +229,18 @@ namespace BankApp.Server.Controllers
         public IActionResult EmailTranscript(int sessionId, [FromBody] EmailTranscriptRequest request)
         {
             ChatSession? session = chatRepository.GetById(sessionId);
-            if (session == null || session.Id != GetAuthenticatedUserId())
+            if (IsMissingOrNotOwnedSession(session))
             {
                 return NotFound();
             }
 
-            if (string.IsNullOrWhiteSpace(request.Email))
+            if (request == null || string.IsNullOrWhiteSpace(request.Email))
             {
                 return BadRequest(new { message = "A destination email is required." });
             }
 
             List<ChatMessage> messages = chatMessageRepository.GetBySessionId(sessionId);
-            string transcript = BuildTranscript(session, messages);
+            string transcript = BuildTranscript(session!, messages);
             // In this implementation the transcript is prepared and ready for outbound email integration.
             return Ok(new { success = true, message = "Transcript prepared for email delivery.", transcriptLength = transcript.Length });
         }

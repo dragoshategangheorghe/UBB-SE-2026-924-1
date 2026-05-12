@@ -1,16 +1,12 @@
-using System.Threading.Tasks;
-using BankApp.Models.Features.Investments;
-
 namespace BankApp.Client.Services.Interfaces
 {
+    using System.Threading.Tasks;
+    using BankApp.Models.Entities;
+
     public interface IInvestmentsService
     {
         Task<Portfolio?> GetPortfolioAsync(int userId);
 
-        /// <summary>
-        /// Loads portfolio for <see cref="IAuthService.GetCurrentUserId"/>; returns null when not signed in.
-        /// </summary>
         Task<Portfolio?> GetPortfolioForCurrentUserAsync();
     }
 }
-

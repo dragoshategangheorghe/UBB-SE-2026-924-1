@@ -323,12 +323,12 @@ namespace BankApp.Client.Services.Implementations
                     return (false, LocalZeroAmount);
                 }
 
-                if (decimal.TryParse(input, NumberStyles.Number, CultureInfo.CurrentCulture, out var currentCultureResult))
+                if (decimal.TryParse(input, NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out var currentCultureResult))
                 {
                     return (true, currentCultureResult);
                 }
 
-                if (decimal.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out var invariantCultureResult))
+                if (decimal.TryParse(input, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var invariantCultureResult))
                 {
                     return (true, invariantCultureResult);
                 }

@@ -6,6 +6,7 @@ namespace BankApp.Client.Views
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Input;
+    using Microsoft.UI.Xaml.Navigation;
 
     public sealed partial class NavView : Page
     {
@@ -22,7 +23,14 @@ namespace BankApp.Client.Views
                 NavInvestments, NavStatistics, NavSupport, NavProfile
             };
             App.NavigationService.SetContentFrame(ContentFrame);
+            ContentFrame.Navigated += ContentFrame_Navigated;
             App.NavigationService.NavigateToContent<DashboardView>();
+        }
+
+        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            FloatingChatButton.Visibility =
+                e.SourcePageType == typeof(ChatView) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void UpdateNotificationBadge(int count)

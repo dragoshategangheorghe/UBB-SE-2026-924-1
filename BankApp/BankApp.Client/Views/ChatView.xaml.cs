@@ -62,13 +62,28 @@ namespace BankApp.Client.Views
                 return;
             }
 
-            ChatSession? session = await chatService.GetSessionAsync(sessionId);
-            HeaderText.Text = session == null
-                ? $"Chat #{sessionId}"
-                : $"{session.IssueCategory} - #{session.Id}";
+            try
+            {
+                ChatSession? session = await chatService.GetSessionAsync(sessionId);
+                HeaderText.Text = session == null
+                    ? $"Chat #{sessionId}"
+                    : $"{session.IssueCategory} - #{session.Id}";
 
-            await LoadMessagesAsync();
-            refreshTimer.Start();
+                await LoadMessagesAsync();
+                refreshTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                HeaderText.Text = $"Chat #{sessionId}";
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "Could not load chat",
+                    Content = ex.Message,
+                    CloseButtonText = "OK",
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -99,11 +114,6 @@ namespace BankApp.Client.Views
             if (response == null || !response.Success)
             {
                 return;
-            }
-
-            if (DefaultChatbotResponses.TryGetValue(content, out string? responseText))
-            {
-                await chatService.CreateMessageAsync(sessionId, "Bot", responseText);
             }
 
             if (pendingAttachment != null)

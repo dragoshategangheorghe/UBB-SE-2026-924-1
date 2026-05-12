@@ -4,10 +4,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace BankApp.Server.DataAccess
 {
-    /// <summary>
-    /// Used by EF Core tools (Package Manager Console, dotnet ef) so migrations do not depend
-    /// on the Visual Studio startup project or WinUI client output paths.
-    /// </summary>
     public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         public AppDbContext CreateDbContext(string[] args)

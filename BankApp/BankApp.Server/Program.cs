@@ -1,9 +1,7 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using BankApp.Server.Configuration;
 using BankApp.Server.DataAccess;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using BankApp.Server.DataAccess.Implementations;
 using BankApp.Server.DataAccess.Interfaces;
 using BankApp.Server.Middleware;
@@ -13,7 +11,13 @@ using BankApp.Server.Services.Implementations;
 using BankApp.Server.Services.Infrastructure.Implementations;
 using BankApp.Server.Services.Infrastructure.Interfaces;
 using BankApp.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
