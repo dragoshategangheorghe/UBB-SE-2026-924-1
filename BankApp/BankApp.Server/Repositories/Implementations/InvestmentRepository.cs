@@ -17,16 +17,26 @@
 
         public Portfolio GetPortfolio(int userId)
         {
-            return this._dbContext.Set<Portfolio>()
-                .AsNoTracking()
-                .Include(portfolio => portfolio.Holdings)
-                .FirstOrDefault(portfolio => portfolio.UserId == userId)
-                ?? new Portfolio { UserId = userId };
+            // We search for the portfolio
+            var portfolio = this.db.Portfolios
+                .Include(p => p.Holdings)
+                .FirstOrDefault(p => p.UserId == userId);
+
+            // If it doesn't exist, we create AND SAVE it immediately.
+            // This prevents "Foreign Key" crashes when adding holdings later.
+            if (portfolio == null)
+            {
+                portfolio = new Portfolio { UserId = userId };
+                this.db.Portfolios.Add(portfolio);
+                this.db.SaveChanges();
+            }
+
+            return portfolio;
         }
 
         public async Task<List<InvestmentTransaction>> GetInvestmentLogsAsync(int portfolioId, DateTime? startDate, DateTime? endDate, string? ticker)
         {
-            var query = this._dbContext.Set<InvestmentTransaction>()
+            var query = this.db.InvestmentTransactions
                 .AsNoTracking()
                 .Where(investmentTransaction => investmentTransaction.Holding.PortfolioId == portfolioId);
 
@@ -54,8 +64,8 @@
             await using var transaction = await this._dbContext.Database.BeginTransactionAsync();
             try
             {
-                var holding = await this._dbContext.Set<InvestmentHolding>()
-                    .FirstOrDefaultAsync(investmentHolding => investmentHolding.PortfolioId == portfolioId && investmentHolding.Ticker == ticker);
+                var holding = await this.db.InvestmentHoldings
+                    .FirstOrDefaultAsync(h => h.PortfolioId == portfolioId && h.Ticker == ticker);
 
                 if (holding != null)
                 {
@@ -74,11 +84,11 @@
                         AveragePurchasePrice = finalAveragePrice,
                         CurrentPrice = pricePerUnit
                     };
-                    this._dbContext.Set<InvestmentHolding>().Add(holding);
-                    await this._dbContext.SaveChangesAsync();
+                    this.db.InvestmentHoldings.Add(holding);
+                    await this.db.SaveChangesAsync();
                 }
 
-                this._dbContext.Set<InvestmentTransaction>().Add(new InvestmentTransaction
+                this.db.InvestmentTransactions.Add(new InvestmentTransaction
                 {
                     HoldingId = holding.IdentificationNumber,
                     Ticker = ticker,
@@ -92,10 +102,7 @@
                 await this._dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
-            catch (Exception exception) when (
-            exception is OperationCanceledException
-            || exception is DbUpdateException
-            || exception is DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 throw;

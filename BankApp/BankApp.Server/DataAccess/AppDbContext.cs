@@ -18,67 +18,49 @@ namespace BankApp.Server.DataAccess
         {
         }
 
-        // Entity sets for the tables
-        public DbSet<Account> Accounts { get; set; }
-
-        public DbSet<Card> Cards { get; set; }
-
-        public DbSet<Category> Categories { get; set; }
-
-        public DbSet<Notification> Notifications { get; set; }
-
-        public DbSet<NotificationPreference> NotificationPreferences { get; set; }
-
-        public DbSet<OAuthLink> OAuthLinks { get; set; }
-
-        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
-
-        public DbSet<Session> Sessions { get; set; }
-
-        public DbSet<Transaction> Transactions { get; set; }
-
-        public DbSet<TransactionCategoryOverride> TransactionCategoriesOverride { get; set; }
-
+        // --- Core Tables ---
         public DbSet<User> Users { get; set; }
-
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Card> Cards { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<NotificationPreference> NotificationPreferences { get; set; }
+        public DbSet<OAuthLink> OAuthLinks { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<Session> Sessions { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionCategoryOverride> TransactionCategoriesOverride { get; set; }
         public DbSet<UserCardPreference> UserCardPreferences { get; set; }
-        // FEATURES: Chat
+
+        // --- FEATURE: Chat ---
         public DbSet<AttachmentUploadResponse> AttachmentUploadResponses { get; set; }
-
         public DbSet<ChatAttachment> ChatAttachments { get; set; }
-
         public DbSet<ChatMessage> ChatMessages { get; set; }
-
         public DbSet<ChatSession> ChatSessions { get; set; }
-        // FEATURES: Investments
+
+        // --- FEATURE: Investments ---
         public DbSet<FundingSourceOption> FundingSourceOptions { get; set; }
-
-        public DbSet<Models.Entities.InvestmentHolding> InvestmentHoldings { get; set; }
-
-        public DbSet<Models.Entities.Portfolio> Portfolios { get; set; }
-
+        public DbSet<BankApp.Models.Entities.InvestmentHolding> InvestmentHoldings { get; set; }
+        public DbSet<BankApp.Models.Entities.Portfolio> Portfolios { get; set; }
+        public DbSet<BankApp.Models.Entities.InvestmentTransaction> InvestmentTransactions { get; set; }
         public DbSet<SelectedAttachment> SelectedAttachments { get; set; }
 
-        // FEATURE: Loans
+        // --- FEATURE: Loans ---
         public DbSet<AmortizationRow> AmortizationRows { get; set; }
-
         public DbSet<Loan> Loans { get; set; }
-
         public DbSet<LoanApplication> LoanApplications { get; set; }
-
         public DbSet<LoanEstimate> LoanEstimates { get; set; }
-        // FEATURE: Savings
+
+        // --- FEATURE: Savings ---
         public DbSet<AutoDeposit> AutoDeposits { get; set; }
-
         public DbSet<SavingsAccount> SavingsAccounts { get; set; }
-
         public DbSet<SavingsTransaction> SavingsTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Names match DatabaseSchema/BankAppDb_creation.sql. EF defaults would use Users, Sessions, etc.
+            // Table Name Mappings
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Session>().ToTable("Session");
             modelBuilder.Entity<OAuthLink>().ToTable("OAuthLink");
@@ -97,13 +79,16 @@ namespace BankApp.Server.DataAccess
             modelBuilder.Entity<SavingsAccount>().ToTable("SavingsAccount");
             modelBuilder.Entity<SavingsTransaction>().ToTable("SavingsTransaction");
             modelBuilder.Entity<AutoDeposit>().ToTable("AutoDeposit");
-            modelBuilder.Entity<Models.Entities.Portfolio>().ToTable("Portfolio");
-            modelBuilder.Entity<Models.Entities.InvestmentHolding>().ToTable("InvestmentHolding");
-            modelBuilder.Entity<Models.Entities.InvestmentTransaction>().ToTable("InvestmentTransaction");
             modelBuilder.Entity<ChatSession>().ToTable("ChatSession");
             modelBuilder.Entity<ChatMessage>().ToTable("ChatMessage");
             modelBuilder.Entity<ChatAttachment>().ToTable("ChatAttachment");
 
+            // Investment Feature Table Mappings
+            modelBuilder.Entity<BankApp.Models.Entities.Portfolio>().ToTable("Portfolio");
+            modelBuilder.Entity<BankApp.Models.Entities.InvestmentHolding>().ToTable("InvestmentHolding");
+            modelBuilder.Entity<BankApp.Models.Entities.InvestmentTransaction>().ToTable("InvestmentTransaction");
+
+            //--- Relationship Configurations ---
             modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasOne(a => a.User)
@@ -236,15 +221,6 @@ namespace BankApp.Server.DataAccess
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            /*
-            modelBuilder.Entity<SavingsTransaction>(entity =>
-            {
-                entity.HasOne(t => t.Account)
-                    .WithMany()
-                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
-            });
-            */
-
             modelBuilder.Entity<ChatSession>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -290,22 +266,35 @@ namespace BankApp.Server.DataAccess
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
-            modelBuilder.Entity<Models.Entities.Portfolio>(entity =>
+            // --- Investment Feature Deep Configuration ---
+            modelBuilder.Entity<BankApp.Models.Entities.Portfolio>(entity =>
             {
+                entity.HasKey(p => p.IdentificationNumber); // Ensure PK matches Entity
+
                 entity.HasOne(p => p.User)
                     .WithMany()
+                    .HasForeignKey(p => p.UserId) // Explicit FK mapping
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(p => p.Holdings)
                     .WithOne(h => h.Portfolio)
+                    .HasForeignKey(h => h.PortfolioId) // Explicit FK mapping
                     .IsRequired();
             });
 
-            modelBuilder.Entity<Models.Entities.InvestmentHolding>(entity =>
+            modelBuilder.Entity<BankApp.Models.Entities.InvestmentHolding>(entity =>
             {
+                entity.HasKey(h => h.IdentificationNumber);
+
                 entity.HasMany(h => h.Transactions)
                     .WithOne(t => t.Holding)
+                    .HasForeignKey(t => t.HoldingId) // Explicit FK mapping
                     .IsRequired();
+            });
+
+            modelBuilder.Entity<BankApp.Models.Entities.InvestmentTransaction>(entity =>
+            {
+                entity.HasKey(t => t.IdentificationNumber);
             });
         }
     }
