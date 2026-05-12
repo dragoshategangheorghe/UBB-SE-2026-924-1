@@ -16,13 +16,13 @@ namespace BankApp.Server.DataAccess.Implementations
         /// <summary>
         /// Loads an account together with its owning user through the EF navigation mapping.
         /// </summary>
-        public Account? FindById(int id)
+        public Account? FindById(int accountId)
         {
             return _dbContext.Accounts
-                .Include(a => a.User)
-                .Include(a => a.Cards)
-                .Include(a => a.Transactions)
-                .FirstOrDefault(a => a.Id == id);
+                .Include(account => account.User)
+                .Include(account => account.Cards)
+                .Include(account => account.Transactions)
+                .FirstOrDefault(account => account.Id == accountId);
         }
 
         /// <summary>
@@ -31,8 +31,8 @@ namespace BankApp.Server.DataAccess.Implementations
         public List<Account> FindByUserId(int userId)
         {
             return _dbContext.Accounts
-                .Include(a => a.User)
-                .Where(a => a.User.Id == userId)
+                .Include(account => account.User)
+                .Where(account => account.User.Id == userId)
                 .ToList();
         }
     }

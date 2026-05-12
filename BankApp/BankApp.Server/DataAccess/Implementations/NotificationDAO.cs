@@ -8,14 +8,14 @@ namespace BankApp.Server.DataAccess.Implementations
     {
         private readonly AppDbContext _dbContext;
 
-        public NotificationDAO(AppDbContext appDbContext)
+        public NotificationDAO(AppDbContext dbContext)
         {
-            this._dbContext = appDbContext;
+            this._dbContext = dbContext;
         }
 
         public bool Create(int userId, string title, string message, string type, string channel, string? relatedEntityType, int? relatedEntityId)
         {
-            var user = _dbContext.Users.Local.FirstOrDefault(u => u.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
+            var user = _dbContext.Users.Local.FirstOrDefault(user => user.Id == userId) ?? _dbContext.Users.Find(userId) ?? new User { Id = userId };
             if (_dbContext.Entry(user).State == EntityState.Detached)
             {
                 _dbContext.Attach(user);
@@ -40,14 +40,14 @@ namespace BankApp.Server.DataAccess.Implementations
         public int CountUnreadByUserId(int userId)
         {
             return _dbContext.Notifications
-                    .Count(n => n.User.Id == userId && !n.IsRead);
+                    .Count(notification => notification.User.Id == userId && !notification.IsRead);
         }
 
         public List<Notification> FindByUserId(int userId)
         {
             return _dbContext.Notifications
-                .Include(n => n.User)
-                .Where(n => n.User.Id == userId)
+                .Include(notification => notification.User)
+                .Where(notification => notification.User.Id == userId)
                 .ToList();
         }
     }

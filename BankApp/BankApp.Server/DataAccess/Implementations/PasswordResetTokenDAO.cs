@@ -7,11 +7,11 @@ namespace BankApp.Server.DataAccess.Implementations
 {
     public class PasswordResetTokenDAO : IPasswordResetTokenDAO
     {
-        private readonly AppDbContext context;
+        private readonly AppDbContext _dbContext;
 
-        public PasswordResetTokenDAO(AppDbContext context)
+        public PasswordResetTokenDAO(AppDbContext dbContext)
         {
-            this.context = context;
+            this._dbContext = dbContext;
         }
 
         public PasswordResetToken Create(int userId, string tokenHash, DateTime expiresAt)
@@ -23,9 +23,9 @@ namespace BankApp.Server.DataAccess.Implementations
                 ExpiresAt = expiresAt
             };
 
-            context.PasswordResetTokens.Add(token);
+            _dbContext.PasswordResetTokens.Add(token);
 
-            var rows = context.SaveChanges();
+            var rows = _dbContext.SaveChanges();
 
             if (rows <= 0)
             {
@@ -37,23 +37,23 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public void DeleteExpired()
         {
-            context.PasswordResetTokens
-                .Where(t => t.ExpiresAt < DateTime.UtcNow)
+            _dbContext.PasswordResetTokens
+                .Where(passwordResetToken => passwordResetToken.ExpiresAt < DateTime.UtcNow)
                 .ExecuteDelete();
         }
 
         public PasswordResetToken? FindByToken(string tokenHash)
         {
-            PasswordResetToken? token = context.PasswordResetTokens
-                                        .Where(t => t.TokenHash == tokenHash)
-                                        .Select(t => new PasswordResetToken
+            PasswordResetToken? token = _dbContext.PasswordResetTokens
+                                        .Where(passwordResetToken => passwordResetToken.TokenHash == tokenHash)
+                                        .Select(passwordResetToken => new PasswordResetToken
                                         {
-                                            Id = t.Id,
-                                            UserId = t.UserId,
-                                            TokenHash = t.TokenHash,
-                                            ExpiresAt = t.ExpiresAt,
-                                            UsedAt = t.UsedAt,
-                                            CreatedAt = t.CreatedAt
+                                            Id = passwordResetToken.Id,
+                                            UserId = passwordResetToken.UserId,
+                                            TokenHash = passwordResetToken.TokenHash,
+                                            ExpiresAt = passwordResetToken.ExpiresAt,
+                                            UsedAt = passwordResetToken.UsedAt,
+                                            CreatedAt = passwordResetToken.CreatedAt
                                         })
                                         .FirstOrDefault();
             return token;
@@ -61,9 +61,9 @@ namespace BankApp.Server.DataAccess.Implementations
 
         public void MarkAsUsed(int tokenId)
         {
-            context.PasswordResetTokens
-                .Where(t => t.Id == tokenId)
-                .ExecuteUpdate(s => s.SetProperty(t => t.UsedAt, DateTime.UtcNow));
+            _dbContext.PasswordResetTokens
+                .Where(passwordResetToken => passwordResetToken.Id == tokenId)
+                .ExecuteUpdate(setters => setters.SetProperty(t => t.UsedAt, DateTime.UtcNow));
         }
     }
 }

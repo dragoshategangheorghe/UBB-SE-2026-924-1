@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
@@ -41,7 +39,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<Loan> GetLoanByIdAsync(int id)
         {
-            return await _dbContext.Loans.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            return await _dbContext.Loans.AsNoTracking().FirstOrDefaultAsync(loan => loan.Id == id);
         }
 
         /// <summary>
@@ -51,7 +49,7 @@ namespace BankApp.Server.Repositories.Implementations
         {
             return await _dbContext.Loans
                 .AsNoTracking()
-                .Where(x => EF.Property<int>(x, "UserId") == userId)
+                .Where(loan => EF.Property<int>(loan, "UserId") == userId)
                 .ToListAsync();
         }
 
@@ -62,7 +60,7 @@ namespace BankApp.Server.Repositories.Implementations
         {
             return await _dbContext.Loans
                 .AsNoTracking()
-                .Where(x => x.LoanType == loanType)
+                .Where(loan => loan.LoanType == loanType)
                 .ToListAsync();
         }
 
@@ -73,7 +71,7 @@ namespace BankApp.Server.Repositories.Implementations
         {
             return await _dbContext.Loans
                 .AsNoTracking()
-                .Where(x => x.LoanStatus == loanStatus)
+                .Where(loan => loan.LoanStatus == loanStatus)
                 .ToListAsync();
         }
 
@@ -91,16 +89,16 @@ namespace BankApp.Server.Repositories.Implementations
             try
             {
                 var loanId = rows[FirstIndex].LoanId;
-                var existingRows = _dbContext.AmortizationRows.Where(x => x.LoanId == loanId);
+                var existingRows = _dbContext.AmortizationRows.Where(amortizationRow => amortizationRow.LoanId == loanId);
                 _dbContext.AmortizationRows.RemoveRange(existingRows);
                 await _dbContext.AmortizationRows.AddRangeAsync(rows);
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
-            catch (Exception ex) when (
-            ex is OperationCanceledException
-            || ex is DbUpdateException
-            || ex is DbUpdateConcurrencyException)
+            catch (Exception exception) when (
+            exception is OperationCanceledException
+            || exception is DbUpdateException
+            || exception is DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync();
                 throw;
@@ -114,8 +112,8 @@ namespace BankApp.Server.Repositories.Implementations
         {
             return await _dbContext.AmortizationRows
                 .AsNoTracking()
-                .Where(x => x.LoanId == loanId)
-                .OrderBy(x => x.InstallmentNumber)
+                .Where(amortizationRow => amortizationRow.LoanId == loanId)
+                .OrderBy(amortizationRow => amortizationRow.InstallmentNumber)
                 .ToListAsync();
         }
 
@@ -144,11 +142,11 @@ namespace BankApp.Server.Repositories.Implementations
         /// Updates review status and optional rejection reason for an application using EF Core tracking.
         /// </summary>
         public async Task UpdateLoanApplicationStatusAsync(
-            int id,
+            int userId,
             LoanApplicationStatus loanApplicationStatus,
             string? reason)
         {
-            var application = await _dbContext.LoanApplications.FirstOrDefaultAsync(x => x.UserId == id);
+            var application = await _dbContext.LoanApplications.FirstOrDefaultAsync(loanApplication => loanApplication.UserId == userId);
             if (application == null)
             {
                 return;
@@ -173,12 +171,12 @@ namespace BankApp.Server.Repositories.Implementations
         /// Updates a loan after a payment is processed using EF Core.
         /// </summary>
         public async Task UpdateLoanAfterPaymentAsync(
-            int id,
+            int loanId,
             decimal newBalance,
             int newRemainingMonths,
             LoanStatus newStatus)
         {
-            var loan = await _dbContext.Loans.FirstOrDefaultAsync(x => x.Id == id);
+            var loan = await _dbContext.Loans.FirstOrDefaultAsync(loan => loan.Id == loanId);
             if (loan == null)
             {
                 return;

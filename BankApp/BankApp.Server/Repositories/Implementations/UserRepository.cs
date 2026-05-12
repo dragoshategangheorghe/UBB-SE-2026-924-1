@@ -19,9 +19,9 @@ public class UserRepository : IUserRepository
         this._oAuthLinkDao = oAuthLinkDao;
     }
 
-    public User? FindById(int id)
+    public User? FindById(int userId)
     {
-        return _userDao.FindById(id);
+        return _userDao.FindById(userId);
     }
 
     public bool UpdateUser(User user)

@@ -5,18 +5,18 @@ namespace BankApp.Server.DataAccess.Implementations;
 
 public class ChatMessageDAO : IChatMessageDAO
 {
-    private readonly AppDbContext db;
+    private readonly AppDbContext _dbContext;
 
-    public ChatMessageDAO(AppDbContext db)
+    public ChatMessageDAO(AppDbContext dbContext)
     {
-        this.db = db;
+        this._dbContext = dbContext;
     }
 
     public List<ChatMessage> GetBySessionId(int sessionId)
     {
-        var messages = db.ChatMessages
-             .Where(m => m.SessionId == sessionId)
-             .OrderBy(m => m.SentAt)
+        var messages = _dbContext.ChatMessages
+             .Where(message => message.SessionId == sessionId)
+             .OrderBy(message => message.SentAt)
              .ToList();
         return messages;
     }
@@ -27,8 +27,8 @@ public class ChatMessageDAO : IChatMessageDAO
             ? DateTime.UtcNow
             : message.SentAt;
 
-        db.ChatMessages.Add(message);
-        var rows = db.SaveChanges();
+        _dbContext.ChatMessages.Add(message);
+        var rows = _dbContext.SaveChanges();
 
         if (rows <= 0)
         {
@@ -40,8 +40,8 @@ public class ChatMessageDAO : IChatMessageDAO
 
     public List<ChatAttachment> GetAttachmentsByMessageId(int messageId)
     {
-        var attachments = db.ChatAttachments
-            .Where(a => a.MessageId == messageId)
+        var attachments = _dbContext.ChatAttachments
+            .Where(attachment => attachment.MessageId == messageId)
             .ToList();
 
         return attachments;
@@ -49,8 +49,8 @@ public class ChatMessageDAO : IChatMessageDAO
 
     public int CreateAttachment(ChatAttachment attachment)
     {
-        db.ChatAttachments.Add(attachment);
-        var rows = db.SaveChanges();
+        _dbContext.ChatAttachments.Add(attachment);
+        var rows = _dbContext.SaveChanges();
 
         if (rows <= 0)
         {

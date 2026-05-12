@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
@@ -39,14 +35,14 @@ namespace BankApp.Server.Services.Implementations
             return await this._loanRepository.GetAllLoansAsync();
         }
 
-        public async Task<Loan> GetLoanByIdAsync(int id)
+        public async Task<Loan> GetLoanByIdAsync(int loadId)
         {
-            if (id <= MinimumIdExclusive)
+            if (loadId <= MinimumIdExclusive)
             {
                 return new Loan();
             }
 
-            return await this._loanRepository.GetLoanByIdAsync(id);
+            return await this._loanRepository.GetLoanByIdAsync(loadId);
         }
 
         public async Task<List<Loan>> GetLoansByUserAsync(int userId)
@@ -69,22 +65,22 @@ namespace BankApp.Server.Services.Implementations
             return await this._loanRepository.GetLoansByTypeAsync(loanType);
         }
 
-        public async Task<LoanApplication> ApplyForLoanAsync(LoanApplicationRequest request)
+        public async Task<LoanApplication> ApplyForLoanAsync(LoanApplicationRequest loadnApplicationRequest)
         {
-            this._validator.Validate(request);
+            this._validator.Validate(loadnApplicationRequest);
 
             var application = new LoanApplication
             {
-                UserId = request.UserId,
-                LoanType = request.LoanType,
-                DesiredAmount = request.DesiredAmount,
-                PreferredTermMonths = request.PreferredTermMonths,
-                Purpose = request.Purpose,
+                UserId = loadnApplicationRequest.UserId,
+                LoanType = loadnApplicationRequest.LoanType,
+                DesiredAmount = loadnApplicationRequest.DesiredAmount,
+                PreferredTermMonths = loadnApplicationRequest.PreferredTermMonths,
+                Purpose = loadnApplicationRequest.Purpose,
                 ApplicationStatus = LoanApplicationStatus.Pending,
                 RejectionReason = string.Empty,
             };
 
-            var appId = await this._loanRepository.CreateLoanApplicationAsync(request);
+            var appId = await this._loanRepository.CreateLoanApplicationAsync(loadnApplicationRequest);
             application.UserId = appId;
 
             return application;
@@ -104,50 +100,50 @@ namespace BankApp.Server.Services.Implementations
             return (status, rejectionReason);
         }
 
-        public async Task<(LoanApplicationStatus approved, string? reason)> ProcessApplicationStatusAsync(LoanApplication application)
+        public async Task<(LoanApplicationStatus approved, string? reason)> ProcessApplicationStatusAsync(LoanApplication loanApplication)
         {
-            var (status, reason) = await this.EvaluateApplicationAsync(application);
+            var (status, reason) = await this.EvaluateApplicationAsync(loanApplication);
 
-            await this._loanRepository.UpdateLoanApplicationStatusAsync(application.UserId, status, reason);
+            await this._loanRepository.UpdateLoanApplicationStatusAsync(loanApplication.UserId, status, reason);
 
             return (status, reason);
         }
 
-        public async Task<int> AddLoanAsync(LoanApplication application)
+        public async Task<int> AddLoanAsync(LoanApplication loanApplication)
         {
-            var rate = this.GetInterestRateForType(application.LoanType);
+            var rate = this.GetInterestRateForType(loanApplication.LoanType);
             var estimate = AmortizationCalculator.ComputeEstimate(
-                application.DesiredAmount,
+                loanApplication.DesiredAmount,
                 rate,
-                application.PreferredTermMonths);
+                loanApplication.PreferredTermMonths);
 
             var loan = new Loan
             {
-                UserId = application.UserId,
-                LoanType = application.LoanType,
-                Principal = application.DesiredAmount,
-                OutstandingBalance = application.DesiredAmount,
+                UserId = loanApplication.UserId,
+                LoanType = loanApplication.LoanType,
+                Principal = loanApplication.DesiredAmount,
+                OutstandingBalance = loanApplication.DesiredAmount,
                 InterestRate = rate,
                 MonthlyInstallment = estimate.MonthlyInstallment,
-                RemainingMonths = application.PreferredTermMonths,
+                RemainingMonths = loanApplication.PreferredTermMonths,
                 LoanStatus = LoanStatus.Active,
-                TermInMonths = application.PreferredTermMonths,
+                TermInMonths = loanApplication.PreferredTermMonths,
                 StartDate = DateTime.Now,
             };
 
             return await this._loanRepository.CreateLoanAsync(loan);
         }
 
-        public LoanEstimate GetLoanEstimate(LoanApplicationRequest request)
+        public LoanEstimate GetLoanEstimate(LoanApplicationRequest loanApplicationRequest)
         {
-            this._validator.Validate(request);
+            this._validator.Validate(loanApplicationRequest);
 
-            var rate = this.GetInterestRateForType(request.LoanType);
+            var rate = this.GetInterestRateForType(loanApplicationRequest.LoanType);
 
             return AmortizationCalculator.ComputeEstimate(
-                request.DesiredAmount,
+                loanApplicationRequest.DesiredAmount,
                 rate,
-                request.PreferredTermMonths);
+                loanApplicationRequest.PreferredTermMonths);
         }
 
         public async Task PayInstallmentAsync(int loanId, decimal? customAmount)

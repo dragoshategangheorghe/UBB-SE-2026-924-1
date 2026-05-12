@@ -6,54 +6,54 @@ namespace BankApp.Server.DataAccess.Implementations;
 
 public class ChatDAO : IChatDAO
 {
-    private readonly AppDbContext db;
+    private readonly AppDbContext _dbContext;
 
-    public ChatDAO(AppDbContext db)
+    public ChatDAO(AppDbContext dbContext)
     {
-        this.db = db;
+        this._dbContext = dbContext;
     }
 
     public List<ChatSession> GetByUserId(int userId)
     {
-        return db.ChatSessions
-            .Include(s => s.User)
-            .Where(s => EF.Property<int>(s, "UserId") == userId)
-            .OrderByDescending(s => s.StartedAt)
+        return _dbContext.ChatSessions
+            .Include(session => session.User)
+            .Where(session => EF.Property<int>(session, "UserId") == userId)
+            .OrderByDescending(session => session.StartedAt)
             .AsNoTracking()
             .ToList();
     }
 
-    public ChatSession? GetById(int id)
+    public ChatSession? GetById(int chatSessionId)
     {
-        ChatSession? session = db.ChatSessions
-            .Include(s => s.User)
-            .FirstOrDefault(s => s.Id == id);
-        return session;
+        ChatSession? chatSession = _dbContext.ChatSessions
+            .Include(chatSession => chatSession.User)
+            .FirstOrDefault(chatSession => chatSession.Id == chatSessionId);
+        return chatSession;
     }
 
-    public int Create(ChatSession session)
+    public int Create(ChatSession chatSession)
     {
-        db.ChatSessions.Add(session);
-        db.SaveChanges();
-        return session.Id;
+        _dbContext.ChatSessions.Add(chatSession);
+        _dbContext.SaveChanges();
+        return chatSession.Id;
     }
 
-    public bool UpdateStatus(int id, string status)
+    public bool UpdateStatus(int chatSessionId, string status)
     {
-        var rowsAffected = db.ChatSessions
-            .Where(cs => cs.Id == id)
-            .ExecuteUpdate(s => s.SetProperty(cs => cs.SessionStatus, status));
+        var rowsAffected = _dbContext.ChatSessions
+            .Where(chatSession => chatSession.Id == chatSessionId)
+            .ExecuteUpdate(setters => setters.SetProperty(chatSession => chatSession.SessionStatus, status));
 
         return rowsAffected > 0;
     }
 
-    public bool SaveFeedback(int id, int rating, string feedback)
+    public bool SaveFeedback(int chatSessionId, int rating, string feedback)
     {
-        var rowsAffected = db.ChatSessions
-            .Where(cs => cs.Id == id)
-            .ExecuteUpdate(s => s
-                .SetProperty(cs => cs.Rating, rating)
-                .SetProperty(cs => cs.Feedback, feedback));
+        var rowsAffected = _dbContext.ChatSessions
+            .Where(chatSession => chatSession.Id == chatSessionId)
+            .ExecuteUpdate(setters => setters
+                .SetProperty(chatSession => chatSession.Rating, rating)
+                .SetProperty(chatSession => chatSession.Feedback, feedback));
 
         return rowsAffected > 0;
     }
