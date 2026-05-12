@@ -1,6 +1,7 @@
 using System.Text;
 using BankApp.Models.Entities;
 using BankApp.Models.Features.Chat;
+using BankApp.Models.Features.Chat.Requests;
 using BankApp.Server.Repositories.Implementations;
 using BankApp.Server.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -245,41 +246,6 @@ namespace BankApp.Server.Controllers
             string transcript = BuildTranscript(session!, messages);
             // In this implementation the transcript is prepared and ready for outbound email integration.
             return Ok(new { success = true, message = "Transcript prepared for email delivery.", transcriptLength = transcript.Length });
-        }
-
-        public class CreateChatSessionRequest
-        {
-            public string IssueCategory { get; set; } = string.Empty;
-        }
-
-        public class UpdateChatSessionStatusRequest
-        {
-            public string Status { get; set; } = string.Empty;
-        }
-
-        public class SaveChatFeedbackRequest
-        {
-            public int Rating { get; set; }
-            public string? Feedback { get; set; }
-        }
-
-        public class CreateChatMessageRequest
-        {
-            public string SenderType { get; set; } = "User";
-            public string Content { get; set; } = string.Empty;
-        }
-
-        public class CreateChatAttachmentRequest
-        {
-            public string AttachmentName { get; set; } = string.Empty;
-            public string FileType { get; set; } = string.Empty;
-            public int FileSizeBytes { get; set; }
-            public string? StorageUrl { get; set; }
-        }
-
-        public class EmailTranscriptRequest
-        {
-            public string Email { get; set; } = string.Empty;
         }
 
         private static bool IsSupportedAttachmentType(string fileType, string attachmentName)

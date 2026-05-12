@@ -151,10 +151,6 @@ namespace BankApp.Server.Controllers
 
             return Ok(response);
         }
-        public class VerifyTokenDto
-        {
-            public string Token { get; set; } = string.Empty;
-        }
 
         [HttpPost("verify-reset-token")]
         public IActionResult VerifyResetToken([FromBody] VerifyTokenDto request)
