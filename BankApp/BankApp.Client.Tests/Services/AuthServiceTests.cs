@@ -33,6 +33,20 @@ namespace BankApp.Client.Tests.Services
         }
 
         [Fact]
+        public async Task LoginAsync_UnsuccessfulLogin_ReturnsNullResponse()
+        {
+            LoginRequest loginRequestPayload = new LoginRequest { Email = "user@test.com", Password = "password" };
+            LoginResponse? nullLoginResponse = null;
+
+            mockAuthRepoProxy.Setup(proxy => proxy.LoginAsync(loginRequestPayload))
+                .ReturnsAsync(nullLoginResponse);
+
+            LoginResponse? returnedResponse = await authService.LoginAsync(loginRequestPayload);
+
+            Assert.Null(returnedResponse);
+        }
+
+        [Fact]
         public async Task LoginAsync_RequiresTwoFactorAuthentication_SetsCurrentUserIdButDoesNotSetToken()
         {
             LoginRequest loginRequestPayload = new LoginRequest { Email = "user@test.com", Password = "password" };
@@ -75,6 +89,76 @@ namespace BankApp.Client.Tests.Services
         }
 
         [Fact]
+        public async Task OAuthLoginAsync_UnsuccessfulLogin_ReturnsOriginalFailedResponse()
+        {
+            OAuthLoginRequest oAuthLoginRequestPayload = new OAuthLoginRequest { Provider = "Google", ProviderToken = "123" };
+            LoginResponse failedLoginResponse = new LoginResponse { Success = false };
+
+            mockAuthRepoProxy.Setup(proxy => proxy.OAuthLoginAsync(oAuthLoginRequestPayload))
+                .ReturnsAsync(failedLoginResponse);
+
+            LoginResponse? returnedResponse = await authService.OAuthLoginAsync(oAuthLoginRequestPayload);
+
+            Assert.False(returnedResponse?.Success);
+        }
+
+        [Fact]
+        public async Task OAuthLoginAsync_UnsuccessfulLogin_ReturnsNullResponse()
+        {
+            OAuthLoginRequest oAuthLoginRequestPayload = new OAuthLoginRequest { Provider = "Google", ProviderToken = "123" };
+            LoginResponse? nullLoginResponse = null;
+
+            mockAuthRepoProxy.Setup(proxy => proxy.OAuthLoginAsync(oAuthLoginRequestPayload))
+                .ReturnsAsync(nullLoginResponse);
+
+            LoginResponse? returnedResponse = await authService.OAuthLoginAsync(oAuthLoginRequestPayload);
+
+            Assert.Null(returnedResponse);
+        }
+
+        [Fact]
+        public async Task OAuthLoginAsync_RequiresTwoFactorAuthentication_SetsCurrentUserIdButDoesNotSetToken()
+        {
+            OAuthLoginRequest oAuthLoginRequestPayload = new OAuthLoginRequest { Provider = "Google", ProviderToken = "123" };
+            int authenticatedUserId = 42;
+            LoginResponse twoFactorRequiredResponse = new LoginResponse
+            {
+                Success = true,
+                Requires2FA = true,
+                UserId = authenticatedUserId
+            };
+
+            mockAuthRepoProxy.Setup(proxy => proxy.OAuthLoginAsync(oAuthLoginRequestPayload))
+                .ReturnsAsync(twoFactorRequiredResponse);
+
+            await authService.OAuthLoginAsync(oAuthLoginRequestPayload);
+
+            mockAuthRepoProxy.Verify(proxy => proxy.SetCurrentUserId(authenticatedUserId), Times.Once);
+        }
+
+        [Fact]
+        public async Task OAuthLoginAsync_SuccessfulLogin_SetsBearerTokenAndUserId()
+        {
+            OAuthLoginRequest oAuthLoginRequestPayload = new OAuthLoginRequest { Provider = "Google", ProviderToken = "123" };
+            int authenticatedUserId = 42;
+            string validAuthenticationToken = "valid_jwt_token";
+            LoginResponse successfulLoginResponse = new LoginResponse
+            {
+                Success = true,
+                Requires2FA = false,
+                UserId = authenticatedUserId,
+                Token = validAuthenticationToken
+            };
+
+            mockAuthRepoProxy.Setup(proxy => proxy.OAuthLoginAsync(oAuthLoginRequestPayload))
+                .ReturnsAsync(successfulLoginResponse);
+
+            await authService.OAuthLoginAsync(oAuthLoginRequestPayload);
+
+            mockAuthRepoProxy.Verify(proxy => proxy.SetBearerToken(validAuthenticationToken), Times.Once);
+        }
+
+        [Fact]
         public async Task VerifyOtpAsync_SuccessfulVerification_SetsBearerToken()
         {
             VerifyOTPRequest verificationRequestPayload = new VerifyOTPRequest { UserId = 1, OTPCode = "123456" };
@@ -91,6 +175,24 @@ namespace BankApp.Client.Tests.Services
             await authService.VerifyOtpAsync(verificationRequestPayload);
 
             mockAuthRepoProxy.Verify(proxy => proxy.SetBearerToken(validAuthenticationToken), Times.Once);
+        }
+
+        [Fact]
+        public async Task VerifyOtpAsync_UnsuccessfulVerification_DoesNotSetBearerToken()
+        {
+            VerifyOTPRequest verificationRequestPayload = new VerifyOTPRequest { UserId = 1, OTPCode = "123456" };
+            string validAuthenticationToken = "valid_jwt_token";
+            LoginResponse unsuccessfulVerificationResponse = new LoginResponse
+            {
+                Success = true
+            };
+
+            mockAuthRepoProxy.Setup(proxy => proxy.VerifyOtpAsync(verificationRequestPayload))
+                .ReturnsAsync(unsuccessfulVerificationResponse);
+
+            await authService.VerifyOtpAsync(verificationRequestPayload);
+
+            mockAuthRepoProxy.Verify(proxy => proxy.SetBearerToken(validAuthenticationToken), Times.Never);
         }
 
         [Fact]
