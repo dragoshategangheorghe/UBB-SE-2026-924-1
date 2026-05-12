@@ -104,8 +104,20 @@ namespace BankApp.Client.Services.Implementations
 
             // Business rule: validate ownership and status before deposit.
             var userAccountsList = await _savingsRepoProxy.GetSavingsAccountsByUserIdAsync(userId, true);
-            var destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId)
-                                     ?? throw new InvalidOperationException("Account not found or does not belong to you.");
+
+            // Note: I changed the code a bit, in order to catch the ArgumentNullException from
+            //  Find() and throw InvalidOperationException (if the viewmodels depend on this type of operation)
+            //  I know that it's not the best to throw an exception from a catch block but I'm just not sure
+            //  if me changing the exception type here will break the viewmodels
+            SavingsAccount? destinationAccount;
+            try
+            {
+                destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId);
+            }
+            catch (NullReferenceException e)
+            {
+                throw new InvalidOperationException("Account not found or does not belong to you.");
+            }
 
             if (destinationAccount.AccountStatus == "Closed")
             {
@@ -165,8 +177,19 @@ namespace BankApp.Client.Services.Implementations
             }
 
             var userAccountsList = await _savingsRepoProxy.GetSavingsAccountsByUserIdAsync(userId, true);
-            var destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId)
-                                     ?? throw new InvalidOperationException("Account not found or does not belong to you.");
+            // Note: I changed the code a bit, in order to catch the ArgumentNullException from
+            //  Find() and throw InvalidOperationException (if the viewmodels depend on this type of operation)
+            //  I know that it's not the best to throw an exception from a catch block but I'm just not sure
+            //  if me changing the exception type here will break the viewmodels
+            SavingsAccount? destinationAccount;
+            try
+            {
+                destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId);
+            }
+            catch (NullReferenceException e)
+            {
+                throw new InvalidOperationException("Account not found or does not belong to you.");
+            }
 
             if (destinationAccount.AccountStatus == "Closed")
             {
