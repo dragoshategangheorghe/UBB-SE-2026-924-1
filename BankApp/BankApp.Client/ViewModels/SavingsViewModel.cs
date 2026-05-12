@@ -570,6 +570,7 @@ namespace BankApp.Client.ViewModels
         {
             this.IsLoading = true;
             this.ErrorMessage = string.Empty;
+            this.HasError = false;
             try
             {
                 var accountsList = await this.savingsService.GetAccountsAsync(CurrentUser.Id);
@@ -590,6 +591,7 @@ namespace BankApp.Client.ViewModels
             catch (Exception exception)
             {
                 this.ErrorMessage = exception.Message;
+                this.HasError = true;
             }
             finally
             {

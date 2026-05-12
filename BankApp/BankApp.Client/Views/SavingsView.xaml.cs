@@ -28,25 +28,34 @@ namespace BankApp.Client.Views
 
         private async void SavingsView_Loaded(object sender, RoutedEventArgs e)
         {
-            // Ne asigurăm că ViewModel-ul a fost injectat cu succes din XAML
-            if (this.ViewModel != null)
+            if (this.ViewModel == null)
             {
-                try
-                {
-                    var userId = App.AuthService.GetCurrentUserId() ?? throw new Exception("Current user id is null.");
-                    this.ViewModel.CurrentUser = new User { Id = userId };
+                return;
+            }
 
-                    await this.ViewModel.LoadAccountsAsync();
-                }
-                catch (Exception ex)
+            try
+            {
+                this.ViewModel.HasError = false;
+                this.ViewModel.ErrorMessage = string.Empty;
+
+                var userId = App.AuthService.GetCurrentUserId();
+                if (!userId.HasValue)
                 {
-                    this.ViewModel.ErrorMessage = ex.Message;
+                    return;
                 }
 
-                if (this.ViewModel.HasError)
-                {
-                    await this.ShowDialogAsync("Load Error", this.ViewModel.ErrorMessage);
-                }
+                this.ViewModel.CurrentUser = new User { Id = userId.Value };
+                await this.ViewModel.LoadAccountsAsync();
+            }
+            catch (Exception ex)
+            {
+                this.ViewModel.ErrorMessage = ex.Message;
+                this.ViewModel.HasError = true;
+            }
+
+            if (this.ViewModel.HasError)
+            {
+                await this.ShowDialogAsync("Load Error", this.ViewModel.ErrorMessage);
             }
         }
 

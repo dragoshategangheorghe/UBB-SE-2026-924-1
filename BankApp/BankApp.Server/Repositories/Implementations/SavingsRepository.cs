@@ -51,7 +51,7 @@ namespace BankApp.Server.Repositories.Implementations
                 .Include(a => a.User)
                 .Include(a => a.FundingAccount)
                 .Include(a => a.AutoDeposits)
-                .Include(a => a.Transactions)
+                // .Include(a => a.Transactions)
                 .Where(a => a.User.Id == userIdentificationNumber);
 
             if (!includesClosedAccounts)
@@ -354,7 +354,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// <summary>
         /// Gets paginated savings transactions for an account and filter.
         /// </summary>
-        public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
+        /*public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
             int accountId,
             string typeFilter,
             int page,
@@ -365,6 +365,47 @@ namespace BankApp.Server.Repositories.Implementations
                 .Include(x => x.Account)
                 .Where(x => x.SavingsAccount != null &&
                             x.SavingsAccount.IdentificationNumber == accountId);
+
+            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
+            {
+                if (Enum.TryParse<TransactionType>(typeFilter, out var parsedType))
+                {
+                    query = query.Where(x => x.Type == parsedType);
+                }
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - FirstPageNumber) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }*/
+        public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
+    int accountId,
+    string typeFilter,
+    int page,
+    int pageSize)
+        {
+            // Load the savings account to get its funding account ID
+            var savingsAccount = await _context.SavingsAccounts
+                .AsNoTracking()
+                .Include(s => s.FundingAccount)
+                .FirstOrDefaultAsync(s => s.IdentificationNumber == accountId);
+
+            if (savingsAccount?.FundingAccount == null)
+            {
+                return (new List<SavingsTransaction>(), 0);
+            }
+
+            var fundingAccountId = savingsAccount.FundingAccount.Id;
+
+            var query = _context.SavingsTransactions
+                .AsNoTracking()
+                .Include(x => x.Account)
+                .Where(x => x.AccountId == fundingAccountId);
 
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
             {

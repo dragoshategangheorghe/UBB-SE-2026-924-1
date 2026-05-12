@@ -139,7 +139,7 @@ namespace BankApp.Models.Features.Savings
         // Navigation Properties
         [JsonIgnore]
         public virtual ICollection<AutoDeposit> AutoDeposits { get; set; } = new List<AutoDeposit>();
-        [JsonIgnore]
-        public virtual ICollection<SavingsTransaction> Transactions { get; set; } = new List<SavingsTransaction>();
+        // [JsonIgnore]
+        // public virtual ICollection<SavingsTransaction> Transactions { get; set; } = new List<SavingsTransaction>();
     }
 }
