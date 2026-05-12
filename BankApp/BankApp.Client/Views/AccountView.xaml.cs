@@ -1,8 +1,8 @@
 ﻿namespace BankApp.Client.Views
 {
+    using BankApp.Client.ViewModels;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Navigation;
-    using BankApp.Client.ViewModels;
 
     /// <summary>
     /// View for displaying bank accounts.
@@ -21,7 +21,13 @@
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            await this.ViewModel.LoadAccountsAsync(1);
+            int? userId = App.AuthService.GetCurrentUserId();
+            if (userId == null)
+            {
+                return;
+            }
+
+            await this.ViewModel.LoadAccountsAsync(userId.Value);
         }
     }
 }

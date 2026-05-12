@@ -144,6 +144,16 @@
                         </StackPanel>
                     </Button>
 
+                    <Button x:Name="NavAccounts"
+                            Style="{StaticResource NavItemStyle}"
+                            Click="NavAccounts_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE8C8;" FontSize="14" Foreground="#AAA"/>
+                            <TextBlock Text="Accounts" Foreground="#AAA" FontSize="13"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
                     <Button x:Name="NavTransfers"
                             Style="{StaticResource NavItemStyle}"
                             Click="NavTransfers_Click">

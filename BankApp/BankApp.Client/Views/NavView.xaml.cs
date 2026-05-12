@@ -19,7 +19,7 @@ namespace BankApp.Client.Views
             this.InitializeComponent();
             this._navButtons = new List<Button>
             {
-                NavDashboard, NavTransfers, NavBillPayments, NavCards,
+                NavDashboard, NavAccounts, NavTransfers, NavBillPayments, NavCards,
                 NavTransferHistory, NavCurrencyExchange, NavSavings,
                 NavInvestments, NavStatistics, NavSupport, NavProfile
             };
@@ -54,6 +54,12 @@ namespace BankApp.Client.Views
         {
             this.SetActiveNav(NavDashboard);
             App.NavigationService.NavigateToContent<DashboardView>();
+        }
+
+        private void NavAccounts_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetActiveNav(NavAccounts);
+            App.NavigationService.NavigateToContent<AccountView>();
         }
 
         private void NavProfile_Click(object sender, RoutedEventArgs e)
