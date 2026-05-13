@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using BankApp.Models.DTOs.Transactions;
 using BankApp.Server.Repositories.Interfaces;
-using BankApp.Server.Services.Interfaces;
+using BankApp.Server.Services.Infrastructure;
+using BankApp.Server.Services.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers

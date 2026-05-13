@@ -7,10 +7,8 @@ using BankApp.Server.DataAccess.Interfaces;
 using BankApp.Server.Middleware;
 using BankApp.Server.Repositories.Implementations;
 using BankApp.Server.Repositories.Interfaces;
-using BankApp.Server.Services.Implementations;
 using BankApp.Server.Services.Infrastructure.Implementations;
 using BankApp.Server.Services.Infrastructure.Interfaces;
-using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +21,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- INVESTMENTS & TRADING REGISTRATION ---
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
-// builder.Services.AddScoped<IInvestmentService, InvestmentService>();
-builder.Services.AddSingleton<IMarketDataService, MarketDataService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -90,6 +86,7 @@ string? jwtSecret = builder.Configuration["Jwt:Secret"];
 builder.Services.AddScoped<IJWTService>(_ => new JWTService(jwtSecret!));
 builder.Services.AddScoped<IOTPService, OTPService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();
 
 // --- REPOSITORIES ---
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
@@ -101,16 +98,6 @@ builder.Services.AddScoped<ISavingsRepository, SavingsRepository>();
 builder.Services.AddScoped<ITransactionHistoryRepository, TransactionHistoryRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<ChatMessageRepository>();
-
-// --- BUSINESS SERVICES ---
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IProfileService, ProfileService>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<ICardService, CardService>();
-builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();
-builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
-builder.Services.AddScoped<IStatisticsService, StatisticsService>();
-builder.Services.AddScoped<IApiService, ApiService>();
 
 var app = builder.Build();
 

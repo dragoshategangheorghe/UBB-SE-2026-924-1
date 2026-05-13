@@ -75,6 +75,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BankApp.Client.Shared\BankApp.Client.Shared.csproj" />
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
   </ItemGroup>
   <ItemGroup>

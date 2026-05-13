@@ -3,7 +3,6 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using BankApp.Client.RepoProxies.Interfaces;
-    using BankApp.Client.Utilities;
     using BankApp.Models.Entities;
 
     public class AccountRepoProxy : IAccountRepoProxy

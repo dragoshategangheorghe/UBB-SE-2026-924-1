@@ -1,6 +1,7 @@
-using BankApp.Models.DTOs.Transactions;
+﻿using BankApp.Models.DTOs.Transactions;
+using BankApp.Server.Services.Infrastructure;
 
-namespace BankApp.Server.Services.Interfaces
+namespace BankApp.Server.Services.Infrastructure.Interfaces
 {
     public interface ITransactionExportService
     {

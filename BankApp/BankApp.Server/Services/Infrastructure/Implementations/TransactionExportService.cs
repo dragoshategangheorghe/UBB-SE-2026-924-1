@@ -3,9 +3,9 @@ using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
 using BankApp.Models.DTOs.Transactions;
-using BankApp.Server.Services.Interfaces;
+using BankApp.Server.Services.Infrastructure.Interfaces;
 
-namespace BankApp.Server.Services.Implementations
+namespace BankApp.Server.Services.Infrastructure.Implementations
 {
     public class TransactionExportService : ITransactionExportService
     {
@@ -140,7 +140,7 @@ namespace BankApp.Server.Services.Implementations
             yield return $"Source IBAN: {transaction.SourceAccountIban}";
             yield return $"Destination IBAN: {transaction.DestinationAccountIban}";
             yield return $"Fee: {transaction.Fee:0.00}";
-            yield return $"Exchange Rate: {(transaction.ExchangeRate?.ToString("0.000000", CultureInfo.InvariantCulture) ?? "N/A")}";
+            yield return $"Exchange Rate: {transaction.ExchangeRate?.ToString("0.000000", CultureInfo.InvariantCulture) ?? "N/A"}";
             yield return $"Description: {transaction.Description}";
         }
 

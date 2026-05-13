@@ -1,4 +1,4 @@
-namespace BankApp.Server.Services.Interfaces
+﻿namespace BankApp.Server.Services.Infrastructure
 {
     public class TransactionExportResult
     {
