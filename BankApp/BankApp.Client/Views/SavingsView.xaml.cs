@@ -173,7 +173,7 @@ namespace BankApp.Client.Views
                 ShowError(this.TargetDateError, targetDateError);
             }
 
-            if (this.ViewModel.HasError)
+            if (!string.IsNullOrEmpty(this.ViewModel.ErrorMessage))
             {
                 this.CreateErrorBar.Message = this.ViewModel.ErrorMessage;
                 this.CreateErrorBar.IsOpen = true;
