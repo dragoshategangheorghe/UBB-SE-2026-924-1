@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Interfaces;
@@ -192,7 +193,6 @@ namespace BankApp.Client.Services.Implementations
                 throw new InvalidOperationException("Insufficient balance after penalty.");
             }
 
-            // Note: repository expects total amount debited; penalty recorded separately.
             return await _savingsRepoProxy.WithdrawAsync(
                 accountId,
                 totalSumToWithdraw,
@@ -200,7 +200,17 @@ namespace BankApp.Client.Services.Implementations
                 earlyWithdrawalPenalty);
         }
 
-        public Task<AutoDeposit> GetAutoDepositAsync(int accountId) => _savingsRepoProxy.GetAutoDepositAsync(accountId);
+        public async Task<AutoDeposit> GetAutoDepositAsync(int accountId)
+        {
+            try
+            {
+                return await _savingsRepoProxy.GetAutoDepositAsync(accountId);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
 
         public Task SaveAutoDepositAsync(AutoDeposit autoDeposit) => _savingsRepoProxy.SaveAutoDepositAsync(autoDeposit);
 
@@ -281,8 +291,11 @@ namespace BankApp.Client.Services.Implementations
         public Task<FundingSourceOption> GetDefaultFundingSourceAsync(IEnumerable<FundingSourceOption> fundingSources) =>
             _savingsWorkflow.GetDefaultFundingSource(fundingSources);
 
-        public Task<int> GetDefaultCloseDestinationIdAsync(IEnumerable<SavingsAccount> destinationAccounts) =>
-            _savingsWorkflow.GetDefaultCloseDestinationId(destinationAccounts);
+        public Task<int> GetDefaultCloseDestinationIdAsync(IEnumerable<SavingsAccount> destinationAccounts)
+        {
+            var ids = destinationAccounts.Select(account => account.IdentificationNumber).ToList();
+            return _savingsWorkflow.GetDefaultCloseDestinationId(ids);
+        }
 
         public Task<ValidationResponse> ValidateWithdrawRequestAsync(decimal amount, FundingSourceOption? destination) =>
             _savingsWorkflow.ValidateWithdrawRequest(amount, destination);

@@ -6,7 +6,9 @@ using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Implementations;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.State;
+using BankApp.Models.Entities;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace BankApp.Client
 {
@@ -69,6 +71,8 @@ namespace BankApp.Client
         public static ITransactionHistorySessionState TransactionHistorySessionState { get; private set; } =
             new TransactionHistorySessionState();
 
+        public Frame? RootFrame { get; private set; }
+
         private Window? _window;
 
         public App()
@@ -84,6 +88,9 @@ namespace BankApp.Client
         {
             _window = new MainWindow();
             MainAppWindow = _window;
+
+            RootFrame = (_window as MainWindow)?.PublicRootFrame;
+
             _window.Activate();
         }
     }

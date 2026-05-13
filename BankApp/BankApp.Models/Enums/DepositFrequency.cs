@@ -9,6 +9,9 @@ namespace BankApp.Models.Enums;
 /// </summary>
 public enum DepositFrequency
 {
+    /// <summary>Execute only the initial deposit; do not schedule recurring deposits.</summary>
+    OneTime,
+
     /// <summary>Execute every day.</summary>
     Daily,
 

@@ -10,7 +10,7 @@ namespace BankApp.Client.RepoProxies.Interfaces
     {
         Task<FundingSourceOption> GetDefaultFundingSource(IEnumerable<FundingSourceOption> fundingSources);
 
-        Task<int> GetDefaultCloseDestinationId(IEnumerable<SavingsAccount> destinationAccounts);
+        Task<int> GetDefaultCloseDestinationId(IEnumerable<int> ids);
 
         Task<ValidationResponse> ValidateWithdrawRequest(decimal amount, FundingSourceOption? destination);
 

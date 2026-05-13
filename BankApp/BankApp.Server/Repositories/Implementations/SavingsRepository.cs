@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Models.DTOs;
 using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Entities;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
@@ -51,7 +52,7 @@ namespace BankApp.Server.Repositories.Implementations
                 .Include(a => a.User)
                 .Include(a => a.FundingAccount)
                 .Include(a => a.AutoDeposits)
-                .Include(a => a.Transactions)
+                // .Include(a => a.Transactions)
                 .Where(a => a.User.Id == userIdentificationNumber);
 
             if (!includesClosedAccounts)
@@ -128,17 +129,25 @@ namespace BankApp.Server.Repositories.Implementations
 
                 account.Balance += amount;
                 var newAccountBalance = account.Balance;
+                var fundingAccountId = account.FundingAccount.Id;
+
+                _context.Entry(account).State = EntityState.Detached;
 
                 var savingsTransaction = new SavingsTransaction
                 {
-                    SavingsAccount = account,
-                    Account = account.FundingAccount,
+                    // SavingsAccount = account,
+                    AccountId = fundingAccountId,
+                    // Account = account.FundingAccount,
                     Amount = amount,
                     Type = TransactionType.Deposit,
                     Source = source ?? "Manual",
                     BalanceAfter = newAccountBalance,
                     CreatedAt = DateTime.UtcNow,
                 };
+
+                await _context.SavingsAccounts
+                    .Where(a => a.IdentificationNumber == accountIdentificationNumber)
+                    .ExecuteUpdateAsync(s => s.SetProperty(a => a.Balance, newAccountBalance));
 
                 _context.SavingsTransactions.Add(savingsTransaction);
                 await _context.SaveChangesAsync();
@@ -162,10 +171,10 @@ namespace BankApp.Server.Repositories.Implementations
         /// Closes a savings account and transfers the specified amount to another account.
         /// </summary>
         public async Task<ClosureResultDto> CloseSavingsAccountAsync(
-            int accountIdentificationNumber,
-            int destinationAccountIdentificationNumber,
-            decimal transferAmount,
-            decimal earlyClosurePenalty)
+    int accountIdentificationNumber,
+    int destinationAccountIdentificationNumber,
+    decimal transferAmount,
+    decimal earlyClosurePenalty)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -191,14 +200,27 @@ namespace BankApp.Server.Repositories.Implementations
                     throw new InvalidOperationException("Funding account was not found.");
                 }
 
-                sourceAccount.Balance = ZeroAmount;
-                sourceAccount.AccountStatus = "Closed";
-                destinationAccount.Balance += transferAmount;
+                var sourceFundingAccountId = sourceAccount.FundingAccount.Id;
+                var sourceId = sourceAccount.IdentificationNumber;
+                var destinationId = destinationAccount.IdentificationNumber;
+
+                _context.Entry(sourceAccount).State = EntityState.Detached;
+                _context.Entry(destinationAccount).State = EntityState.Detached;
+
+                await _context.SavingsAccounts
+                    .Where(a => a.IdentificationNumber == sourceId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(a => a.Balance, ZeroAmount)
+                        .SetProperty(a => a.AccountStatus, "Closed"));
+
+                await _context.SavingsAccounts
+                    .Where(a => a.IdentificationNumber == destinationId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(a => a.Balance, destinationAccount.Balance + transferAmount));
 
                 _context.SavingsTransactions.Add(new SavingsTransaction
                 {
-                    SavingsAccount = sourceAccount,
-                    Account = sourceAccount.FundingAccount,
+                    AccountId = sourceFundingAccountId,
                     Amount = transferAmount,
                     Type = TransactionType.Deposit,
                     Source = "Closure",
@@ -222,7 +244,6 @@ namespace BankApp.Server.Repositories.Implementations
             catch (Exception exception)
             {
                 await transaction.RollbackAsync();
-
                 return new ClosureResultDto
                 {
                     Success = false,
@@ -238,10 +259,10 @@ namespace BankApp.Server.Repositories.Implementations
         /// Withdraws funds from a savings account and logs the transaction.
         /// </summary>
         public async Task<WithdrawResponseDto> WithdrawAsync(
-            int accountId,
-            decimal amount,
-            string destinationLabel,
-            decimal earlyWithdrawalPenalty)
+    int accountId,
+    decimal amount,
+    string destinationLabel,
+    decimal earlyWithdrawalPenalty)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -262,8 +283,16 @@ namespace BankApp.Server.Repositories.Implementations
                     throw new InvalidOperationException("Funding account was not found.");
                 }
 
+                var fundingAccountId = account.FundingAccount.Id;
                 var newBalance = account.Balance - amount;
-                account.Balance = newBalance;
+                var currentId = account.IdentificationNumber;
+
+                _context.Entry(account).State = EntityState.Detached;
+
+                await _context.SavingsAccounts
+                    .Where(a => a.IdentificationNumber == currentId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(a => a.Balance, newBalance));
 
                 var withdrawalDescription = earlyWithdrawalPenalty > NoPenaltyAmount
                     ? $"To: {destinationLabel} | Early withdrawal penalty: {earlyWithdrawalPenalty:C2}"
@@ -271,8 +300,7 @@ namespace BankApp.Server.Repositories.Implementations
 
                 _context.SavingsTransactions.Add(new SavingsTransaction
                 {
-                    SavingsAccount = account,
-                    Account = account.FundingAccount,
+                    AccountId = fundingAccountId,
                     Amount = amount,
                     Type = TransactionType.Withdrawal,
                     Source = "Manual",
@@ -317,7 +345,8 @@ namespace BankApp.Server.Repositories.Implementations
                 .AsNoTracking()
                 .Include(x => x.SavingsAccount)
                 .ThenInclude(x => x.User)
-                .FirstOrDefaultAsync(x => x.SavingsAccount.IdentificationNumber == accountId);
+                // .FirstOrDefaultAsync(x => x.SavingsAccount.IdentificationNumber == accountId);
+                .FirstOrDefaultAsync(x => x.SavingsAccountId == accountId);
         }
 
         /// <summary>
@@ -353,7 +382,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// <summary>
         /// Gets paginated savings transactions for an account and filter.
         /// </summary>
-        public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
+        /*public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
             int accountId,
             string typeFilter,
             int page,
@@ -361,14 +390,57 @@ namespace BankApp.Server.Repositories.Implementations
         {
             var query = _context.SavingsTransactions
                 .AsNoTracking()
-                .Include(x => x.SavingsAccount)
-                .ThenInclude(x => x.User)
                 .Include(x => x.Account)
-                .Where(x => x.SavingsAccount.IdentificationNumber == accountId);
+                .Where(x => x.SavingsAccount != null &&
+                            x.SavingsAccount.IdentificationNumber == accountId);
 
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
             {
-                query = query.Where(x => x.Type.ToString() == typeFilter);
+                if (Enum.TryParse<TransactionType>(typeFilter, out var parsedType))
+                {
+                    query = query.Where(x => x.Type == parsedType);
+                }
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - FirstPageNumber) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }*/
+        public async Task<(List<SavingsTransaction> Items, int TotalCount)> GetTransactionsPagedAsync(
+    int accountId,
+    string typeFilter,
+    int page,
+    int pageSize)
+        {
+            // Load the savings account to get its funding account ID
+            var savingsAccount = await _context.SavingsAccounts
+                .AsNoTracking()
+                .Include(s => s.FundingAccount)
+                .FirstOrDefaultAsync(s => s.IdentificationNumber == accountId);
+
+            if (savingsAccount?.FundingAccount == null)
+            {
+                return (new List<SavingsTransaction>(), 0);
+            }
+
+            var fundingAccountId = savingsAccount.FundingAccount.Id;
+
+            var query = _context.SavingsTransactions
+                .AsNoTracking()
+                .Include(x => x.Account)
+                .Where(x => x.AccountId == fundingAccountId);
+
+            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
+            {
+                if (Enum.TryParse<TransactionType>(typeFilter, out var parsedType))
+                {
+                    query = query.Where(x => x.Type == parsedType);
+                }
             }
 
             var totalCount = await query.CountAsync();

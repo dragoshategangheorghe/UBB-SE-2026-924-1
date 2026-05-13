@@ -4,6 +4,8 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// Represents a single row from a loan amortization schedule.
@@ -16,13 +18,13 @@ namespace BankApp.Models.Features.Loans
         /// Gets or sets the row identifier.
         /// </summary>
         [Key]
-
         public int Id { get; set; }
         public int LoanId { get; set; }
 
         /// <summary>
         /// Gets or sets the associated loan.
         /// </summary>
+        [JsonIgnore]
         public virtual Loan Loan { get; set; } = null!;
 
         /// <summary>
@@ -53,6 +55,7 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets a value indicating whether this row is the current installment.
         /// </summary>
+        [NotMapped]
         public bool IsCurrent { get; set; }
     }
 }

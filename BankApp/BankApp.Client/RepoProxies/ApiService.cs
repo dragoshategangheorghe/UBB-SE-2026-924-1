@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -99,6 +100,12 @@ namespace BankApp.Client.RepoProxies
                 response.StatusCode);
         }
 
+        public async Task PostVoidAsync<TRequest>(string endpoint, TRequest data)
+        {
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);
+            await EnsureSuccessAsync(response, endpoint);
+        }
+
         private static T? DeserializeWebJson<T>(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
@@ -132,6 +139,12 @@ namespace BankApp.Client.RepoProxies
             return await ReadJsonAsync<TResponse>(response);
         }
 
+        public async Task PutVoidAsync<TRequest>(string endpoint, TRequest data)
+        {
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(endpoint, data, JsonWriteOptions);
+            await EnsureSuccessAsync(response, endpoint);
+        }
+
         public async Task<DownloadResponse?> PostDownloadAsync<TRequest>(string endpoint, TRequest data)
         {
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync(endpoint, data, JsonWriteOptions);
@@ -163,6 +176,11 @@ namespace BankApp.Client.RepoProxies
 
             string contentType = response.Content.Headers.ContentType?.MediaType ?? "(none)";
             string body = await response.Content.ReadAsStringAsync();
+
+            Debug.WriteLine($"EnsureSuccessAsync FAILED: {endpoint}");
+            Debug.WriteLine($"Status: {(int)response.StatusCode} {response.StatusCode}");
+            Debug.WriteLine($"Body: {(body.Length > 500 ? body[..500] : body)}");
+
             if (body.Length > 2000)
             {
                 body = body[..2000] + "…";
@@ -176,6 +194,19 @@ namespace BankApp.Client.RepoProxies
 
         private static async Task<T?> ReadJsonAsync<T>(HttpResponseMessage response)
         {
+            Debug.WriteLine($"ReadJsonAsync called with T={typeof(T).Name}");
+            Debug.WriteLine($"Content-Type: {response.Content.Headers.ContentType?.MediaType}");
+
+            if (typeof(T) == typeof(string))
+            {
+                var text = await response.Content.ReadAsStringAsync();
+                if (text.StartsWith("\"") && text.EndsWith("\""))
+                {
+                    text = text[1..^1];
+                }
+                return (T)(object)text;
+            }
+
             try
             {
                 return await response.Content.ReadFromJsonAsync<T>(new JsonSerializerOptions(JsonSerializerDefaults.Web));

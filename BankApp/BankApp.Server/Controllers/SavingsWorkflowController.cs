@@ -33,14 +33,14 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("default-close-destination")]
-        public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<SavingsAccount> destinationAccounts)
+        public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<int> ids)
         {
-            if (destinationAccounts == null)
+            if (ids == null)
             {
                 return BadRequest("List of accounts cannot be null.");
             }
 
-            var destinationId = destinationAccounts.FirstOrDefault()?.IdentificationNumber ?? NoDestinationId;
+            var destinationId = ids.FirstOrDefault();
             return Ok(destinationId);
         }
 

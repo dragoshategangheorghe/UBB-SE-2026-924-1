@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +15,6 @@ namespace BankApp.Models.Features.Savings
     /// </summary>
     public class SavingsAccount
     {
-        public int Id { get; set; }
         private const decimal MonthsInYear = 12m;
         private const decimal PercentageScale = 100m;
         private const decimal MinimumTargetAmountExclusive = 0m;
@@ -21,11 +23,14 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the unique identifier for the savings account.
         /// </summary>
+        [Key]
+        [Column("id")]
         public int IdentificationNumber { get; set; }
 
         /// <summary>
         ///     Gets or sets the user who owns the savings account.
         /// </summary>
+        [JsonIgnore]
         public virtual User User { get; set; } = null!;
 
         /// <summary>
@@ -48,6 +53,7 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the annual percentage yield (APY) for the savings account.
         /// </summary>
+        [Column("apy")]
         public decimal AnnualPercentageYield { get; set; }
 
         /// <summary>
@@ -80,6 +86,7 @@ namespace BankApp.Models.Features.Savings
         /// <summary>
         ///     Gets or sets the funding account associated with this savings account, if any.
         /// </summary>
+        [JsonIgnore]
         public virtual Account? FundingAccount { get; set; }
 
         /// <summary>
@@ -130,7 +137,9 @@ namespace BankApp.Models.Features.Savings
                 : this.AccountStatus;
 
         // Navigation Properties
+        [JsonIgnore]
         public virtual ICollection<AutoDeposit> AutoDeposits { get; set; } = new List<AutoDeposit>();
-        public virtual ICollection<SavingsTransaction> Transactions { get; set; } = new List<SavingsTransaction>();
+        // [JsonIgnore]
+        // public virtual ICollection<SavingsTransaction> Transactions { get; set; } = new List<SavingsTransaction>();
     }
 }

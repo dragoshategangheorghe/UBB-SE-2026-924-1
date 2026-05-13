@@ -13,6 +13,9 @@ namespace BankApp.Models.Features.Loans
     {
         public int Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the indicative annual interest rate.
+        /// </summary>
         public decimal IndicativeRate { get; set; }
 
         /// <summary>

@@ -1,4 +1,7 @@
-﻿using BankApp.Models.Features.Savings;
+using BankApp.Models.DTOs.Savings;
+using BankApp.Models.Features.Savings;
+using BankApp.Server.Services.Implementations;
+using BankApp.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
@@ -12,7 +15,7 @@ namespace BankApp.Server.Controllers
         private const decimal PercentageScale = 100m;
 
         [HttpPost("total-saved")]
-        public ActionResult<string> GetTotalSavedAmount([FromBody] IEnumerable<SavingsAccount> accounts)
+        public ActionResult<string> GetTotalSavedAmount([FromBody] IEnumerable<SavingsAccountSummaryDto> accounts)
         {
             var result = $"${accounts.Sum(account => account.Balance):F2}";
             return Ok(result);
@@ -26,7 +29,7 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("best-interest-rate")]
-        public ActionResult<string> GetBestInterestRate([FromBody] IEnumerable<SavingsAccount> accounts)
+        public ActionResult<string> GetBestInterestRate([FromBody] IEnumerable<SavingsAccountSummaryDto> accounts)
         {
             var bestApy = accounts.Any() ? accounts.Max(account => account.AnnualPercentageYield) : DefaultBestApy;
             var result = $"{bestApy * PercentageScale:F2}%";
@@ -34,12 +37,12 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("close-penalty-risk")]
-        public ActionResult<bool> CheckClosePenaltyRisk([FromBody] SavingsAccount selectedAccount)
+        public ActionResult<bool> CheckClosePenaltyRisk([FromBody] SavingsAccountSummaryDto selectedAccount)
         {
             var hasRisk = selectedAccount?.SavingsType == "FixedDeposit" &&
-                          selectedAccount.MaturityDate.HasValue &&
-                          selectedAccount.MaturityDate.Value > DateTime.UtcNow;
-            return Ok(new { HasClosePenaltyRisk = hasRisk });
+                   selectedAccount.MaturityDate.HasValue &&
+                   selectedAccount.MaturityDate.Value > DateTime.UtcNow;
+            return Ok(hasRisk);
         }
     }
 }

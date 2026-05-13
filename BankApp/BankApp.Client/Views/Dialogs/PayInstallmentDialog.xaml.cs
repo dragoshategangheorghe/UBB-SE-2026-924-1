@@ -1,6 +1,7 @@
 namespace BankApp.Client.View.Dialogs
 {
     using System;
+    using System.Diagnostics;
     using BankApp.Client.ViewModels;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
@@ -22,10 +23,15 @@ namespace BankApp.Client.View.Dialogs
             var deferral = args.GetDeferral();
             try
             {
+                Debug.WriteLine($"CustomAmount before pay: {this.viewModel.CustomAmount}");
+                Debug.WriteLine($"SelectedLoan: {this.viewModel.SelectedLoan?.Loan?.Id}");
                 await this.viewModel.PayInstallmentAsync();
+                Debug.WriteLine("PayInstallmentAsync completed successfully");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"PAY ERROR: {ex.Message}");
+                Debug.WriteLine($"PAY INNER: {ex.InnerException?.Message}");
                 args.Cancel = true;
             }
             finally
@@ -68,11 +74,13 @@ namespace BankApp.Client.View.Dialogs
 
         private void OnCustomAmountTextChanged(object sender, TextChangedEventArgs e)
         {
+            this.viewModel.UpdateCustomPayment(this.CustomAmountBox?.Text ?? string.Empty);
             this.UpdatePreview();
         }
 
         private void OnCustomAmountLostFocus(object sender, RoutedEventArgs e)
         {
+            this.viewModel.UpdateCustomPayment(this.CustomAmountBox?.Text ?? string.Empty);
             this.UpdatePreview();
         }
 

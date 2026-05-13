@@ -85,7 +85,7 @@ namespace BankApp.Server.Services.Implementations
             };
 
             var appId = await this.loanRepository.CreateLoanApplicationAsync(request);
-            application.UserId = appId;
+            application.Id = appId;
 
             return application;
         }
@@ -108,7 +108,7 @@ namespace BankApp.Server.Services.Implementations
         {
             var (status, reason) = await this.EvaluateApplicationAsync(application);
 
-            await this.loanRepository.UpdateLoanApplicationStatusAsync(application.UserId, status, reason);
+            await this.loanRepository.UpdateLoanApplicationStatusAsync(application.Id, status, reason);
 
             return (status, reason);
         }
@@ -187,7 +187,7 @@ namespace BankApp.Server.Services.Implementations
                 ? LoanStatus.Passed
                 : loan.LoanStatus;
 
-            await this.loanRepository.UpdateLoanAfterPaymentAsync(loan.UserId, newBalance, newRemainingMonths, newStatus);
+            await this.loanRepository.UpdateLoanAfterPaymentAsync(loanId, newBalance, newRemainingMonths, newStatus);
         }
 
         public (decimal BalanceAfterPayment, int RemainingMonths) CalculatePaymentPreview(Loan loan, decimal? customAmount = null)

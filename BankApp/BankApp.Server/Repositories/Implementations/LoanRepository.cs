@@ -134,7 +134,7 @@ namespace BankApp.Server.Repositories.Implementations
 
             dbContext.LoanApplications.Add(loanApplication);
             await dbContext.SaveChangesAsync();
-            return loanApplication.UserId;
+            return loanApplication.Id;
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace BankApp.Server.Repositories.Implementations
             LoanApplicationStatus loanApplicationStatus,
             string? reason)
         {
-            var application = await dbContext.LoanApplications.FirstOrDefaultAsync(x => x.UserId == id);
+            var application = await dbContext.LoanApplications.FirstOrDefaultAsync(x => x.Id == id);
             if (application == null)
             {
                 return;

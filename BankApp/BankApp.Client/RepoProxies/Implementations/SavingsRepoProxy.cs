@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -20,20 +21,26 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<ClosureResultDto> CloseSavingsAccountAsync(int accountId, int destinationAccountId, decimal transferAmount, decimal earlyClosurePenalty)
         {
+            var transferAmountText = transferAmount.ToString(CultureInfo.InvariantCulture);
+            var earlyClosurePenaltyText = earlyClosurePenalty.ToString(CultureInfo.InvariantCulture);
+
             return await _apiService.PostAsync<object, ClosureResultDto>(
-                $"/api/savings/{accountId}/close?destinationAccountId={destinationAccountId}&transferAmount={transferAmount}&earlyClosurePenalty={earlyClosurePenalty}",
+                $"/api/savings/{accountId}/close?destinationAccountId={destinationAccountId}&transferAmount={transferAmountText}&earlyClosurePenalty={earlyClosurePenaltyText}",
                 new { });
         }
 
         public async Task<SavingsAccount> CreateSavingsAccountAsync(CreateSavingsAccountDto account, decimal apy)
         {
-            return await _apiService.PostAsync<CreateSavingsAccountDto, SavingsAccount>($"/api/savings/create-account?apy={apy}", account);
+            var apyText = apy.ToString(CultureInfo.InvariantCulture);
+            return await _apiService.PostAsync<CreateSavingsAccountDto, SavingsAccount>($"/api/savings/create-account?apy={apyText}", account);
         }
 
         public async Task<DepositResponseDto> DepositAsync(int accountId, decimal amount, string source)
         {
+            var amountText = amount.ToString(CultureInfo.InvariantCulture);
+
             return await _apiService.PostAsync<object, DepositResponseDto>(
-                $"/api/savings/{accountId}/deposit?amount={amount}&source={Uri.EscapeDataString(source)}",
+                $"/api/savings/{accountId}/deposit?amount={amountText}&source={Uri.EscapeDataString(source)}",
                 new { });
         }
 
@@ -69,13 +76,16 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task SaveAutoDepositAsync(AutoDeposit autoDeposit)
         {
-            await _apiService.PostAsync<AutoDeposit, Task>("/api/savings/auto-deposit", autoDeposit);
+            await _apiService.PostVoidAsync<AutoDeposit>("/api/savings/auto-deposit", autoDeposit);
         }
 
         public async Task<WithdrawResponseDto> WithdrawAsync(int accountId, decimal amount, string destinationLabel, decimal earlyWithdrawalPenalty)
         {
+            var amountText = amount.ToString(CultureInfo.InvariantCulture);
+            var earlyWithdrawalPenaltyText = earlyWithdrawalPenalty.ToString(CultureInfo.InvariantCulture);
+
             return await _apiService.PostAsync<object, WithdrawResponseDto>(
-                $"/api/savings/{accountId}/withdraw?amount={amount}&destinationLabel={Uri.EscapeDataString(destinationLabel)}&earlyWithdrawalPenalty={earlyWithdrawalPenalty}",
+                $"/api/savings/{accountId}/withdraw?amount={amountText}&destinationLabel={Uri.EscapeDataString(destinationLabel)}&earlyWithdrawalPenalty={earlyWithdrawalPenaltyText}",
                 new { });
         }
     }

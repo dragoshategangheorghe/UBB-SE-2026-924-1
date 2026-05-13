@@ -1,6 +1,7 @@
 ﻿using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
+using BankApp.Server.Repositories.Implementations;
 using BankApp.Server.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,12 +36,7 @@ namespace BankApp.Server.Controllers
         public async Task<ActionResult<List<Loan>>> GetLoansByUserAsync([FromRoute] int userId)
         {
             var result = await _loanRepository.GetLoansByUserAsync(userId);
-            if (result == null || !result.Any())
-            {
-                return BadRequest();
-            }
-
-            return Ok(result);
+            return Ok(result ?? new List<Loan>());
         }
 
         [HttpGet("by-status/{loanStatus}")]
@@ -128,22 +124,27 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("{loanId:int}/amortization-schedule")]
-        public async Task<IActionResult> SaveAmortizationAsync([FromRoute] int loanId, [FromBody] List<AmortizationRow> rows)
+        public async Task<IActionResult> SaveAmortizationAsync([FromRoute] int loanId, [FromBody] List<AmortizationRowDto> rows)
         {
-            try
+            var loan = await _loanRepository.GetLoanByIdAsync(loanId);
+            if (loan == null)
             {
-                if (rows == null || rows.Any(r => r.LoanId != loanId))
-                {
-                    return BadRequest("Invalid amortization rows payload.");
-                }
+                return NotFound();
+            }
 
-                await _loanRepository.SaveAmortizationAsync(rows);
-                return Ok();
-            }
-            catch (Exception ex)
+            var entities = rows.Select(r => new AmortizationRow
             {
-                return BadRequest(ex.Message);
-            }
+                LoanId = loanId,
+                // Loan = loan,
+                InstallmentNumber = r.InstallmentNumber,
+                DueDate = r.DueDate,
+                PrincipalPortion = r.PrincipalPortion,
+                InterestPortion = r.InterestPortion,
+                RemainingBalance = r.RemainingBalance,
+            }).ToList();
+
+            await _loanRepository.SaveAmortizationAsync(entities);
+            return Ok();
         }
     }
 }

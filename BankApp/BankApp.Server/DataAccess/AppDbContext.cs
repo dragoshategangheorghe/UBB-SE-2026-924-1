@@ -213,6 +213,21 @@ namespace BankApp.Server.DataAccess
                 entity.HasMany(l => l.AmortizationRows)
                     .WithOne(a => a.Loan)
                     .IsRequired();
+
+                entity.Property(l => l.LoanType)
+                    .HasConversion<string>();
+
+                entity.Property(l => l.LoanStatus)
+                    .HasConversion<string>();
+            });
+
+            modelBuilder.Entity<LoanApplication>(entity =>
+            {
+                entity.Property(la => la.LoanType)
+                    .HasConversion<string>();
+
+                entity.Property(la => la.ApplicationStatus)
+                    .HasConversion<string>();
             });
 
             modelBuilder.Entity<SavingsAccount>(entity =>
@@ -226,18 +241,27 @@ namespace BankApp.Server.DataAccess
 
                 entity.HasMany(s => s.AutoDeposits)
                     .WithOne(a => a.SavingsAccount)
+                    .HasForeignKey(a => a.SavingsAccountId)
                     .IsRequired();
+            });
 
-                entity.HasMany(s => s.Transactions)
-                    .WithOne(t => t.SavingsAccount)
-                    .IsRequired();
+            modelBuilder.Entity<AutoDeposit>(entity =>
+            {
+                entity.Property(a => a.Frequency)
+                    .HasConversion<string>();
             });
 
             modelBuilder.Entity<SavingsTransaction>(entity =>
             {
                 entity.HasOne(t => t.Account)
                     .WithMany()
-                    .IsRequired().OnDelete(DeleteBehavior.NoAction);
+                    .HasForeignKey(t => t.AccountId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.AccountId).HasColumnName("accountId");
+                entity.Property(t => t.Type).HasColumnName("transactionType");
             });
 
             modelBuilder.Entity<ChatSession>(entity =>

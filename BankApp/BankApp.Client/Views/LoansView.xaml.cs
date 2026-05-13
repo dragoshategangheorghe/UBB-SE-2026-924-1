@@ -5,6 +5,7 @@ namespace BankApp.Client.Views
     using BankApp.Client.View.Dialogs;
     using BankApp.Client.ViewModels;
     using BankApp.Client.Views.Dialogs;
+    using BankApp.Models.Entities;
     using BankApp.Models.Enums;
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
@@ -25,7 +26,17 @@ namespace BankApp.Client.Views
         {
             if (ViewModel != null)
             {
-                await this.ViewModel.LoadLoansAsync();
+                try
+                {
+                    var userId = App.AuthService.GetCurrentUserId() ?? throw new Exception("Current user id is null.");
+                    this.ViewModel.CurrentUser = new User { Id = userId };
+
+                    await this.ViewModel.LoadLoansAsync();
+                }
+                catch (Exception ex)
+                {
+                    this.ViewModel.ErrorMessage = ex.Message;
+                }
             }
         }
 
@@ -72,17 +83,11 @@ namespace BankApp.Client.Views
                 if (sender is Button btn && btn.Tag is LoanViewModel loan)
                 {
                     this.ViewModel.SelectedLoan = loan;
-                    await this.ViewModel.LoadAmortizationAsync();
 
                     Frame? mainFrame = GetParentFrame();
-
                     if (mainFrame != null)
                     {
                         mainFrame.Navigate(typeof(AmortizationScheduleView), loan.Loan);
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Nu s-a putut gasi un Frame pentru navigare.");
                     }
                 }
             }
@@ -95,18 +100,16 @@ namespace BankApp.Client.Views
         private Frame? GetParentFrame()
         {
             DependencyObject current = this;
-
             while (current != null)
             {
                 if (current is Frame frame)
                 {
                     return frame;
                 }
-
                 current = VisualTreeHelper.GetParent(current);
             }
 
-            return null;
+            return App.NavigationService.GetFrame();
         }
 
         private void OnFilterAll(object sender, RoutedEventArgs e)

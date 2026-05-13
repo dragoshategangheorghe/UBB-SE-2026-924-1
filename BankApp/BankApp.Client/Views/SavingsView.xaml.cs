@@ -9,6 +9,7 @@ namespace BankApp.Client.Views
     using Microsoft.UI.Xaml.Navigation;
     using BankApp.Models.Features.Investments;
     using BankApp.Models.Features.Savings;
+    using BankApp.Models.Entities;
 
     public sealed partial class SavingsView : UserControl
     {
@@ -27,17 +28,34 @@ namespace BankApp.Client.Views
 
         private async void SavingsView_Loaded(object sender, RoutedEventArgs e)
         {
-            // Ne asigurăm că ViewModel-ul a fost injectat cu succes din XAML
-            if (this.ViewModel != null)
+            if (this.ViewModel == null)
             {
-                // Apelăm proprietatea cu V mare
-                await this.ViewModel.LoadAccountsAsync();
+                return;
+            }
 
-                if (this.ViewModel.HasError)
+            try
+            {
+                this.ViewModel.HasError = false;
+                this.ViewModel.ErrorMessage = string.Empty;
+
+                var userId = App.AuthService.GetCurrentUserId();
+                if (!userId.HasValue)
                 {
-                    // Presupun că ShowDialogAsync e o metodă definită mai jos în clasa ta
-                    await this.ShowDialogAsync("Load Error", this.ViewModel.ErrorMessage);
+                    return;
                 }
+
+                this.ViewModel.CurrentUser = new User { Id = userId.Value };
+                await this.ViewModel.LoadAccountsAsync();
+            }
+            catch (Exception ex)
+            {
+                this.ViewModel.ErrorMessage = ex.Message;
+                this.ViewModel.HasError = true;
+            }
+
+            if (this.ViewModel.HasError)
+            {
+                await this.ShowDialogAsync("Load Error", this.ViewModel.ErrorMessage);
             }
         }
 
@@ -155,7 +173,7 @@ namespace BankApp.Client.Views
                 ShowError(this.TargetDateError, targetDateError);
             }
 
-            if (this.ViewModel.HasError)
+            if (!string.IsNullOrEmpty(this.ViewModel.ErrorMessage))
             {
                 this.CreateErrorBar.Message = this.ViewModel.ErrorMessage;
                 this.CreateErrorBar.IsOpen = true;

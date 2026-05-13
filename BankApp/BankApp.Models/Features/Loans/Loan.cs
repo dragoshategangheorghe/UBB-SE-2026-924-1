@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets the owning user.
         /// </summary>
+        [JsonIgnore]
         public virtual User User { get; set; } = null!;
 
         /// <summary>
@@ -70,6 +72,7 @@ namespace BankApp.Models.Features.Loans
         public DateTime StartDate { get; set; }
 
         // Navigation Properties
+        [JsonIgnore]
         public virtual ICollection<AmortizationRow> AmortizationRows { get; set; } = new List<AmortizationRow>();
     }
 }

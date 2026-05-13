@@ -18,9 +18,9 @@ namespace BankApp.Server.Services.Implementations
             return fundingSources.FirstOrDefault();
         }
 
-        public int GetDefaultCloseDestinationId(IEnumerable<SavingsAccount> destinationAccounts)
+        public int GetDefaultCloseDestinationId(IEnumerable<int> ids)
         {
-            return destinationAccounts.FirstOrDefault()?.IdentificationNumber ?? NoDestinationId;
+            return ids.FirstOrDefault();
         }
 
         public (bool IsValid, string ErrorMessage) ValidateWithdrawRequest(decimal amount, FundingSourceOption? destination)

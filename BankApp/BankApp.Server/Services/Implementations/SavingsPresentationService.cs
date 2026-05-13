@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Savings;
 
 namespace BankApp.Server.Services.Implementations
@@ -11,7 +12,7 @@ namespace BankApp.Server.Services.Implementations
         private const decimal DefaultBestApy = 0m;
         private const decimal PercentageScale = 100m;
 
-        public string BuildTotalSavedAmount(IEnumerable<SavingsAccount> accounts)
+        public string BuildTotalSavedAmount(IEnumerable<SavingsAccountSummaryDto> accounts)
         {
             return $"${accounts.Sum(account => account.Balance):F2}";
         }
@@ -21,13 +22,13 @@ namespace BankApp.Server.Services.Implementations
             return $"across {accountCount} account{(accountCount == SingularAccountCount ? string.Empty : "s")}";
         }
 
-        public string BuildBestInterestRate(IEnumerable<SavingsAccount> accounts)
+        public string BuildBestInterestRate(IEnumerable<SavingsAccountSummaryDto> accounts)
         {
             var bestApy = accounts.Any() ? accounts.Max(account => account.AnnualPercentageYield) : DefaultBestApy;
             return $"{bestApy * PercentageScale:F2}%";
         }
 
-        public bool HasClosePenaltyRisk(SavingsAccount? selectedAccount)
+        public bool HasClosePenaltyRisk(SavingsAccountSummaryDto? selectedAccount)
         {
             return selectedAccount?.SavingsType == "FixedDeposit" &&
                    selectedAccount.MaturityDate.HasValue &&
