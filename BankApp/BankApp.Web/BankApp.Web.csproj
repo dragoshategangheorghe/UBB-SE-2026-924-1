@@ -7,15 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Views\NewFolder\**" />
-    <Content Remove="Views\NewFolder\**" />
-    <EmbeddedResource Remove="Views\NewFolder\**" />
-    <None Remove="Views\NewFolder\**" />
+    <ProjectReference Include="..\BankApp.Client.Shared\BankApp.Client.Shared.csproj" />
+    <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BankApp.Client.Shared\BankApp.Client.Shared.csproj" />
-    <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
+    <Folder Include="Views\Auth\" />
+    <Folder Include="Views\Dashboard\" />
+    <Folder Include="Views\Accounts\" />
+    <Folder Include="Views\Loans\" />
+    <Folder Include="Views\Investments\" />
+    <Folder Include="Views\Profile\" />
+    <Folder Include="Views\Crypto\" />
+    <Folder Include="Views\Chat\" />
+    <Folder Include="Views\Statistics\" />
+    <Folder Include="Views\Transactions\" />
+    <Folder Include="Views\Savings\" />
   </ItemGroup>
 
 </Project>
