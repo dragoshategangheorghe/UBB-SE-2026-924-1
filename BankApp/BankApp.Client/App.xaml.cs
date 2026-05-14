@@ -1,14 +1,15 @@
 using System;
 using System.Globalization;
+using System.Threading;
 using BankApp.Client.Master;
 using BankApp.Client.RepoProxies;
-using global::BankApp.Client.Services.Interfaces;
-using global::BankApp.Client.Services.Implementations;
-using global::BankApp.Client.RepoProxies.Interfaces;
-using global::BankApp.Client.RepoProxies.Implementations;
 using BankApp.Client.State;
 using BankApp.Client.ViewModels; // Added for the new ViewModel
 using BankApp.Models.Entities;
+using global::BankApp.Client.RepoProxies.Implementations;
+using global::BankApp.Client.RepoProxies.Interfaces;
+using global::BankApp.Client.Services.Implementations;
+using global::BankApp.Client.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection; // Required for IServiceProvider
 using Microsoft.UI.Xaml;
 
@@ -91,9 +92,11 @@ namespace BankApp.Client
             Services = serviceCollection.BuildServiceProvider();
 
             // 2. Setup Culture
-            CultureInfo culture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentCulture = culture;
-            CultureInfo.DefaultThreadCurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
