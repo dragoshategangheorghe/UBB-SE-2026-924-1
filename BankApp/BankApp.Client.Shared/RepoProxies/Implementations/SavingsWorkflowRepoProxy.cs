@@ -49,7 +49,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<ValidationResponse> ValidateWithdrawRequest(decimal amount, FundingSourceOption? destination)
         {
-            return await _apiService.PostAsync<FundingSourceOption?, ValidationResponse>($"/api/savings-workflow?amount={amount}", destination);
+            return await _apiService.PostAsync<FundingSourceOption?, ValidationResponse>($"/api/savings-workflow/validate-withdraw?amount={amount}", destination);
         }
     }
 }
