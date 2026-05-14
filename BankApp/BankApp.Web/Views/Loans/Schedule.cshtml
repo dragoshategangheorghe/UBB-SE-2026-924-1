@@ -1,0 +1,66 @@
+@model LoanSchedulePageViewModel
+@{
+    ViewData["Title"] = "Amortization Schedule";
+}
+
+<div class="finance-page">
+    @await Html.PartialAsync("_FinanceTabs", "loans")
+
+    <section class="hero-panel compact">
+        <div class="hero-copy">
+            <span class="hero-kicker">Amortization schedule</span>
+            <h1>@Model.Loan.Loan.LoanType loan</h1>
+            <p>@Model.Loan.PaidInstallments paid of @Model.Loan.Loan.TermInMonths installments. @Model.Loan.Loan.RemainingMonths months remain.</p>
+        </div>
+        <div class="hero-metrics">
+            <article class="metric-card">
+                <span>Principal</span>
+                <strong>@Model.Loan.Loan.Principal.ToString("C0")</strong>
+                <small>Original amount</small>
+            </article>
+            <article class="metric-card">
+                <span>Outstanding</span>
+                <strong>@Model.Loan.Loan.OutstandingBalance.ToString("C0")</strong>
+                <small>Current balance</small>
+            </article>
+        </div>
+    </section>
+
+    <section class="surface-card">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+            <div class="section-title-wrap mb-0">
+                <span class="section-kicker">Breakdown</span>
+                <h2>Installment schedule</h2>
+            </div>
+            <button type="button" class="btn btn-outline-secondary" onclick="window.print();">Print</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table schedule-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Due date</th>
+                        <th>Principal</th>
+                        <th>Interest</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr class="@(row.IsCurrent ? "schedule-current" : string.Empty)">
+                            <td>@row.InstallmentNumber</td>
+                            <td>@row.DueDate.ToString("dd MMM yyyy")</td>
+                            <td>@row.PrincipalPortion.ToString("C2")</td>
+                            <td>@row.InterestPortion.ToString("C2")</td>
+                            <td>@row.RemainingBalance.ToString("C2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <a asp-action="Index" class="btn btn-link back-link">Back to loans</a>
+</div>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using BankApp.Models.DTOs.Loans;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
 {
@@ -9,9 +10,14 @@ namespace BankApp.Server.Controllers
         [HttpGet]
         public IActionResult GetBuildApplicationOutcome([FromQuery] string? rejectionReason)
         {
-            var result = rejectionReason == null
-                ? (true, "Your loan application has been approved!")
-                : (false, $"Application rejected: {rejectionReason}");
+            var result = new BuildApplicationOutcomeResponse
+            {
+                IsApproved = string.IsNullOrWhiteSpace(rejectionReason),
+                Message = string.IsNullOrWhiteSpace(rejectionReason)
+                    ? "Your loan application has been approved!"
+                    : $"Application rejected: {rejectionReason}",
+            };
+
             return Ok(result);
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -44,7 +45,14 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<AutoDeposit> GetAutoDepositAsync(int accountId)
         {
-            return await _apiService.GetAsync<AutoDeposit>($"/api/savings/{accountId}/auto-deposit");
+            try
+            {
+                return await _apiService.GetAsync<AutoDeposit>($"/api/savings/{accountId}/auto-deposit");
+            }
+            catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
 
         public async Task<List<FundingSourceOption>> GetFundingSourcesAsync(int userId)
@@ -59,7 +67,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<GetTransactionsResponse> GetTransactionsAsync(int accountId, string filter = "", int page = 1, int pageSize = 20)
         {
-            return await _apiService.GetAsync<GetTransactionsResponse>($"/api/savings/{accountId}/transactions?filter={filter}&page={page}&pageSize={pageSize}");
+            return await _apiService.GetAsync<GetTransactionsResponse>($"/api/savings/{accountId}/transactions?filter={Uri.EscapeDataString(filter)}&page={page}&pageSize={pageSize}");
         }
 
         public async Task<List<SavingsAccount>> GetValidTransferDestinationsAsync(int currentAccountId, int userId)
@@ -69,7 +77,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task SaveAutoDepositAsync(AutoDeposit autoDeposit)
         {
-            await _apiService.PostAsync<AutoDeposit, Task>("/api/savings/auto-deposit", autoDeposit);
+            await _apiService.PostAsync<AutoDeposit, object>("/api/savings/auto-deposit", autoDeposit);
         }
 
         public async Task<WithdrawResponseDto> WithdrawAsync(int accountId, decimal amount, string destinationLabel, decimal earlyWithdrawalPenalty)
