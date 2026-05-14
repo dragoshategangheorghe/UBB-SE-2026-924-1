@@ -95,6 +95,13 @@ namespace BankApp.Client.ViewModels
                 return;
             }
 
+            // --- CLIENT-SIDE PROTECTION: BUY ORDER WALLET LIMIT ---
+            if (ActionType == "BUY" && TotalAmount > CurrentBalance)
+            {
+                StatusMessage = $"⚠️ Insufficient Funds: Total cost ({TotalAmount:N2} RON) exceeds your wallet balance ({CurrentBalance:N2} RON).";
+                return;
+            }
+
             IsProcessing = true;
             StatusMessage = "Processing secure network order verification...";
 
@@ -108,27 +115,50 @@ namespace BankApp.Client.ViewModels
                     _ => 0m
                 };
 
-                // Triggers API pipeline directly
                 bool success = await _service.ExecuteTradeAsync(1, SelectedTicker, ActionType, qty, currentMarketPrice);
 
                 if (success)
                 {
                     StatusMessage = "Transaction verified successfully!";
 
-                    // Unified Application Router Frame Navigation
                     if (App.MainAppWindow?.Content is Frame targetFrame && targetFrame.CanGoBack)
                     {
                         targetFrame.GoBack();
                     }
                 }
-                else
-                {
-                    StatusMessage = "Server dropped execution package. Validate account balances.";
-                }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Error responding: {ex.Message}";
+                // --- CLEAN JSON STRING PARSING FOR ERROR DUMPS ---
+                string rawError = ex.Message;
+                if (rawError.Contains("Body: "))
+                {
+                    try
+                    {
+                        int bodyStartIndex = rawError.IndexOf("Body: ") + 6;
+                        string jsonBody = rawError.Substring(bodyStartIndex);
+
+                        if (jsonBody.Contains("\"detail\":\""))
+                        {
+                            int detailStart = jsonBody.IndexOf("\"detail\":\"") + 10;
+                            int detailEnd = jsonBody.IndexOf("\"", detailStart);
+                            StatusMessage = $"⚠️ {jsonBody.Substring(detailStart, detailEnd - detailStart)}";
+                        }
+                        else
+                        {
+                            StatusMessage = "⚠️ Transaction rejected by server validations.";
+                        }
+                    }
+                    catch
+                    {
+                        StatusMessage = "⚠️ Validation processing failure.";
+                    }
+                }
+                else
+                {
+                    StatusMessage = $"⚠️ Connection Error: {ex.Message}";
+                }
+
                 Debug.WriteLine($"Trade Failure Trace: {ex.Message}");
             }
             finally

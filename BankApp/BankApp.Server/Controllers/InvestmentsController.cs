@@ -31,31 +31,48 @@
 
             return Ok(portfolio);
         }
-
         [HttpPost("trade")]
         public async Task<IActionResult> ExecuteTrade([FromBody] TradeRequest request)
         {
-            // 1. Calculate the math (Fees, etc.)
+            // 1. Calculate trade math (values and fees) upfront
             decimal feeRate = 0.015m;
             decimal tradeValue = request.quantity * request.price;
             decimal fees = Math.Round(tradeValue * feeRate, 2);
+            decimal totalCost = tradeValue + fees;
 
-            // 2. Fetch current portfolio to get totals
+            // 2. Fetch current user portfolio context
             var portfolio = _repo.GetPortfolio(request.userId);
             var holding = portfolio.Holdings.FirstOrDefault(h => h.Ticker == request.ticker);
 
             decimal currentQty = holding?.Quantity ?? 0;
             decimal currentAvgPrice = holding?.AvgPurchasePrice ?? 0;
 
-            // 3. Calculate new totals
+            if (request.action == "SELL" && currentQty < request.quantity)
+            {
+                return BadRequest(new
+                {
+                    error = "Insufficient Asset Balance",
+                    detail = $"You cannot sell {request.quantity} {request.ticker}. You only hold {currentQty} {request.ticker}."
+                });
+            }
+
+            if (request.action == "BUY" && portfolio.TotalValue < totalCost)
+            {
+                return BadRequest(new
+                {
+                    error = "Insufficient Capital Buying Power",
+                    detail = $"Transaction cost of {totalCost:N2} RON exceeds your portfolio account margin limits."
+                });
+            }
+
+            // 3. Calculate new totals safely
             decimal finalQty = request.action == "BUY" ? currentQty + request.quantity : currentQty - request.quantity;
 
-            // Prevent division by zero if selling everything
             decimal finalAvgPrice = (request.action == "BUY" && finalQty > 0)
                 ? ((currentQty * currentAvgPrice) + (request.quantity * request.price)) / finalQty
                 : currentAvgPrice;
 
-            // 4. Save to DB
+            // 4. Save clean data state to database
             await _repo.RecordCryptoTradeAsync(
                 portfolio.Id,
                 request.ticker,
