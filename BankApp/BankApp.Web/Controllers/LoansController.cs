@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers;
 
-[AllowAnonymousSession]
 public class LoansController : WebControllerBase
 {
     private readonly ILoansService _loansService;

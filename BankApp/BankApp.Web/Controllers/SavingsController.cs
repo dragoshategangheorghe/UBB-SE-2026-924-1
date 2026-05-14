@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers;
 
-[AllowAnonymousSession]
 public class SavingsController : WebControllerBase
 {
     private const string OverviewTab = "overview";
