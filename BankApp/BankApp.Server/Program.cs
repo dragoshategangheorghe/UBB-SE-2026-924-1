@@ -82,8 +82,9 @@ builder.Services.AddScoped<IChatMessageDAO, ChatMessageDAO>();
 
 // --- INFRASTRUCTURE SERVICES ---
 builder.Services.AddScoped<IHashService, HashService>();
-string? jwtSecret = builder.Configuration["Jwt:Secret"];
-builder.Services.AddScoped<IJWTService>(_ => new JWTService(jwtSecret!));
+// Ensure the secret is being pulled from the config
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+builder.Services.AddSingleton<IJWTService>(new JWTService(jwtSecret));
 builder.Services.AddScoped<IOTPService, OTPService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();

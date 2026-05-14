@@ -269,7 +269,7 @@ namespace BankApp.Server.DataAccess
             // --- Investment Feature Deep Configuration ---
             modelBuilder.Entity<BankApp.Models.Entities.Portfolio>(entity =>
             {
-                entity.HasKey(p => p.IdentificationNumber); // Ensure PK matches Entity
+                entity.HasKey(p => p.Id); // Ensure PK matches Entity
 
                 entity.HasOne(p => p.User)
                     .WithMany()
@@ -284,7 +284,7 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<BankApp.Models.Entities.InvestmentHolding>(entity =>
             {
-                entity.HasKey(h => h.IdentificationNumber);
+                entity.HasKey(h => h.Id);
 
                 entity.HasMany(h => h.Transactions)
                     .WithOne(t => t.Holding)
@@ -294,7 +294,7 @@ namespace BankApp.Server.DataAccess
 
             modelBuilder.Entity<BankApp.Models.Entities.InvestmentTransaction>(entity =>
             {
-                entity.HasKey(t => t.IdentificationNumber);
+                entity.HasKey(t => t.Id);
             });
         }
     }

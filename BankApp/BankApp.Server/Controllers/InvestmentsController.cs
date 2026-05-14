@@ -1,5 +1,6 @@
 ﻿namespace BankApp.Server.Controllers
 {
+    using System.Linq;
     using System.Threading.Tasks;
     using BankApp.Models.Entities;
     using BankApp.Server.Repositories.Interfaces;
@@ -10,7 +11,26 @@
     public class InvestmentsController : ControllerBase
     {
         private readonly IInvestmentRepository _repo;
-        public InvestmentsController(IInvestmentRepository repo) => _repo = repo;
+
+        public InvestmentsController(IInvestmentRepository repo)
+        {
+            _repo = repo;
+        }
+
+        // --- THE MISSING METHOD ---
+        [HttpGet("portfolio/{userId}")]
+        public async Task<IActionResult> GetPortfolio(int userId)
+        {
+            // This calls the repository method we just verified
+            var portfolio = _repo.GetPortfolio(userId);
+
+            if (portfolio == null)
+            {
+                return NotFound($"Portfolio for user {userId} not found.");
+            }
+
+            return Ok(portfolio);
+        }
 
         [HttpPost("trade")]
         public async Task<IActionResult> ExecuteTrade([FromBody] TradeRequest request)
@@ -25,17 +45,19 @@
             var holding = portfolio.Holdings.FirstOrDefault(h => h.Ticker == request.ticker);
 
             decimal currentQty = holding?.Quantity ?? 0;
-            decimal currentAvgPrice = holding?.AveragePurchasePrice ?? 0;
+            decimal currentAvgPrice = holding?.AvgPurchasePrice ?? 0;
 
             // 3. Calculate new totals
             decimal finalQty = request.action == "BUY" ? currentQty + request.quantity : currentQty - request.quantity;
-            decimal finalAvgPrice = request.action == "BUY"
+
+            // Prevent division by zero if selling everything
+            decimal finalAvgPrice = (request.action == "BUY" && finalQty > 0)
                 ? ((currentQty * currentAvgPrice) + (request.quantity * request.price)) / finalQty
                 : currentAvgPrice;
 
             // 4. Save to DB
             await _repo.RecordCryptoTradeAsync(
-                portfolio.IdentificationNumber,
+                portfolio.Id,
                 request.ticker,
                 request.action,
                 request.quantity,

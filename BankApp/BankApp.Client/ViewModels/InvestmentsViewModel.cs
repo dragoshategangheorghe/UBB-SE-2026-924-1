@@ -4,20 +4,22 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
-using BankApp.Models.Entities;
+using System.Windows.Input;
+using BankApp.Client.Commands;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Client.Utilities;
 using BankApp.Models.Entities;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace BankApp.Client.ViewModels
 {
     public class InvestmentsViewModel : System.ComponentModel.INotifyPropertyChanged
     {
-        private const string RefreshPricesEventName = "refreshPrices";
         private readonly DispatcherQueue? dispatcherQueue;
+        private readonly IInvestmentsService investmentsService;
 
         private string activeFilterType = "All";
         private ObservableCollection<InvestmentHolding> displayedHoldings;
@@ -25,19 +27,24 @@ namespace BankApp.Client.ViewModels
         private bool isPortfolioLoading;
         private Portfolio userPortfolio;
 
-        private readonly IInvestmentsService investmentsService;
-
         public InvestmentsViewModel(IInvestmentsService investmentsService)
         {
             this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            this.SelectFilterCommand = new RelayCommand<string>(this.ApplyFilter);
-
             this.investmentsService = investmentsService;
+
+            // Commands
+            this.SelectFilterCommand = new RelayCommand<string>(this.ApplyFilter);
+            this.OpenTradeDialogCommand = new RelayCommand(async () => await this.HandleTradeAsync());
+
             this.userPortfolio = new Portfolio();
             this.displayedHoldings = new ObservableCollection<InvestmentHolding>();
         }
 
+        // --- Commands ---
         public ICommand SelectFilterCommand { get; }
+        public ICommand OpenTradeDialogCommand { get; }
+
+        // --- Properties ---
         public bool IsEmptyStateVisible => !this.IsPortfolioLoading && !this.DisplayedHoldings.Any();
         public bool IsHoldingsVisible => !this.IsEmptyStateVisible;
 
@@ -89,8 +96,7 @@ namespace BankApp.Client.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
+        // --- Logic ---
         public void EnsureInitialized()
         {
             if (this.hasLoaded)
@@ -105,12 +111,11 @@ namespace BankApp.Client.ViewModels
         public async void LoadUserPortfolio()
         {
             this.IsPortfolioLoading = true;
-
             try
             {
                 var portfolio = await investmentsService.GetPortfolioForCurrentUserAsync();
 
-                if (this.UserPortfolio is not null)
+                if (portfolio != null)
                 {
                     this.UserPortfolio = portfolio;
                     this.RefreshDisplayedHoldings();
@@ -126,6 +131,19 @@ namespace BankApp.Client.ViewModels
             }
         }
 
+        private async Task HandleTradeAsync()
+        {
+            // This is much simpler and avoids that double-negative logic
+            if (App.MainAppWindow?.Content is Frame rootFrame)
+            {
+                rootFrame.Navigate(typeof(BankApp.Client.Views.CryptoTradingView));
+            }
+            else
+            {
+                Debug.WriteLine("Navigation Error: Root content is not a Frame.");
+            }
+        }
+
         public void ApplyFilter(string? filterType)
         {
             this.ActiveFilterType = string.IsNullOrWhiteSpace(filterType) ? "All" : filterType;
@@ -136,10 +154,14 @@ namespace BankApp.Client.ViewModels
             this.DisplayedHoldings.Clear();
             var holdings = this.UserPortfolio?.Holdings ?? Enumerable.Empty<InvestmentHolding>();
 
-            // Filters logic: if All, show all; otherwise filter by type
-            var filtered = this.ActiveFilterType == "All"
-                ? holdings
-                : holdings.Where(h => h.AssetType.Equals(this.ActiveFilterType, StringComparison.OrdinalIgnoreCase));
+            // Fixed the plural/singular logic (Filter says "Stocks", DB says "Stock")
+            var filtered = this.ActiveFilterType switch
+            {
+                "All" => holdings,
+                "Stocks" => holdings.Where(h => h.AssetType.Equals("Stock", StringComparison.OrdinalIgnoreCase)),
+                "Crypto" => holdings.Where(h => h.AssetType.Equals("Crypto", StringComparison.OrdinalIgnoreCase)),
+                _ => holdings.Where(h => h.AssetType.Equals(this.ActiveFilterType, StringComparison.OrdinalIgnoreCase))
+            };
 
             foreach (var holding in filtered)
             {
@@ -151,9 +173,9 @@ namespace BankApp.Client.ViewModels
 
         public void StopMarketDataPolling()
         {
-            // Logic to stop server polling can be implemented here if needed
         }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

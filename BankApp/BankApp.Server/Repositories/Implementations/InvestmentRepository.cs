@@ -74,7 +74,7 @@
                 if (holding != null)
                 {
                     holding.Quantity = finalQuantity;
-                    holding.AveragePurchasePrice = finalAveragePrice;
+                    holding.AvgPurchasePrice = finalAveragePrice;
                     holding.CurrentPrice = pricePerUnit;
                 }
                 else
@@ -85,7 +85,7 @@
                         Ticker = ticker,
                         AssetType = "Crypto",
                         Quantity = finalQuantity,
-                        AveragePurchasePrice = finalAveragePrice,
+                        AvgPurchasePrice = finalAveragePrice,
                         CurrentPrice = pricePerUnit
                     };
                     this._db.InvestmentHoldings.Add(holding);
@@ -94,7 +94,7 @@
 
                 this._db.InvestmentTransactions.Add(new InvestmentTransaction
                 {
-                    HoldingId = holding.IdentificationNumber,
+                    HoldingId = holding.Id,
                     Ticker = ticker,
                     ActionType = actionType.ToUpperInvariant(),
                     Quantity = quantity,

@@ -1,6 +1,7 @@
 using BankApp.Client.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace BankApp.Client.Views
 {
@@ -10,7 +11,7 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            // Unified GUI: Initialize the ViewModel and link DataContext
+            // Link the ViewModel (Using the Service from your App.xaml.cs)
             this.ViewModel = new InvestmentsViewModel(App.InvestmentsService);
             this.DataContext = this.ViewModel;
 
@@ -22,12 +23,14 @@ namespace BankApp.Client.Views
 
         private void OnPageLoaded(object sender, RoutedEventArgs e)
         {
+            // Triggers the data fetch from the Server
             this.ViewModel.EnsureInitialized();
         }
 
         private void OnPageUnloaded(object sender, RoutedEventArgs e)
         {
             this.ViewModel.StopMarketDataPolling();
+            // Important: Remove handlers to prevent memory leaks
             this.Loaded -= this.OnPageLoaded;
             this.Unloaded -= this.OnPageUnloaded;
         }

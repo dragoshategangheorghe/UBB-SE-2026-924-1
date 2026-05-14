@@ -1,20 +1,41 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace BankApp.Models.Entities
 {
+    /// <summary>
+    /// Represents a specific asset holding within a user's investment portfolio.
+    /// </summary>
+    [Table("InvestmentHolding")]
     public class InvestmentHolding
     {
         [Key]
-        public int IdentificationNumber { get; set; }
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Column("portfolioId")]
         public int PortfolioId { get; set; }
-        public virtual Portfolio Portfolio { get; set; } = null!;
+
+        [Column("ticker")]
         public string Ticker { get; set; } = string.Empty;
+
+        [Column("assetType")]
         public string AssetType { get; set; } = string.Empty;
+
+        [Column("quantity")]
         public decimal Quantity { get; set; }
-        public decimal AveragePurchasePrice { get; set; }
+
+        [Column("avgPurchasePrice")]
+        public decimal AvgPurchasePrice { get; set; }
+
+        [Column("currentPrice")]
         public decimal CurrentPrice { get; set; }
-        public decimal UnrealizedGainLoss { get; set; }
+
+        [ForeignKey("PortfolioId")]
+        public virtual Portfolio Portfolio { get; set; } = null!;
+
         public virtual ICollection<InvestmentTransaction> Transactions { get; set; } = new List<InvestmentTransaction>();
     }
 }

@@ -2,10 +2,10 @@ using System;
 using System.Globalization;
 using BankApp.Client.Master;
 using BankApp.Client.RepoProxies;
-using BankApp.Client.RepoProxies.Implementations;
-using BankApp.Client.RepoProxies.Interfaces;
-using BankApp.Client.Services.Implementations;
-using BankApp.Client.Services.Interfaces;
+using global::BankApp.Client.Services.Interfaces;
+using global::BankApp.Client.Services.Implementations;
+using global::BankApp.Client.RepoProxies.Interfaces;
+using global::BankApp.Client.RepoProxies.Implementations;
 using BankApp.Client.State;
 using BankApp.Client.ViewModels; // Added for the new ViewModel
 using BankApp.Models.Entities;

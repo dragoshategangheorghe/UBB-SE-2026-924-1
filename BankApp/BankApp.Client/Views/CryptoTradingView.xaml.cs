@@ -14,7 +14,6 @@ namespace BankApp.Client.Views
         {
             this.InitializeComponent();
 
-            // Cast App.Current so we can see the Services property
             var app = (App)Application.Current;
             this.ViewModel = app.Services.GetService<CryptoTradingViewModel>();
             this.DataContext = this.ViewModel;
@@ -25,6 +24,19 @@ namespace BankApp.Client.Views
             if (sender is RadioButton rb && ViewModel != null)
             {
                 ViewModel.ActionType = rb.Tag?.ToString() ?? "BUY";
+            }
+        }
+
+        private void OnBackButtonClicked(object sender, RoutedEventArgs e)
+        {
+            // Reliable UI-level frame manipulation routing
+            if (this.Frame != null && this.Frame.CanGoBack)
+            {
+                this.Frame.GoBack();
+            }
+            else
+            {
+                this.Frame?.Navigate(typeof(InvestmentsView));
             }
         }
     }

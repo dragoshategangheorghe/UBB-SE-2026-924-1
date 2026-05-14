@@ -14,7 +14,17 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24" Spacing="24" MaxWidth="600" HorizontalAlignment="Left">
-            <TextBlock Text="Crypto Trading" FontSize="28" FontWeight="Bold" />
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="" 
+                        FontFamily="Segoe MDL2 Assets" 
+                        Click="OnBackButtonClicked" 
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        FontSize="16" 
+                        VerticalAlignment="Center"/>
+                <TextBlock Text="Crypto Trading" FontSize="28" FontWeight="Bold" VerticalAlignment="Center" />
+            </StackPanel>
 
             <Border Background="#FFF4CE" BorderBrush="#FFD666" BorderThickness="1" CornerRadius="8" Padding="16">
                 <StackPanel Orientation="Horizontal" Spacing="12">
@@ -51,7 +61,7 @@
                          Text="{Binding QuantityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
-            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Foreground="DarkBlue" />
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Foreground="White" FontWeight="Medium" />
 
             <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8"
@@ -76,8 +86,10 @@
                 </StackPanel>
             </Border>
 
-            <Button Content="Execute Trade" Command="{Binding ExecuteTradeCommand}"
-                    Style="{StaticResource AccentButtonStyle}" Width="150" />
+            <Button Content="Execute Trade" 
+                    Command="{Binding ExecuteTradeCommand}"
+                    Style="{StaticResource AccentButtonStyle}" 
+                    Width="150" />
         </StackPanel>
     </ScrollViewer>
 </Page>
