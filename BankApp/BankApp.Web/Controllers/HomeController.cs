@@ -1,3 +1,4 @@
+using BankApp.Web.Infrastructure;
 using BankApp.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -5,6 +6,7 @@ using System.Diagnostics;
 namespace BankApp.Web.Controllers
 {
     //[Authorize]
+    [AllowAnonymousSession] // delete this? 
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

@@ -57,38 +57,38 @@ builder.Services.AddScoped<ApiService>(serviceProvider =>
 // ADD Client Proxy Repositories as singletons (because they don't actually store any data)
 // there are no dependencies below them, besides giving them the ApiService, which is truly independent
 
-builder.Services.AddSingleton<IAccountRepoProxy, AccountRepoProxy>();
-builder.Services.AddSingleton<IAuthRepoProxy, AuthRepoProxy>();
-builder.Services.AddSingleton<ICardRepoProxy, CardRepoProxy>();
-builder.Services.AddSingleton<IChatRepoProxy, ChatRepoProxy>();
-builder.Services.AddSingleton<IDashboardRepoProxy, DashboardRepoProxy>();
-builder.Services.AddSingleton<IInvestmentsRepoProxy, InvestmentsRepoProxy>();
-builder.Services.AddSingleton<ILoanApplicationPresentationRepoProxy, LoanApplicationPresentationRepoProxy>();
-builder.Services.AddSingleton<ILoanDialogStateRepoProxy, LoanDialogStateRepoProxy>();
-builder.Services.AddSingleton<ILoansRepoProxy, LoansRepoProxy>();
-builder.Services.AddSingleton<IProfileRepoProxy, ProfileRepoProxy>();
-builder.Services.AddSingleton<ISavingsPresentationRepoProxy, SavingsPresentationRepoProxy>();
-builder.Services.AddSingleton<ISavingsRepoProxy, SavingsRepoProxy>();
-builder.Services.AddSingleton<ISavingsUiRulesRepoProxy, SavingsUiRulesRepoProxy>();
-builder.Services.AddSingleton<ISavingsWorkflowRepoProxy, SavingsWorkflowRepoProxy>();
-builder.Services.AddSingleton<IStatisticsRepoProxy,  StatisticsRepoProxy>();
-builder.Services.AddSingleton<ITransactionRepoProxy, TransactionRepoProxy>();
+builder.Services.AddScoped<IAccountRepoProxy, AccountRepoProxy>();
+builder.Services.AddScoped<IAuthRepoProxy, AuthRepoProxy>();
+builder.Services.AddScoped<ICardRepoProxy, CardRepoProxy>();
+builder.Services.AddScoped<IChatRepoProxy, ChatRepoProxy>();
+builder.Services.AddScoped<IDashboardRepoProxy, DashboardRepoProxy>();
+builder.Services.AddScoped<IInvestmentsRepoProxy, InvestmentsRepoProxy>();
+builder.Services.AddScoped<ILoanApplicationPresentationRepoProxy, LoanApplicationPresentationRepoProxy>();
+builder.Services.AddScoped<ILoanDialogStateRepoProxy, LoanDialogStateRepoProxy>();
+builder.Services.AddScoped<ILoansRepoProxy, LoansRepoProxy>();
+builder.Services.AddScoped<IProfileRepoProxy, ProfileRepoProxy>();
+builder.Services.AddScoped<ISavingsPresentationRepoProxy, SavingsPresentationRepoProxy>();
+builder.Services.AddScoped<ISavingsRepoProxy, SavingsRepoProxy>();
+builder.Services.AddScoped<ISavingsUiRulesRepoProxy, SavingsUiRulesRepoProxy>();
+builder.Services.AddScoped<ISavingsWorkflowRepoProxy, SavingsWorkflowRepoProxy>();
+builder.Services.AddScoped<IStatisticsRepoProxy,  StatisticsRepoProxy>();
+builder.Services.AddScoped<ITransactionRepoProxy, TransactionRepoProxy>();
 
 
 // ADD CLIENT SERVICES AS SINGLETONS
 
-builder.Services.AddSingleton<IAccountService, AccountService>();
-builder.Services.AddSingleton<IAuthService, AuthService>();
-builder.Services.AddSingleton<ICardService, CardService>();
-builder.Services.AddSingleton<IChatService, ChatService>();
-builder.Services.AddSingleton<IDashboardService, DashboardService>();
-builder.Services.AddSingleton<IInvestmentsService, InvestmentsService>();
-builder.Services.AddSingleton<ILoansService, LoansService>();
-builder.Services.AddSingleton<INotificationClientService, NotificationClientService>();
-builder.Services.AddSingleton<IProfileService, ProfileService>();
-builder.Services.AddSingleton<ISavingsService, SavingsService>();
-builder.Services.AddSingleton<IStatisticsService, StatisticsService>();
-builder.Services.AddSingleton<ITransactionHistoryService, TransactionHistoryService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
+builder.Services.AddScoped<ILoansService, LoansService>();
+builder.Services.AddScoped<INotificationClientService, NotificationClientService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ISavingsService, SavingsService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
 
 var app = builder.Build();
 
@@ -103,11 +103,8 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
 
-app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 
 app.MapControllerRoute(
