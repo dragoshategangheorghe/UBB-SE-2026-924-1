@@ -115,7 +115,16 @@ namespace BankApp.Client.ViewModels
                     _ => 0m
                 };
 
-                bool success = await _service.ExecuteTradeAsync(1, SelectedTicker, ActionType, qty, currentMarketPrice);
+                // Get the ID from the App's global Auth Service
+                int? userId = App.AuthService.GetCurrentUserId();
+
+                if (!userId.HasValue)
+                {
+                    StatusMessage = "⚠️ Session expired. Please log in again.";
+                    return;
+                }
+
+                bool success = await _service.ExecuteTradeAsync(userId.Value, SelectedTicker, ActionType, qty, currentMarketPrice);
 
                 if (success)
                 {

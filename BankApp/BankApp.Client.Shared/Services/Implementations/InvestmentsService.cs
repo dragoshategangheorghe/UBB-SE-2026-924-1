@@ -1,5 +1,7 @@
 namespace BankApp.Client.Services.Implementations
 {
+    using System;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using BankApp.Client.RepoProxies.Interfaces;
     using BankApp.Client.Services.Interfaces;
@@ -8,10 +10,12 @@ namespace BankApp.Client.Services.Implementations
     public class InvestmentsService : IInvestmentsService
     {
         private readonly IInvestmentsRepoProxy _investmentsRepo;
+        private readonly IAuthService _authService;
 
-        public InvestmentsService(IInvestmentsRepoProxy investmentsRepo)
+        public InvestmentsService(IInvestmentsRepoProxy investmentsRepo, IAuthService authService)
         {
             this._investmentsRepo = investmentsRepo;
+            this._authService = authService;
         }
 
         public async Task<Portfolio?> GetPortfolioAsync(int userId)
@@ -21,8 +25,16 @@ namespace BankApp.Client.Services.Implementations
 
         public async Task<Portfolio?> GetPortfolioForCurrentUserAsync()
         {
-            // Points to Vlad (ID 1) as requested for current setup
-            return await this.GetPortfolioAsync(1);
+            // Dynamically fetch the ID from the Auth Session
+            int? userId = this._authService.GetCurrentUserId();
+
+            if (!userId.HasValue)
+            {
+                Debug.WriteLine("InvestmentsService: Attempted to fetch portfolio, but no user is logged in.");
+                return null;
+            }
+
+            return await this.GetPortfolioAsync(userId.Value);
         }
 
         public async Task<bool> ExecuteTradeAsync(int userId, string ticker, string action, decimal quantity, decimal price)
