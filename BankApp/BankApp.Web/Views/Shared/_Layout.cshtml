@@ -65,50 +65,55 @@
 </header>
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-sm-10 px-0 bg-primary">
+            <div class="col-auto bg-primary px-1 pt-3">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
                     <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                        <span class="fs-5 d-none d-sm-inline">BankApp</span>
+                        <div class="d-flex gap-2">
+                            <span style="background-color: #16213E; padding: 1em; padding-bottom: 0.4em; padding-top: 0.4em; border-radius: 10px;">&#xE8AB;</span>
+                            <span class="fs-5 d-none d-sm-inline text-center" style="font-weight: bold;">BankApp</span>
+                            <div class="ps-4">&#xEA8F;</div>
+                            <div class="">0</div>
+                        </div>
                     </a>
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                         <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Dashboard" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Dashboard</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "custom-active" : "")" asp-area="" asp-controller="Dashboard" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Dashboard</span></a>
+                                                                                                                                                </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Accounts" ? "custom-active" : "")" asp-area="" asp-controller="Accounts" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Accounts</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Accounts" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Accounts</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transfers" ? "custom-active" : "")" asp-area="" asp-controller="Transfers" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Transfers</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Transfers" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Transfers</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "BillPayments" ? "custom-active" : "")" asp-area="" asp-controller="BillPayments" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Bill Payments</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="BillPayments" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Bill Payments</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Cards" ? "custom-active" : "")" asp-area="" asp-controller="Cards" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Cards</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Cards" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Cards</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "TransferHistory" ? "custom-active" : "")" asp-area="" asp-controller="TransferHistory" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Transfer History</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="TransferHistory" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Transfer History</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "CurrencyExchange" ? "custom-active" : "")" asp-area="" asp-controller="CurrencyExchange" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Currency Exchange</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="CurrencyExchange" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Currency Exchange</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SavingsAndLoans" ? "custom-active" : "")" asp-area="" asp-controller="SavingsAndLoans" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Savings & Loans</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="SavingsAndLoans" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Savings & Loans</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "InvestmentsAndTrading" ? "custom-active" : "")" asp-area="" asp-controller="InvestmentsAndTrading" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Investments & Trading</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Investments" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Investments & Trading</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Statistics" ? "custom-active" : "")" asp-area="" asp-controller="Statistics" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Support</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Statistics" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Support</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Support" ? "custom-active" : "")" asp-area="" asp-controller="Support" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Statistics</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Chat" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Statistics</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Profile" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Profile</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Profile" ? "custom-active" : "")" asp-area="" asp-controller="Profile" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Profile</span></a>
                         </li>
                         <li class="nav-item mt-5">
-                            <a class="nav-link" onmousedown="setTimeout(setActiveNavItem, 2000, this)" onmouseout="this.style.color='#FF6B6B'" onmouseover="this.style.color='#d84545'" style="color: #FF6B6B" asp-area="" asp-controller="Home" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Log Out</span></a>
+                            <a class="nav-link" onmouseout="this.style.color='#FF6B6B'" onmouseover="this.style.color='#d84545'" style="color: #FF6B6B" asp-area="" asp-controller="Home" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Log Out</span></a>
                         </li>
                     </ul>
                 </div>
@@ -130,11 +135,5 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    
-    <script>
-        function setActiveNavItem(event) {
-            event.style.color = 'black';
-        }
-    </script>
     </body>
 </html>

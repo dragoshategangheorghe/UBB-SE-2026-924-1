@@ -1,3 +1,26 @@
-﻿.nav-item > .active {
-    color: black;
+﻿.nav-link {
+    padding-left: 1.5em;
+    color: #AAA;
+}
+
+.nav-link:hover {
+    color: #7a7a7a;
+}
+
+.nav-item > .custom-active {
+    z-index: 1000;
+    color: white;
+    text-decoration: none;
+    background-color: #16213E;
+    padding: 0.7em;
+    padding-left: 1.5em;
+    padding-right: 5em;
+    border-style: solid;
+    border-color: #4ECDC4;
+    border-radius: 12px;
+    border-width: 2px;
+}
+
+.nav-item > .custom-active:hover {
+    color: white;
 }
