@@ -27,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Auth\" />
     <Folder Include="Views\Accounts\" />
     <Folder Include="Views\Loans\" />
     <Folder Include="Views\Investments\" />

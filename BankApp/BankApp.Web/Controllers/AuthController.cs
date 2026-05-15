@@ -8,7 +8,8 @@ public class AuthController : Controller
 {
     public IActionResult Index(string? returnUrl = null)
     {
-        ViewData["ReturnUrl"] = returnUrl;
-        return Content("Authentication is outside the scope of this task.");
+        //ViewData["ReturnUrl"] = returnUrl;
+        return View();
+
     }
 }
