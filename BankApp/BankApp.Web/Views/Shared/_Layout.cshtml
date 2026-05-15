@@ -65,14 +65,14 @@
 </header>
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-primary">
+            <div class="col-auto col-md-3 col-xl-2 px-sm-10 px-0 bg-primary">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
                     <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                         <span class="fs-5 d-none d-sm-inline">BankApp</span>
                     </a>
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                         <li class="nav-item">
-                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Dashboard" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Dashboard</span></a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Dashboard" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Dashboard</span></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Accounts" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Accounts</span></a>
@@ -107,6 +107,9 @@
                         <li class="nav-item">
                             <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Profile" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Profile</span></a>
                         </li>
+                        <li class="nav-item mt-5">
+                            <a class="nav-link" onmousedown="setTimeout(setActiveNavItem, 2000, this)" onmouseout="this.style.color='#FF6B6B'" onmouseover="this.style.color='#d84545'" style="color: #FF6B6B" asp-area="" asp-controller="Home" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Log Out</span></a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -127,5 +130,11 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+    
+    <script>
+        function setActiveNavItem(event) {
+            event.style.color = 'black';
+        }
+    </script>
+    </body>
 </html>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,9 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Chat\**" />
+    <Compile Remove="Views\Crypto\**" />
     <Compile Remove="wwwroot\NewFolder\**" />
+    <Content Remove="Views\Chat\**" />
+    <Content Remove="Views\Crypto\**" />
     <Content Remove="wwwroot\NewFolder\**" />
+    <EmbeddedResource Remove="Views\Chat\**" />
+    <EmbeddedResource Remove="Views\Crypto\**" />
     <EmbeddedResource Remove="wwwroot\NewFolder\**" />
+    <None Remove="Views\Chat\**" />
+    <None Remove="Views\Crypto\**" />
     <None Remove="wwwroot\NewFolder\**" />
   </ItemGroup>
 
@@ -20,13 +28,10 @@
 
   <ItemGroup>
     <Folder Include="Views\Auth\" />
-    <Folder Include="Views\Dashboard\" />
     <Folder Include="Views\Accounts\" />
     <Folder Include="Views\Loans\" />
     <Folder Include="Views\Investments\" />
     <Folder Include="Views\Profile\" />
-    <Folder Include="Views\Crypto\" />
-    <Folder Include="Views\Chat\" />
     <Folder Include="Views\Statistics\" />
     <Folder Include="Views\Transactions\" />
     <Folder Include="Views\Savings\" />
