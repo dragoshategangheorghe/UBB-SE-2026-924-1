@@ -1,4 +1,4 @@
-﻿using BankApp.Models.Features.Savings;
+using BankApp.Models.Features.Savings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
@@ -39,7 +39,7 @@ namespace BankApp.Server.Controllers
             var hasRisk = selectedAccount?.SavingsType == "FixedDeposit" &&
                           selectedAccount.MaturityDate.HasValue &&
                           selectedAccount.MaturityDate.Value > DateTime.UtcNow;
-            return Ok(new { HasClosePenaltyRisk = hasRisk });
+            return Ok(hasRisk);
         }
     }
 }

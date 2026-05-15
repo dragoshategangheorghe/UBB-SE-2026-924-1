@@ -1,0 +1,14 @@
+@model string
+
+<div class="finance-switch nav nav-pills">
+    <a class="nav-link @(Model == "savings" ? "active" : string.Empty)"
+       asp-controller="Savings"
+       asp-action="Index">
+        Savings
+    </a>
+    <a class="nav-link @(Model == "loans" ? "active" : string.Empty)"
+       asp-controller="Loans"
+       asp-action="Index">
+        Loans
+    </a>
+</div>

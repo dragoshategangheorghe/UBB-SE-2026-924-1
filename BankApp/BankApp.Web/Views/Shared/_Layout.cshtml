@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+@inject BankApp.Web.Infrastructure.IWebSessionContext SessionContext
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- <meta charset="utf-8">-->
@@ -126,11 +127,14 @@
         </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - BankApp.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+        <footer class="app-footer">
+            <div class="container-xxl">
+                <span>BankApp Web</span>
+                <span>Loans and savings</span>
+            </div>
+        </footer>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

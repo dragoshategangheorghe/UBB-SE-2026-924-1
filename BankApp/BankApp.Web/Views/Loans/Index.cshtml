@@ -1,0 +1,296 @@
+@using System.Linq
+@model LoansPageViewModel
+@{
+    ViewData["Title"] = "Loans";
+    var activeLoans = Model.Loans.Count(loan => loan.Loan.LoanStatus == BankApp.Models.Enums.LoanStatus.Active);
+    var totalOutstanding = Model.Loans.Sum(loan => loan.Loan.OutstandingBalance);
+    var averageProgress = Model.Loans.Count == 0 ? 0 : Model.Loans.Average(loan => loan.RepaymentProgress);
+}
+
+<div class="finance-page">
+    @await Html.PartialAsync("_FinanceTabs", "loans")
+
+    <section class="hero-panel">
+        <div class="hero-copy">
+            <span class="hero-kicker">Loans desk</span>
+            <h1>Track repayments and apply with confidence.</h1>
+            <p>Review open debt, project new installments, and inspect each amortization schedule without leaving the module.</p>
+        </div>
+        <div class="hero-metrics">
+            <article class="metric-card">
+                <span>Active loans</span>
+                <strong>@activeLoans</strong>
+                <small>@Model.Loans.Count total products</small>
+            </article>
+            <article class="metric-card">
+                <span>Outstanding</span>
+                <strong>@totalOutstanding.ToString("C0")</strong>
+                <small>Across all visible loans</small>
+            </article>
+            <article class="metric-card">
+                <span>Repayment progress</span>
+                <strong>@averageProgress.ToString("N0")%</strong>
+                <small>Average completion rate</small>
+            </article>
+        </div>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="alert alert-success shadow-sm" role="alert">@Model.StatusMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger shadow-sm" role="alert">@Model.ErrorMessage</div>
+    }
+
+    <div class="row g-4 align-items-start">
+        <div class="col-12 col-xl-4">
+            <section class="surface-card h-100">
+                <div class="section-title-wrap">
+                    <span class="section-kicker">Apply</span>
+                    <h2>New loan request</h2>
+                </div>
+
+                <form asp-action="Apply" method="post" class="stack-form js-loan-estimate-form" data-estimate-url="@Url.Action("Estimate", "Loans")">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="statusFilter" value="@Model.SelectedStatusFilter" />
+                    <input type="hidden" name="typeFilter" value="@Model.SelectedTypeFilter" />
+
+                    <div>
+                        <label asp-for="Application.LoanType" class="form-label"></label>
+                        <select asp-for="Application.LoanType" class="form-select js-loan-type" asp-items="Html.GetEnumSelectList<BankApp.Models.Enums.LoanType>()"></select>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label asp-for="Application.DesiredAmount" class="form-label"></label>
+                            <input asp-for="Application.DesiredAmount" class="form-control js-loan-amount" placeholder="10000" />
+                            <span asp-validation-for="Application.DesiredAmount" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="Application.PreferredTermMonths" class="form-label"></label>
+                            <input asp-for="Application.PreferredTermMonths" class="form-control js-loan-term" placeholder="36" />
+                            <span asp-validation-for="Application.PreferredTermMonths" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label asp-for="Application.Purpose" class="form-label"></label>
+                        <textarea asp-for="Application.Purpose" class="form-control js-loan-purpose" rows="3" placeholder="What is the funding for?"></textarea>
+                        <span asp-validation-for="Application.Purpose" class="text-danger small"></span>
+                    </div>
+
+                    <div class="estimate-card d-none">
+                        <span>Indicative estimate</span>
+                        <div class="estimate-grid">
+                            <div>
+                                <strong class="js-estimate-rate">-</strong>
+                                <small>Interest rate</small>
+                            </div>
+                            <div>
+                                <strong class="js-estimate-monthly">-</strong>
+                                <small>Monthly payment</small>
+                            </div>
+                            <div>
+                                <strong class="js-estimate-total">-</strong>
+                                <small>Total repayable</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Submit application</button>
+                </form>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <section class="surface-card">
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-4">
+                    <div class="section-title-wrap mb-0">
+                        <span class="section-kicker">Portfolio</span>
+                        <h2>Current loans</h2>
+                    </div>
+
+                    <form asp-action="Index" method="get" class="row g-2 align-items-end filter-form">
+                        <div class="col-auto">
+                            <label class="form-label">Status</label>
+                            <select name="statusFilter" class="form-select">
+                                <option value="">All</option>
+                                @foreach (var status in Enum.GetValues<BankApp.Models.Enums.LoanStatus>())
+                                {
+                                    if (Model.SelectedStatusFilter == status)
+                                    {
+                                        <option value="@status" selected>@status</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@status">@status</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label">Type</label>
+                            <select name="typeFilter" class="form-select">
+                                <option value="">All</option>
+                                @foreach (var type in Enum.GetValues<BankApp.Models.Enums.LoanType>())
+                                {
+                                    if (Model.SelectedTypeFilter == type)
+                                    {
+                                        <option value="@type" selected>@type</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@type">@type</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-outline-secondary">Apply filters</button>
+                        </div>
+                    </form>
+                </div>
+
+                @if (!Model.HasLoans)
+                {
+                    <div class="empty-panel compact">
+                        <h3>No loans yet</h3>
+                        <p>Once a loan is approved, it will appear here with its progress and repayment actions.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="loan-grid">
+                        @foreach (var loan in Model.Loans)
+                        {
+                            <article class="loan-card">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <span class="card-kicker">@loan.Loan.LoanType loan</span>
+                                        <h3>@loan.Loan.Principal.ToString("C0")</h3>
+                                    </div>
+                                    <span class="status-pill @(loan.Loan.LoanStatus == BankApp.Models.Enums.LoanStatus.Active ? "status-pill-active" : "status-pill-closed")">@loan.Loan.LoanStatus</span>
+                                </div>
+
+                                <div class="loan-meta-grid">
+                                    <div>
+                                        <span>Outstanding</span>
+                                        <strong>@loan.Loan.OutstandingBalance.ToString("C2")</strong>
+                                    </div>
+                                    <div>
+                                        <span>Monthly</span>
+                                        <strong>@loan.Loan.MonthlyInstallment.ToString("C2")</strong>
+                                    </div>
+                                    <div>
+                                        <span>Interest</span>
+                                        <strong>@loan.Loan.InterestRate.ToString("N2")%</strong>
+                                    </div>
+                                    <div>
+                                        <span>Remaining</span>
+                                        <strong>@loan.Loan.RemainingMonths mo</strong>
+                                    </div>
+                                </div>
+
+                                <div class="goal-progress">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Repayment progress</span>
+                                        <span>@loan.RepaymentProgress.ToString("N0")%</span>
+                                    </div>
+                                    <div class="progress" role="progressbar" aria-valuenow="@loan.RepaymentProgress" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar" style="width:@loan.RepaymentProgress%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button"
+                                            class="btn btn-primary js-payment-launch"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#paymentModal"
+                                            data-loan-id="@loan.Loan.Id"
+                                            data-loan-type="@loan.Loan.LoanType"
+                                            data-balance="@loan.Loan.OutstandingBalance.ToString("F2")"
+                                            data-installment="@loan.Loan.MonthlyInstallment.ToString("F2")"
+                                            data-remaining="@loan.Loan.RemainingMonths">
+                                        Pay installment
+                                    </button>
+                                    <a asp-action="Schedule" asp-route-id="@loan.Loan.Id" class="btn btn-outline-secondary">Schedule</a>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-surface">
+            <div class="modal-header border-0">
+                <div>
+                    <span class="section-kicker">Repayment</span>
+                    <h5 class="modal-title" id="paymentModalLabel">Pay installment</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="PayInstallment" method="post" class="stack-form js-payment-form" data-preview-url="@Url.Action("PaymentPreview", "Loans")">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Payment.LoanId" class="js-payment-loan-id" />
+                    <input type="hidden" name="statusFilter" value="@Model.SelectedStatusFilter" />
+                    <input type="hidden" name="typeFilter" value="@Model.SelectedTypeFilter" />
+
+                    <div class="mini-metrics single">
+                        <div>
+                            <span>Outstanding balance</span>
+                            <strong class="js-payment-balance">-</strong>
+                        </div>
+                        <div>
+                            <span>Minimum installment</span>
+                            <strong class="js-payment-installment">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input js-payment-mode" id="payment-mode-standard" type="radio" name="Payment.UseCustomAmount" value="false" checked />
+                        <label class="form-check-label" for="payment-mode-standard">Standard payment</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input js-payment-mode" id="payment-mode-custom" type="radio" name="Payment.UseCustomAmount" value="true" />
+                        <label class="form-check-label" for="payment-mode-custom">Custom payment</label>
+                    </div>
+
+                    <div class="custom-payment-wrap d-none">
+                        <label asp-for="Payment.CustomAmount" class="form-label"></label>
+                        <input asp-for="Payment.CustomAmount" class="form-control js-payment-custom-amount" placeholder="0.00" />
+                    </div>
+
+                    <div class="estimate-card preview-card">
+                        <span>After payment</span>
+                        <div class="estimate-grid">
+                            <div>
+                                <strong class="js-preview-balance">-</strong>
+                                <small>Outstanding balance</small>
+                            </div>
+                            <div>
+                                <strong class="js-preview-remaining">-</strong>
+                                <small>Remaining term</small>
+                            </div>
+                        </div>
+                        <div class="text-danger small d-none js-preview-error"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Confirm payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

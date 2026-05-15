@@ -27,7 +27,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<string> GetNumberOfAccountsText(int accountCount)
         {
-            return await _apiService.GetAsync<string>($"/accounts-text/{accountCount}");
+            return await _apiService.GetAsync<string>($"/api/savings-presentation/accounts-text/{accountCount}");
         }
 
         public async Task<string> GetTotalSavedAmount(IEnumerable<SavingsAccount> accounts)

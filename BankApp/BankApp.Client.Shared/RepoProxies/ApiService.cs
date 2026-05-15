@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -94,7 +93,7 @@ namespace BankApp.Client.RepoProxies
                 return parsed;
             }
 
-            string truncated = json.Length > JsonTruncateLength ? json[..JsonTruncateLength] + "…" : json;
+            string truncated = json.Length > JsonTruncateLength ? json[..JsonTruncateLength] + "â€¦" : json;
             throw new HttpRequestException(
                 $"Request to '{endpoint}' failed: {(int)response.StatusCode} {response.StatusCode}. Body: {truncated}",
                 null,
@@ -167,7 +166,7 @@ namespace BankApp.Client.RepoProxies
             string body = await response.Content.ReadAsStringAsync();
             if (body.Length > JsonTruncateLength)
             {
-                body = body[..JsonTruncateLength] + "…";
+                body = body[..JsonTruncateLength] + "â€¦";
             }
 
             throw new HttpRequestException(
@@ -178,16 +177,21 @@ namespace BankApp.Client.RepoProxies
 
         private static async Task<T?> ReadJsonAsync<T>(HttpResponseMessage response)
         {
+            string body = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return default;
+            }
+
             try
             {
-                return await response.Content.ReadFromJsonAsync<T>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                return JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             }
             catch (Exception jsonEx)
             {
-                string body = await response.Content.ReadAsStringAsync();
                 if (body.Length > JsonTruncateLength)
                 {
-                    body = body[..JsonTruncateLength] + "…";
+                    body = body[..JsonTruncateLength] + "â€¦";
                 }
 
                 throw new InvalidOperationException(

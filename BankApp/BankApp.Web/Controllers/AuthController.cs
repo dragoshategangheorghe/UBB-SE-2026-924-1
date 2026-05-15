@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using BankApp.Web.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
-namespace BankApp.Web.Controllers
+namespace BankApp.Web.Controllers;
+
+[AllowAnonymousSession]
+public class AuthController : Controller
 {
-    public class AuthController : Controller
+    public IActionResult Index(string? returnUrl = null)
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        ViewData["ReturnUrl"] = returnUrl;
+        return Content("Authentication is outside the scope of this task.");
     }
 }
