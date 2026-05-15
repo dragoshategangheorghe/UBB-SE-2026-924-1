@@ -1,7 +1,12 @@
+using BankApp.Client.RepoProxies;
+using BankApp.Client.Services.Implementations;
+using BankApp.Client.Services.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add controllers to the container.
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 

@@ -312,16 +312,16 @@ namespace BankApp.Server.Migrations
                 name: "Portfolio",
                 columns: table => new
                 {
-                    IdentificationNumber = table.Column<int>(type: "int", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    userId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Portfolio", x => x.IdentificationNumber);
+                    table.PrimaryKey("PK_Portfolio", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Portfolio_User_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Portfolio_User_userId",
+                        column: x => x.userId,
                         principalTable: "User",
                         principalColumn: "Id");
                 });
@@ -497,24 +497,23 @@ namespace BankApp.Server.Migrations
                 name: "InvestmentHolding",
                 columns: table => new
                 {
-                    IdentificationNumber = table.Column<int>(type: "int", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    PortfolioId = table.Column<int>(type: "int", nullable: false),
-                    Ticker = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AssetType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AveragePurchasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CurrentPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    UnrealizedGainLoss = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    portfolioId = table.Column<int>(type: "int", nullable: false),
+                    ticker = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    assetType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    avgPurchasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    currentPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InvestmentHolding", x => x.IdentificationNumber);
+                    table.PrimaryKey("PK_InvestmentHolding", x => x.id);
                     table.ForeignKey(
-                        name: "FK_InvestmentHolding_Portfolio_PortfolioId",
-                        column: x => x.PortfolioId,
+                        name: "FK_InvestmentHolding_Portfolio_portfolioId",
+                        column: x => x.portfolioId,
                         principalTable: "Portfolio",
-                        principalColumn: "IdentificationNumber",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -649,25 +648,25 @@ namespace BankApp.Server.Migrations
                 name: "InvestmentTransaction",
                 columns: table => new
                 {
-                    IdentificationNumber = table.Column<int>(type: "int", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    HoldingId = table.Column<int>(type: "int", nullable: false),
-                    Ticker = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PricePerUnit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Fees = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OrderType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExecutedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    holdingId = table.Column<int>(type: "int", nullable: false),
+                    ticker = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    actionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    pricePerUnit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    fees = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    orderType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    executedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InvestmentTransaction", x => x.IdentificationNumber);
+                    table.PrimaryKey("PK_InvestmentTransaction", x => x.id);
                     table.ForeignKey(
-                        name: "FK_InvestmentTransaction_InvestmentHolding_HoldingId",
-                        column: x => x.HoldingId,
+                        name: "FK_InvestmentTransaction_InvestmentHolding_holdingId",
+                        column: x => x.holdingId,
                         principalTable: "InvestmentHolding",
-                        principalColumn: "IdentificationNumber",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -742,14 +741,14 @@ namespace BankApp.Server.Migrations
                 column: "userId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvestmentHolding_PortfolioId",
+                name: "IX_InvestmentHolding_portfolioId",
                 table: "InvestmentHolding",
-                column: "PortfolioId");
+                column: "portfolioId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvestmentTransaction_HoldingId",
+                name: "IX_InvestmentTransaction_holdingId",
                 table: "InvestmentTransaction",
-                column: "HoldingId");
+                column: "holdingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Loan_UserId",
@@ -782,9 +781,9 @@ namespace BankApp.Server.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Portfolio_UserId",
+                name: "IX_Portfolio_userId",
                 table: "Portfolio",
-                column: "UserId");
+                column: "userId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SavingsAccount_FundingAccountId",

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankApp.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260512135600_InitialCreate")]
+    [Migration("20260514210539_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -169,36 +169,40 @@ namespace BankApp.Server.Migrations
 
             modelBuilder.Entity("BankApp.Models.Entities.InvestmentHolding", b =>
                 {
-                    b.Property<int>("IdentificationNumber")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdentificationNumber"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AssetType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("assetType");
 
-                    b.Property<decimal>("AveragePurchasePrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<decimal>("AvgPurchasePrice")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("avgPurchasePrice");
 
                     b.Property<decimal>("CurrentPrice")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("currentPrice");
 
                     b.Property<int>("PortfolioId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("portfolioId");
 
                     b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("quantity");
 
                     b.Property<string>("Ticker")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ticker");
 
-                    b.Property<decimal>("UnrealizedGainLoss")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("IdentificationNumber");
+                    b.HasKey("Id");
 
                     b.HasIndex("PortfolioId");
 
@@ -207,40 +211,49 @@ namespace BankApp.Server.Migrations
 
             modelBuilder.Entity("BankApp.Models.Entities.InvestmentTransaction", b =>
                 {
-                    b.Property<int>("IdentificationNumber")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdentificationNumber"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("actionType");
 
                     b.Property<DateTime>("ExecutedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("executedAt");
 
                     b.Property<decimal>("Fees")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("fees");
 
                     b.Property<int>("HoldingId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("holdingId");
 
                     b.Property<string>("OrderType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("orderType");
 
                     b.Property<decimal>("PricePerUnit")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("pricePerUnit");
 
                     b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("quantity");
 
                     b.Property<string>("Ticker")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ticker");
 
-                    b.HasKey("IdentificationNumber");
+                    b.HasKey("Id");
 
                     b.HasIndex("HoldingId");
 
@@ -392,16 +405,18 @@ namespace BankApp.Server.Migrations
 
             modelBuilder.Entity("BankApp.Models.Entities.Portfolio", b =>
                 {
-                    b.Property<int>("IdentificationNumber")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdentificationNumber"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("userId");
 
-                    b.HasKey("IdentificationNumber");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
 

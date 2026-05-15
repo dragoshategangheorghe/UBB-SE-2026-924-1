@@ -1,39 +1,121 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <meta charset="utf-8">-->
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] - BankApp.Web</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/BankApp.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true"/>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BankApp.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+<body style="font-family: 'Segoe UI', 'Noto Sans', sans-serif;">
+<header>
+    <!--
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BankApp.Web</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1" style="color: #AAA">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Dashboard" asp-action="Index">&#8962; Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Accounts" asp-action="Index">Accounts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Transfers" asp-action="Index">Transfers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="BillPayments" asp-action="Index">Bill Payments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Cards" asp-action="Index">Cards</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="TransferHistory" asp-action="Index">Transfer History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="CurrencyExchange" asp-action="Index">Currency Exchange</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="SavingsAndLoansController" asp-action="Index">Savings & Loans</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="InvestmentsController" asp-action="Index">Investments & Trading</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Statistics" asp-action="Index">Support</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Support" asp-action="Index">Statistics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Profile" asp-action="Index">Profile</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    -->
+</header>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-primary">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">BankApp</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Dashboard" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Dashboard</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Accounts" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Accounts</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Transfers" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Transfers</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="BillPayments" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Bill Payments</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Cards" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Cards</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="TransferHistory" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Transfer History</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="CurrencyExchange" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Currency Exchange</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="SavingsAndLoans" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Savings & Loans</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Investments" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Investments & Trading</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Statistics" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Support</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Chat" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Statistics</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onmouseout="this.style.color='#AAA'" onmouseover="this.style.color='#7d7d7d'" style="color: #AAA" asp-area="" asp-controller="Profile" asp-action="Index">&#xE80F;<span class="ms-1 d-none d-sm-inline">Profile</span></a>
                         </li>
                     </ul>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
     </div>
 
     <footer class="border-top footer text-muted">
