@@ -33,6 +33,9 @@ namespace BankApp.Models.Entities
         [Column("currentPrice")]
         public decimal CurrentPrice { get; set; }
 
+        [Column("unrealizedGainLoss")]
+        public decimal UnrealizedGainLoss { get; set; }
+
         [ForeignKey("PortfolioId")]
         public virtual Portfolio Portfolio { get; set; } = null!;
 
