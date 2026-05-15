@@ -9,6 +9,6 @@
     /// </summary>
     public interface IAccountService
     {
-        Task<IEnumerable<Account>> GetUserAccountsAsync(int userId);
+        Task<IEnumerable<Account>> GetAccountsAsync();
     }
 }

@@ -1,3 +1,4 @@
+using BankApp.Client.Views;
 using Microsoft.UI.Xaml.Controls;
 
 namespace BankApp.Client.Master
@@ -19,12 +20,12 @@ namespace BankApp.Client.Master
 
         public void NavigateTo<TPage>()
         {
-            _frame?.Navigate(typeof(TPage));
+            NavigateInternal(_frame, typeof(TPage));
         }
 
         public void NavigateToContent<TPage>()
         {
-            _contentFrame?.Navigate(typeof(TPage));
+            NavigateInternal(_contentFrame, typeof(TPage));
         }
 
         public void GoBack()
@@ -38,6 +39,27 @@ namespace BankApp.Client.Master
         public bool CanGoBack()
         {
             return _frame?.CanGoBack ?? false;
+        }
+
+        private void NavigateInternal(Frame? frame, System.Type pageType)
+        {
+            if (frame == null)
+            {
+                return;
+            }
+
+            bool isPublicPage = pageType == typeof(LoginView) ||
+                                pageType == typeof(RegisterView) ||
+                                pageType == typeof(ForgotPasswordView) ||
+                                pageType == typeof(TwoFactorView);
+
+            if (!isPublicPage && (App.AuthService == null || !App.AuthService.IsAuthenticated()))
+            {
+                frame.Navigate(typeof(LoginView));
+                return;
+            }
+
+            frame.Navigate(pageType);
         }
     }
 }

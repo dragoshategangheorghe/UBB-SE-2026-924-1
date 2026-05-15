@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,12 +13,13 @@ namespace BankApp.Client.ViewModels
     public class StatisticsViewModel : BaseViewModel
     {
         private readonly IStatisticsService _statisticsService;
+        private readonly IAuthService _authService;
         private readonly AsyncRelayCommand _refreshCommand;
 
         private bool _isLoading;
-        private bool _isStatusOpen;
-        private InfoBarSeverity _statusSeverity;
         private string _statusMessage = string.Empty;
+        private bool _isStatusOpen;
+        private InfoBarSeverity _statusSeverity = InfoBarSeverity.Informational;
         private decimal _income;
         private decimal _expenses;
         private decimal _net;
@@ -28,13 +28,14 @@ namespace BankApp.Client.ViewModels
         private double _maxBalanceAmount = 1;
         private double _maxTopRecipientAmount = 1;
 
-        public StatisticsViewModel(IStatisticsService statisticsService)
+        public StatisticsViewModel(IStatisticsService statisticsService, IAuthService authService)
         {
             _statisticsService = statisticsService;
+            _authService = authService;
             SpendingByCategory = new ObservableCollection<CategorySpendingPointDto>();
             BalanceTrends = new ObservableCollection<BalanceTrendPointDto>();
             TopRecipients = new ObservableCollection<TopCounterpartyDto>();
-            _refreshCommand = new AsyncRelayCommand(LoadAsync);
+            _refreshCommand = new AsyncRelayCommand(LoadAsync, () => !_isLoading);
         }
 
         public ObservableCollection<CategorySpendingPointDto> SpendingByCategory { get; }
@@ -48,10 +49,11 @@ namespace BankApp.Client.ViewModels
         public bool IsLoading
         {
             get => _isLoading;
-            set
+            private set
             {
                 if (SetProperty(ref _isLoading, value))
                 {
+                    _refreshCommand.RaiseCanExecuteChanged();
                     OnPropertyChanged(nameof(LoadingVisibility));
                 }
             }
@@ -59,71 +61,80 @@ namespace BankApp.Client.ViewModels
 
         public Visibility LoadingVisibility => IsLoading ? Visibility.Visible : Visibility.Collapsed;
 
-        public bool IsStatusOpen
-        {
-            get => _isStatusOpen;
-            set => SetProperty(ref _isStatusOpen, value);
-        }
-
         public string StatusMessage
         {
             get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
+            private set => SetProperty(ref _statusMessage, value);
+        }
+
+        public bool IsStatusOpen
+        {
+            get => _isStatusOpen;
+            private set => SetProperty(ref _isStatusOpen, value);
         }
 
         public InfoBarSeverity StatusSeverity
         {
             get => _statusSeverity;
-            set => SetProperty(ref _statusSeverity, value);
+            private set => SetProperty(ref _statusSeverity, value);
         }
 
         public decimal Income
         {
             get => _income;
-            set => SetProperty(ref _income, value);
+            private set => SetProperty(ref _income, value);
         }
 
         public decimal Expenses
         {
             get => _expenses;
-            set => SetProperty(ref _expenses, value);
+            private set => SetProperty(ref _expenses, value);
         }
 
         public decimal Net
         {
             get => _net;
-            set => SetProperty(ref _net, value);
+            private set => SetProperty(ref _net, value);
         }
 
         public decimal TotalSpending
         {
             get => _totalSpending;
-            set => SetProperty(ref _totalSpending, value);
+            private set => SetProperty(ref _totalSpending, value);
         }
 
         public double MaxCategoryAmount
         {
             get => _maxCategoryAmount;
-            set => SetProperty(ref _maxCategoryAmount, value);
+            private set => SetProperty(ref _maxCategoryAmount, value);
         }
 
         public double MaxBalanceAmount
         {
             get => _maxBalanceAmount;
-            set => SetProperty(ref _maxBalanceAmount, value);
+            private set => SetProperty(ref _maxBalanceAmount, value);
         }
 
         public double MaxTopRecipientAmount
         {
             get => _maxTopRecipientAmount;
-            set => SetProperty(ref _maxTopRecipientAmount, value);
+            private set => SetProperty(ref _maxTopRecipientAmount, value);
         }
+
+        public bool HasData => SpendingByCategory.Count > 0 || BalanceTrends.Count > 0 || TopRecipients.Count > 0;
 
         public async Task LoadAsync()
         {
+            if (!_authService.IsAuthenticated())
+            {
+                ShowStatus("You must sign in to view statistics.", InfoBarSeverity.Warning);
+                return;
+            }
+
             try
             {
                 IsLoading = true;
+                ShowStatus(string.Empty, InfoBarSeverity.Informational);
 
                 Task<SpendingByCategoryResponse?> spendingTask = _statisticsService.GetSpendingByCategoryAsync();
                 Task<IncomeVsExpensesResponse?> incomeTask = _statisticsService.GetIncomeVsExpensesAsync();
@@ -157,6 +168,13 @@ namespace BankApp.Client.ViewModels
                 MaxCategoryAmount = SpendingByCategory.Count == 0 ? 1 : (double)SpendingByCategory.Max(item => item.Amount);
                 MaxBalanceAmount = BalanceTrends.Count == 0 ? 1 : (double)BalanceTrends.Max(item => item.Balance);
                 MaxTopRecipientAmount = TopRecipients.Count == 0 ? 1 : (double)TopRecipients.Max(item => item.TotalAmount);
+
+                ShowStatus("Statistics refreshed successfully.", InfoBarSeverity.Success);
+                OnPropertyChanged(nameof(HasData));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowStatus("Your session expired. Please sign in again.", InfoBarSeverity.Warning);
             }
             catch (Exception ex)
             {
@@ -165,6 +183,7 @@ namespace BankApp.Client.ViewModels
             finally
             {
                 IsLoading = false;
+                OnPropertyChanged(nameof(HasData));
             }
         }
 
@@ -175,7 +194,7 @@ namespace BankApp.Client.ViewModels
             IsStatusOpen = !string.IsNullOrWhiteSpace(message);
         }
 
-        private static void ReplaceCollection<T>(ObservableCollection<T> target, IEnumerable<T> source)
+        private static void ReplaceCollection<T>(ObservableCollection<T> target, System.Collections.Generic.IEnumerable<T> source)
         {
             target.Clear();
             foreach (T item in source)

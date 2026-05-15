@@ -9,6 +9,6 @@
     /// </summary>
     public interface IAccountRepoProxy
     {
-        Task<IEnumerable<Account>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Account>> GetAuthenticatedAccountsAsync();
     }
 }

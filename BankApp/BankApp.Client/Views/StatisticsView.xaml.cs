@@ -1,6 +1,6 @@
-using System.ComponentModel;
-using System.Globalization;
+using System;
 using BankApp.Client.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -11,9 +11,8 @@ namespace BankApp.Client.Views
         public StatisticsView()
         {
             InitializeComponent();
-            ViewModel = new StatisticsViewModel(App.StatisticsService);
+            ViewModel = App.Services.GetRequiredService<StatisticsViewModel>();
             DataContext = ViewModel;
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             Loaded += StatisticsView_Loaded;
             Unloaded += StatisticsView_Unloaded;
         }
@@ -22,38 +21,15 @@ namespace BankApp.Client.Views
 
         private async void StatisticsView_Loaded(object sender, RoutedEventArgs e)
         {
-            await ViewModel.LoadAsync();
-            UpdateSummaryValues();
+            if (!ViewModel.IsLoading && !ViewModel.HasData)
+            {
+                await ViewModel.LoadAsync();
+            }
         }
 
         private void StatisticsView_Unloaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             ViewModel.Dispose();
-        }
-
-        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(StatisticsViewModel.Income) ||
-                e.PropertyName == nameof(StatisticsViewModel.Expenses) ||
-                e.PropertyName == nameof(StatisticsViewModel.Net) ||
-                e.PropertyName == nameof(StatisticsViewModel.TotalSpending))
-            {
-                UpdateSummaryValues();
-            }
-        }
-
-        private void UpdateSummaryValues()
-        {
-            IncomeValueText.Text = FormatCurrency(ViewModel.Income);
-            ExpensesValueText.Text = FormatCurrency(ViewModel.Expenses);
-            NetValueText.Text = FormatCurrency(ViewModel.Net);
-            TotalSpendingText.Text = $"Total spending: {FormatCurrency(ViewModel.TotalSpending)}";
-        }
-
-        private static string FormatCurrency(decimal value)
-        {
-            return value.ToString("0.00", CultureInfo.CurrentCulture);
         }
     }
 }

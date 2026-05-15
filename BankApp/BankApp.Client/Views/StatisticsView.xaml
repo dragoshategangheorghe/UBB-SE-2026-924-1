@@ -1,31 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="BankApp.Client.Views.StatisticsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="using:BankApp.Client.Utilities"
     x:Name="RootPage"
-    RequestedTheme="Light"
-    Background="#F4F6FA">
+    mc:Ignorable="d">
 
-    <Grid>
+    <Page.Resources>
+        <utils:DecimalToCurrencyConverter x:Key="CurrencyConverter" />
+        <utils:DateToMonthYearConverter x:Key="MonthYearConverter" />
+        <utils:BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
+
+    <Grid Background="#F5F7FB">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Padding="28" Spacing="18">
-                <InfoBar
-                    IsOpen="{Binding IsStatusOpen, Mode=TwoWay}"
-                    Severity="{Binding StatusSeverity}"
-                    Message="{Binding StatusMessage}" />
-
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="Statistics &amp; Analytics" FontSize="26" FontWeight="Bold" Foreground="#1A1A2E" />
-                        <TextBlock Text="Track spending habits, cashflow balance, and top recipients from your transaction history." Foreground="#5B6170" TextWrapping="Wrap" />
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Statistics" FontSize="30" FontWeight="SemiBold" Foreground="#111827" />
+                        <TextBlock Text="Analytics are pulled only for an authenticated session and never bypass the session token." Foreground="#6B7280" TextWrapping="Wrap" />
                     </StackPanel>
-                    <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" />
+
+                    <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" Style="{ThemeResource AccentButtonStyle}" />
                 </Grid>
+
+                <InfoBar IsOpen="{Binding IsStatusOpen}" Severity="{Binding StatusSeverity}" Message="{Binding StatusMessage}" />
 
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -34,61 +40,65 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="White" CornerRadius="18" Padding="18">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Income" FontWeight="SemiBold" Foreground="#4E5566" />
-                            <TextBlock x:Name="IncomeValueText" FontSize="28" FontWeight="Bold" Foreground="#0F766E" />
+                    <Border CornerRadius="18" Background="White" Padding="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Income" Foreground="#6B7280" />
+                            <TextBlock Text="{Binding Income, Converter={StaticResource CurrencyConverter}}" FontSize="28" FontWeight="SemiBold" Foreground="#0F766E" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="1" Background="White" CornerRadius="18" Padding="18">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Expenses" FontWeight="SemiBold" Foreground="#4E5566" />
-                            <TextBlock x:Name="ExpensesValueText" FontSize="28" FontWeight="Bold" Foreground="#B91C1C" />
+                    <Border Grid.Column="1" CornerRadius="18" Background="White" Padding="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Expenses" Foreground="#6B7280" />
+                            <TextBlock Text="{Binding Expenses, Converter={StaticResource CurrencyConverter}}" FontSize="28" FontWeight="SemiBold" Foreground="#B91C1C" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Background="White" CornerRadius="18" Padding="18">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Net" FontWeight="SemiBold" Foreground="#4E5566" />
-                            <TextBlock x:Name="NetValueText" FontSize="28" FontWeight="Bold" Foreground="#1D4ED8" />
+                    <Border Grid.Column="2" CornerRadius="18" Background="White" Padding="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Net" Foreground="#6B7280" />
+                            <TextBlock Text="{Binding Net, Converter={StaticResource CurrencyConverter}}" FontSize="28" FontWeight="SemiBold" Foreground="#1D4ED8" />
                         </StackPanel>
                     </Border>
                 </Grid>
 
-                <Grid>
+                <Border CornerRadius="20" Background="White" Padding="18">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Spending by Category" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+                        <TextBlock Text="{Binding TotalSpending, StringFormat='Total spending: {0:C2}'}" Foreground="#6B7280" />
+
+                        <ItemsControl ItemsSource="{Binding SpendingByCategory}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="6" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding CategoryName}" FontWeight="SemiBold" Foreground="#111827" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Amount, Converter={StaticResource CurrencyConverter}}" Foreground="#4B5563" />
+                                        </Grid>
+                                        <Grid>
+                                            <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxCategoryAmount, ElementName=RootPage}" Value="{Binding Amount}" Height="8" />
+                                            <TextBlock HorizontalAlignment="Right" Margin="0,10,0,0" Foreground="#6B7280" Text="{Binding ShareOfTotal, StringFormat='{}{0:P0}'}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="White" CornerRadius="18" Padding="18" Margin="0,0,18,0">
+                    <Border CornerRadius="20" Background="White" Padding="18">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Spending by Category" FontSize="18" FontWeight="SemiBold" />
-                            <TextBlock x:Name="TotalSpendingText" Foreground="#4E5566" />
-                            <ItemsControl ItemsSource="{Binding SpendingByCategory}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Spacing="6" Margin="0,0,0,12">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding CategoryName}" FontWeight="SemiBold" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Amount}" />
-                                            </Grid>
-                                            <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxCategoryAmount, ElementName=RootPage}" Value="{Binding Amount}" Height="8" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1" Background="White" CornerRadius="18" Padding="18">
-                        <StackPanel Spacing="12">
-                            <TextBlock Text="Top Recipients / Merchants" FontSize="18" FontWeight="SemiBold" />
+                            <TextBlock Text="Top Recipients / Merchants" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
                             <ItemsControl ItemsSource="{Binding TopRecipients}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -98,11 +108,11 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Text="{Binding TotalAmount}" />
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#111827" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Text="{Binding TotalAmount, Converter={StaticResource CurrencyConverter}}" Foreground="#4B5563" />
                                             </Grid>
                                             <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxTopRecipientAmount, ElementName=RootPage}" Value="{Binding TotalAmount}" Height="8" />
-                                            <TextBlock Foreground="#4E5566">
+                                            <TextBlock Foreground="#6B7280">
                                                 <Run Text="Transactions: " />
                                                 <Run Text="{Binding TransactionCount}" />
                                             </TextBlock>
@@ -112,34 +122,40 @@
                             </ItemsControl>
                         </StackPanel>
                     </Border>
+
+                    <Border Grid.Column="1" CornerRadius="20" Background="White" Padding="18">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Balance Trends" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+                            <ItemsControl ItemsSource="{Binding BalanceTrends}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Spacing="6" Margin="0,0,0,12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Date, Converter={StaticResource MonthYearConverter}}" FontWeight="SemiBold" Foreground="#111827" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Balance, Converter={StaticResource CurrencyConverter}}" Foreground="#4B5563" />
+                                            </Grid>
+                                            <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxBalanceAmount, ElementName=RootPage}" Value="{Binding Balance}" Height="8" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
                 </Grid>
 
-                <Border Background="White" CornerRadius="18" Padding="18">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Balance Trends" FontSize="18" FontWeight="SemiBold" />
-                        <ItemsControl ItemsSource="{Binding BalanceTrends}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Spacing="6" Margin="0,0,0,12">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Date}" FontWeight="SemiBold" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Balance}" />
-                                        </Grid>
-                                        <ProgressBar Minimum="0" Maximum="{Binding DataContext.MaxBalanceAmount, ElementName=RootPage}" Value="{Binding Balance}" Height="8" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
+                <Grid>
+                    <Border CornerRadius="20" Background="White" Padding="18" Visibility="{Binding HasData, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="All analytics are protected by the authenticated session and server-side authorization." Foreground="#6B7280" TextWrapping="Wrap" />
+                    </Border>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
 
-        <Grid Background="#80F4F6FA" Visibility="{Binding LoadingVisibility}">
+        <Grid Background="#80F5F7FB" Visibility="{Binding LoadingVisibility}">
             <ProgressRing Width="56" Height="56" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
     </Grid>

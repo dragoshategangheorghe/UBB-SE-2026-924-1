@@ -10,35 +10,104 @@
     <Page.Resources>
         <utils:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <utils:DecimalToCurrencyConverter x:Key="CurrencyConverter" />
+        <utils:AccountStatusToBrushConverter x:Key="StatusToBrush" />
     </Page.Resources>
 
-    <Grid Padding="40">
-        <StackPanel Spacing="20">
-            <TextBlock Text="My Bank Accounts" FontSize="28" FontWeight="Bold" />
+    <Grid Background="#F5F7FB">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="28" Spacing="18">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <ListView ItemsSource="{Binding Accounts}" SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                                CornerRadius="8" Padding="20" Margin="0,0,0,10"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                            <Grid>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding AccountName}" FontSize="18" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding IBAN}" Opacity="0.6" FontSize="14"/>
-                                    <TextBlock Text="{Binding AccountType}" FontSize="12" Opacity="0.5"/>
-                                </StackPanel>
-                                <TextBlock Text="{Binding Balance, Converter={StaticResource CurrencyConverter}}" 
-                                           HorizontalAlignment="Right" VerticalAlignment="Center"
-                                           FontSize="22" FontWeight="Bold" Foreground="Green"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Accounts" FontSize="30" FontWeight="SemiBold" Foreground="#111827" />
+                        <TextBlock Text="View secured balances, account types, and status details for the authenticated session." Foreground="#6B7280" TextWrapping="Wrap" />
+                    </StackPanel>
 
-        <ProgressRing IsActive="{Binding IsBusy}" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
-                      Width="50" Height="50" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" Style="{ThemeResource AccentButtonStyle}" />
+                </Grid>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border CornerRadius="18" Background="White" Padding="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Accounts" Foreground="#6B7280" />
+                            <TextBlock Text="{Binding AccountCount}" FontSize="28" FontWeight="SemiBold" Foreground="#111827" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" CornerRadius="18" Background="White" Padding="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Total Balance" Foreground="#6B7280" />
+                            <TextBlock Text="{Binding TotalBalance, Converter={StaticResource CurrencyConverter}}" FontSize="28" FontWeight="SemiBold" Foreground="#0F766E" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" CornerRadius="18" Background="White" Padding="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Session" Foreground="#6B7280" />
+                            <TextBlock Text="Protected" FontSize="28" FontWeight="SemiBold" Foreground="#1D4ED8" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <InfoBar IsOpen="{Binding HasError}" Severity="Error" Message="{Binding StatusMessage}" />
+                <InfoBar IsOpen="{Binding IsLoading}" Severity="Informational" Message="Loading secured account data..." />
+
+                <Border CornerRadius="20" Background="White" Padding="18">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Account Portfolio" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+
+                        <ListView ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" SelectionMode="Single" BorderThickness="0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="16" BorderThickness="1" BorderBrush="#E5E7EB" Background="#FBFCFE" Padding="16" Margin="0,0,0,12">
+                                        <Grid ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="{Binding AccountName}" FontSize="18" FontWeight="SemiBold" Foreground="#111827" />
+                                                <TextBlock Text="{Binding IBAN}" FontFamily="Consolas" Foreground="#6B7280" />
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <Border Background="#EEF2FF" CornerRadius="999" Padding="10,4">
+                                                        <TextBlock Text="{Binding AccountType}" Foreground="#4338CA" />
+                                                    </Border>
+                                                    <Border Background="#F3F4F6" CornerRadius="999" Padding="10,4">
+                                                        <TextBlock Text="{Binding Currency}" Foreground="#4B5563" />
+                                                    </Border>
+                                                    <Border Background="{Binding Status, Converter={StaticResource StatusToBrush}}" CornerRadius="999" Padding="10,4">
+                                                        <TextBlock Text="{Binding Status}" Foreground="White" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="4">
+                                                <TextBlock Text="{Binding Balance, Converter={StaticResource CurrencyConverter}}" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#0F172A" />
+                                                <TextBlock Text="{Binding CreatedAt, StringFormat='Opened {0:dd MMM yyyy}'}" HorizontalAlignment="Right" Foreground="#6B7280" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Background="#80F5F7FB" Visibility="{Binding LoadingVisibility}">
+            <ProgressRing Width="56" Height="56" IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
     </Grid>
 </Page>

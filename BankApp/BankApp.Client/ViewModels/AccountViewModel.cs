@@ -1,53 +1,126 @@
-﻿namespace BankApp.Client.ViewModels
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using BankApp.Client.Commands;
+using BankApp.Client.Services.Interfaces;
+using BankApp.Models.Entities;
+using Microsoft.UI.Xaml;
+
+namespace BankApp.Client.ViewModels
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Threading.Tasks;
-    using BankApp.Models.Entities;
-    using CommunityToolkit.Mvvm.ComponentModel;
-
-    /// <summary>
-    /// ViewModel for managing bank accounts.
-    /// </summary>
-    public partial class AccountViewModel : ObservableObject
+    public class AccountViewModel : BaseViewModel
     {
-        [ObservableProperty]
-        private ObservableCollection<Account> accounts = new ();
+        private readonly IAccountService _accountService;
+        private readonly IAuthService _authService;
+        private readonly AsyncRelayCommand _refreshCommand;
 
-        [ObservableProperty]
-        private bool isBusy;
+        private bool _isLoading;
+        private string _statusMessage = string.Empty;
+        private bool _hasError;
+        private Account? _selectedAccount;
 
-        /// <summary>
-        /// Loads accounts for a specific user via the AccountService.
-        /// </summary>
-        /// <param name="userId">The ID of the user.</param>
-        /// <returns>A task representing the operation.</returns>
-        public async Task LoadAccountsAsync(int userId)
+        public AccountViewModel(IAccountService accountService, IAuthService authService)
         {
-            this.IsBusy = true;
+            _accountService = accountService;
+            _authService = authService;
+            Accounts = new ObservableCollection<Account>();
+            _refreshCommand = new AsyncRelayCommand(LoadAsync, () => !_isLoading);
+        }
+
+        public ObservableCollection<Account> Accounts { get; }
+
+        public AsyncRelayCommand RefreshCommand => _refreshCommand;
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            private set
+            {
+                if (SetProperty(ref _isLoading, value))
+                {
+                    _refreshCommand.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(LoadingVisibility));
+                }
+            }
+        }
+
+        public Visibility LoadingVisibility => IsLoading ? Visibility.Visible : Visibility.Collapsed;
+
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            private set => SetProperty(ref _statusMessage, value);
+        }
+
+        public bool HasError
+        {
+            get => _hasError;
+            private set => SetProperty(ref _hasError, value);
+        }
+
+        public Account? SelectedAccount
+        {
+            get => _selectedAccount;
+            set => SetProperty(ref _selectedAccount, value);
+        }
+
+        public int AccountCount => Accounts.Count;
+
+        public decimal TotalBalance => Accounts.Sum(account => account.Balance);
+
+        public async Task LoadAsync()
+        {
+            if (!_authService.IsAuthenticated())
+            {
+                StatusMessage = "You must sign in to view accounts.";
+                HasError = true;
+                return;
+            }
+
             try
             {
-                // Refactored to use the Service instead of direct ApiService
-                var result = await App.AccountService.GetUserAccountsAsync(userId);
+                IsLoading = true;
+                HasError = false;
+                StatusMessage = string.Empty;
 
-                if (result != null)
+                var accounts = await _accountService.GetAccountsAsync();
+                Accounts.Clear();
+
+                foreach (Account account in accounts)
                 {
-                    this.Accounts.Clear();
-                    foreach (var account in result)
-                    {
-                        this.Accounts.Add(account);
-                    }
+                    Accounts.Add(account);
                 }
+
+                OnPropertyChanged(nameof(AccountCount));
+                OnPropertyChanged(nameof(TotalBalance));
+
+                if (Accounts.Count == 0)
+                {
+                    StatusMessage = "No accounts were found for the current session.";
+                    HasError = false;
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                StatusMessage = "Your session expired. Please sign in again.";
+                HasError = true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading accounts: {ex.Message}");
+                StatusMessage = $"Unable to load accounts: {ex.Message}";
+                HasError = true;
             }
             finally
             {
-                this.IsBusy = false;
+                IsLoading = false;
+                OnPropertyChanged(nameof(AccountCount));
+                OnPropertyChanged(nameof(TotalBalance));
             }
+        }
+
+        public override void Dispose()
+        {
         }
     }
 }
