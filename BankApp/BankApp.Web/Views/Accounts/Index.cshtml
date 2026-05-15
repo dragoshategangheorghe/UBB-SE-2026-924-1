@@ -1,0 +1,272 @@
+@using BankApp.Models.Entities
+@model IEnumerable<Account>
+
+@{
+    ViewData["Title"] = "Accounts";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="fw-bold mb-0">
+                    <i class="bi bi-wallet2"></i> My Accounts
+                </h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAccountModal">
+                    <i class="bi bi-plus-circle"></i> Add Account
+                </button>
+            </div>
+            <p class="text-muted">Manage and view all your bank accounts</p>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i>
+            <strong>No accounts found.</strong> Start by creating your first account.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var account in Model)
+            {
+                <div class="col-lg-6 col-xl-4">
+                    <div class="card shadow-sm h-100 account-card" data-account-id="@account.Id">
+                        <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">@(account.AccountName ?? "Unnamed Account")</h5>
+                                    <small class="text-white-50">@account.AccountType</small>
+                                </div>
+                                <span class="badge bg-light text-dark">@account.Status</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">Account Number (IBAN)</small>
+                                <div class="font-monospace">
+                                    <span class="account-iban">@account.IBAN</span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary btn-copy-iban ms-2" title="Copy IBAN">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block mb-1">Currency</small>
+                                    <span class="fw-semibold">@account.Currency</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block mb-1">Created</small>
+                                    <span class="fw-semibold">@account.CreatedAt.ToString("MM/dd/yyyy")</span>
+                                </div>
+                            </div>
+
+                            <div class="balance-section p-3 rounded-3" style="background-color: #f8f9fa;">
+                                <small class="text-muted d-block mb-1">Account Balance</small>
+                                <h3 class="fw-bold text-success mb-0">
+                                    @account.Currency @account.Balance.ToString("N2")
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary flex-grow-1 btn-view-details" data-account-id="@account.Id">
+                                <i class="bi bi-eye"></i> View Details
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary flex-grow-1 btn-edit-account" data-account-id="@account.Id">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Summary Section -->
+        <div class="row mt-5">
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted mb-2">Total Accounts</h6>
+                        <h3 class="fw-bold">@Model.Count()</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted mb-2">Total Balance</h6>
+                        <h3 class="fw-bold text-success">@Model.Sum(a => a.Balance).ToString("N2")</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted mb-2">Active Accounts</h6>
+                        <h3 class="fw-bold">@Model.Count(a => a.Status == "Active")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Account Details Modal -->
+<div class="modal fade" id="accountDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Account Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="accountDetailsContent">
+                <!-- Content loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New/Edit Account Modal -->
+<div class="modal fade" id="newAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Create New Account</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="accountForm">
+                    <div class="mb-3">
+                        <label for="accountName" class="form-label">Account Name</label>
+                        <input type="text" class="form-control" id="accountName" placeholder="e.g., Savings Account" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="accountType" class="form-label">Account Type</label>
+                        <select class="form-select" id="accountType" required>
+                            <option value="">Select Account Type</option>
+                            <option value="Checking">Checking</option>
+                            <option value="Savings">Savings</option>
+                            <option value="Money Market">Money Market</option>
+                            <option value="Certificate of Deposit">Certificate of Deposit</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="currency" class="form-label">Currency</label>
+                        <select class="form-select" id="currency" required>
+                            <option value="">Select Currency</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitAccountForm">Create Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Copy IBAN to clipboard
+            $('.btn-copy-iban').on('click', function (e) {
+                e.preventDefault();
+                const iban = $(this).closest('.account-iban').parent().find('.account-iban').text();
+                navigator.clipboard.writeText(iban).then(() => {
+                    const btn = $(this);
+                    const originalHtml = btn.html();
+                    btn.html('<i class="bi bi-check"></i>').addClass('btn-success').removeClass('btn-outline-secondary');
+                    setTimeout(() => {
+                        btn.html(originalHtml).removeClass('btn-success').addClass('btn-outline-secondary');
+                    }, 2000);
+                });
+            });
+
+            // View account details
+            $('.btn-view-details').on('click', function () {
+                const accountId = $(this).data('account-id');
+                const modal = new bootstrap.Modal(document.getElementById('accountDetailsModal'));
+
+                // Simulate loading account details (in real app, fetch via AJAX)
+                const card = $(`[data-account-id="${accountId}"]`);
+                const accountName = card.find('.card-title').text();
+                const iban = card.find('.account-iban').text();
+                const balance = card.find('.text-success').text();
+                const currency = card.find('.fw-semibold').eq(0).text();
+                const status = card.find('.badge').text();
+
+                const detailsHtml = `
+                    <div class="row">
+                        <div class="col-6">
+                            <h6 class="text-muted">Account Name</h6>
+                            <p class="fw-semibold">${accountName}</p>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted">Status</h6>
+                            <p class="fw-semibold"><span class="badge bg-success">${status}</span></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-muted">IBAN</h6>
+                            <p class="font-monospace fw-semibold">${iban}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <h6 class="text-muted">Currency</h6>
+                            <p class="fw-semibold">${currency}</p>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted">Balance</h6>
+                            <p class="fw-semibold text-success">${balance}</p>
+                        </div>
+                    </div>
+                `;
+
+                $('#accountDetailsContent').html(detailsHtml);
+                modal.show();
+            });
+
+            // Edit account
+            $('.btn-edit-account').on('click', function () {
+                const accountId = $(this).data('account-id');
+                const card = $(`[data-account-id="${accountId}"]`);
+                const accountName = card.find('.card-title').text();
+
+                $('#accountName').val(accountName);
+                const modal = new bootstrap.Modal(document.getElementById('newAccountModal'));
+                document.querySelector('.modal-title').textContent = 'Edit Account';
+                modal.show();
+            });
+
+            // Submit account form
+            $('#submitAccountForm').on('click', function () {
+                const formData = {
+                    accountName: $('#accountName').val(),
+                    accountType: $('#accountType').val(),
+                    currency: $('#currency').val()
+                };
+
+                console.log('Account form submitted:', formData);
+                // In a real app, send via AJAX to server
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newAccountModal'));
+                modal.hide();
+                alert('Account created successfully!');
+            });
+        });
+    </script>
+}

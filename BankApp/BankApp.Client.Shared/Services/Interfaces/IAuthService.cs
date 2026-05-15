@@ -23,6 +23,16 @@ namespace BankApp.Client.Services.Interfaces
         int? GetCurrentUserId();
 
         /// <summary>
+        /// Returns the cached bearer token used for authenticated API calls.
+        /// </summary>
+        string? GetBearerToken();
+
+        /// <summary>
+        /// Indicates whether the client currently has a usable authenticated session.
+        /// </summary>
+        bool IsAuthenticated();
+
+        /// <summary>
         /// Clears JWT and cached user id without calling the API (e.g. abandon login flow).
         /// </summary>
         void ClearLocalSession();

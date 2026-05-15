@@ -112,6 +112,13 @@ namespace BankApp.Client.Services.Implementations
 
         public int? GetCurrentUserId() => _authRepo.GetCurrentUserId();
 
+        public string? GetBearerToken() => _authRepo.GetBearerToken();
+
+        public bool IsAuthenticated()
+        {
+            return GetCurrentUserId().HasValue && !string.IsNullOrWhiteSpace(GetBearerToken());
+        }
+
         public void ClearLocalSession() => _authRepo.ClearLocalSession();
     }
 }

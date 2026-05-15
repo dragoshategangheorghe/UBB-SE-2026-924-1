@@ -1,0 +1,327 @@
+@using BankApp.Models.DTOs.Statistics
+@using BankApp.Web.ViewModels.Statistics
+@model StatisticsViewModel
+
+@{
+    ViewData["Title"] = "Statistics";
+    var spendingByCategory = Model?.SpendingByCategory;
+    var incomeVsExpenses = Model?.IncomeVsExpenses;
+    var balanceTrends = Model?.BalanceTrends;
+    var topRecipients = Model?.TopRecipients;
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-graph-up"></i> Financial Statistics
+            </h2>
+            <p class="text-muted">Comprehensive overview of your financial activity and trends</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-arrow-down text-danger" style="font-size: 2rem;"></i>
+                    <h6 class="card-title text-muted mt-2 mb-1">Total Expenses</h6>
+                    <h4 class="fw-bold text-danger">$@(incomeVsExpenses?.Expenses.ToString("N2") ?? "0.00")</h4>
+                    <small class="text-muted">This month</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-arrow-up text-success" style="font-size: 2rem;"></i>
+                    <h6 class="card-title text-muted mt-2 mb-1">Total Income</h6>
+                    <h4 class="fw-bold text-success">$@(incomeVsExpenses?.Income.ToString("N2") ?? "0.00")</h4>
+                    <small class="text-muted">This month</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cash-coin text-primary" style="font-size: 2rem;"></i>
+                    <h6 class="card-title text-muted mt-2 mb-1">Net Balance</h6>
+                    <h4 class="fw-bold text-primary">$@(incomeVsExpenses?.Net.ToString("N2") ?? "0.00")</h4>
+                    <small class="text-muted">Income - Expenses</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-percent text-warning" style="font-size: 2rem;"></i>
+                    <h6 class="card-title text-muted mt-2 mb-1">Savings Rate</h6>
+                    <h4 class="fw-bold text-warning">
+                        @{
+                            var savingsRate = incomeVsExpenses?.Income > 0
+                                ? ((incomeVsExpenses.Net / incomeVsExpenses.Income) * 100)
+                                : 0;
+                        }
+                        @savingsRate.ToString("N1")%
+                    </h4>
+                    <small class="text-muted">% of income</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Spending by Category Chart -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Spending by Category</h5>
+                </div>
+                <div class="card-body">
+                    <div id="spendingCategoryChart" style="height: 300px;">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Income vs Expenses Chart -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Income vs Expenses</h5>
+                </div>
+                <div class="card-body">
+                    <div id="incomeExpensesChart" style="height: 300px;">
+                        <canvas id="incomeExpensesChartCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Trends and Top Recipients Row -->
+    <div class="row g-4 mb-4">
+        <!-- Balance Trends Chart -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Balance Trends Over Time</h5>
+                </div>
+                <div class="card-body">
+                    <div id="balanceTrendsChart" style="height: 300px;">
+                        <canvas id="balanceTrendsChartCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Recipients -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Top Recipients</h5>
+                </div>
+                <div class="card-body">
+                    <div id="topRecipientsContainer">
+                        @if (topRecipients?.Recipients != null && topRecipients.Recipients.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var recipient in topRecipients.Recipients.Take(5))
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">@recipient.Name</h6>
+                                            <small class="text-muted">@recipient.TransactionCount transaction(s)</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">$@recipient.TotalAmount.ToString("N2")</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center mb-0">No transaction data available</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics Section -->
+    <div class="row g-4">
+        <!-- Category Breakdown Table -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Category Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Spending</th>
+                                    <th>% of Total</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (spendingByCategory?.Categories != null && spendingByCategory.Categories.Any())
+                                {
+                                    var totalSpending = spendingByCategory.TotalSpending;
+                                    @foreach (var category in spendingByCategory.Categories.OrderByDescending(c => c.Amount))
+                                    {
+                                        var percentage = totalSpending > 0 ? (category.Amount / totalSpending) * 100 : 0;
+                                        <tr>
+                                            <td>
+                                                <strong>@category.CategoryName</strong>
+                                            </td>
+                                            <td>$@category.Amount.ToString("N2")</td>
+                                            <td>@percentage.ToString("N1")%</td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No spending data available</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initialize charts only if data is available
+            @if (spendingByCategory?.Categories != null && spendingByCategory.Categories.Any())
+            {
+                <text>
+                // Spending by Category Chart
+                var spendingCtx = document.getElementById('spendingChart').getContext('2d');
+                var spendingChart = new Chart(spendingCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [@string.Join(", ", spendingByCategory.Categories.Select(c => $"'{c.CategoryName}'"))],
+                        datasets: [{
+                            data: [@string.Join(", ", spendingByCategory.Categories.Select(c => c.Amount))],
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            @if (incomeVsExpenses != null)
+            {
+                <text>
+                // Income vs Expenses Chart
+                var incomeCtx = document.getElementById('incomeExpensesChartCanvas').getContext('2d');
+                var incomeChart = new Chart(incomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Income', 'Expenses'],
+                        datasets: [{
+                            label: 'Amount ($)',
+                            data: [@incomeVsExpenses.Income, @incomeVsExpenses.Expenses],
+                            backgroundColor: ['#28a745', '#dc3545'],
+                            borderColor: ['#28a745', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function (value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            @if (balanceTrends?.Points != null && balanceTrends.Points.Any())
+            {
+                <text>
+                // Balance Trends Chart
+                var balanceCtx = document.getElementById('balanceTrendsChartCanvas').getContext('2d');
+                var balanceChart = new Chart(balanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [@string.Join(", ", balanceTrends.Points.Select(b => $"'{b.Date.ToString("MM/dd")}'"))],
+                        datasets: [{
+                            label: 'Balance ($)',
+                            data: [@string.Join(", ", balanceTrends.Points.Select(b => b.Balance))],
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function (value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+        });
+    </script>
+}

@@ -1,13 +1,44 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using BankApp.Client.Services.Interfaces;
+using BankApp.Web.ViewModels.Statistics;
 
-//[Authorize]
 namespace BankApp.Web.Controllers
 {
+    [Authorize]
     public class StatisticsController : Controller
     {
-        public IActionResult Index()
+        private readonly IStatisticsService _statisticsService;
+
+        public StatisticsController(IStatisticsService statisticsService)
         {
-            return View();
+            _statisticsService = statisticsService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var spendingByCategory = await _statisticsService.GetSpendingByCategoryAsync();
+                var incomeVsExpenses = await _statisticsService.GetIncomeVsExpensesAsync();
+                var balanceTrends = await _statisticsService.GetBalanceTrendsAsync();
+                var topRecipients = await _statisticsService.GetTopRecipientsAsync();
+
+                var viewModel = new StatisticsViewModel
+                {
+                    SpendingByCategory = spendingByCategory,
+                    IncomeVsExpenses = incomeVsExpenses,
+                    BalanceTrends = balanceTrends,
+                    TopRecipients = topRecipients
+                };
+
+                return View(viewModel);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Index", "Auth");
+            }
         }
     }
 }

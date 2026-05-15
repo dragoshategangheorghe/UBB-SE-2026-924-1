@@ -24,13 +24,14 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.AddService<RequireSessionLoginFilter>();
 });
 
-// This should, in theory, redirect to Login on an [Authorize] Controller access
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
         options.SlidingExpiration = true;
-        options.AccessDeniedPath = "/Auth/";
+        options.LoginPath = "/Auth";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Auth/AccessDenied";
     });
 
 builder.Services.AddScoped<IWebSessionContext, WebSessionContext>();
@@ -71,7 +72,7 @@ builder.Services.AddScoped<ISavingsPresentationRepoProxy, SavingsPresentationRep
 builder.Services.AddScoped<ISavingsRepoProxy, SavingsRepoProxy>();
 builder.Services.AddScoped<ISavingsUiRulesRepoProxy, SavingsUiRulesRepoProxy>();
 builder.Services.AddScoped<ISavingsWorkflowRepoProxy, SavingsWorkflowRepoProxy>();
-builder.Services.AddScoped<IStatisticsRepoProxy,  StatisticsRepoProxy>();
+builder.Services.AddScoped<IStatisticsRepoProxy, StatisticsRepoProxy>();
 builder.Services.AddScoped<ITransactionRepoProxy, TransactionRepoProxy>();
 
 

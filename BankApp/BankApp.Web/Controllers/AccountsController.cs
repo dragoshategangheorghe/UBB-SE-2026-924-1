@@ -1,13 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using BankApp.Client.Services.Interfaces;
 
 namespace BankApp.Web.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class AccountsController : Controller
     {
-        public IActionResult Index()
+        private readonly IAccountService _accountService;
+
+        public AccountsController(IAccountService accountService)
         {
-            return View();
+            _accountService = accountService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var accounts = await _accountService.GetAccountsAsync();
+                return View(accounts);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Index", "Auth");
+            }
         }
     }
 }
