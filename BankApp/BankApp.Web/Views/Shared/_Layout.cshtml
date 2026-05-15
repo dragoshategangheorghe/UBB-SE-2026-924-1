@@ -1,4 +1,8 @@
 @inject BankApp.Web.Infrastructure.IWebSessionContext SessionContext
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var isSavingsAndLoansSection = currentController == "Savings" || currentController == "Loans";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,7 +103,7 @@
                             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "CurrencyExchange" ? "custom-active" : "")" asp-area="" asp-controller="CurrencyExchange" asp-action="Index">&#xE8B1;<span class="ms-2 d-none d-sm-inline">Currency Exchange</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "SavingsAndLoans" ? "custom-active" : "")" asp-area="" asp-controller="SavingsAndLoans" asp-action="Index">&#xE719;<span class="ms-2 d-none d-sm-inline">Savings & Loans</span></a>
+                            <a class="nav-link @(isSavingsAndLoansSection ? "custom-active" : "")" asp-area="" asp-controller="Savings" asp-action="Index">&#xE719;<span class="ms-2 d-none d-sm-inline">Savings & Loans</span></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "InvestmentsAndTrading" ? "custom-active" : "")" asp-area="" asp-controller="InvestmentsAndTrading" asp-action="Index">&#xE9D9;<span class="ms-2 d-none d-sm-inline">Investments & Trading</span></a>
