@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers;
 
+//[Authorize]
 public class LoansController : WebControllerBase
 {
     private readonly ILoansService _loansService;

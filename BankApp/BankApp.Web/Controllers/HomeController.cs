@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 namespace BankApp.Web.Controllers
 {
+    //[Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

@@ -2,6 +2,7 @@
 
 namespace BankApp.Web.Controllers
 {
+    //[Authorize]
     public class InvestmentsController : Controller
     {
         public IActionResult Index()

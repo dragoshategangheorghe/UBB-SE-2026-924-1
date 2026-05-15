@@ -4,6 +4,7 @@ using BankApp.Client.RepoProxies.Interfaces;
 using BankApp.Client.Services.Implementations;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Web.Infrastructure;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,15 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.AddService<RequireSessionLoginFilter>();
 });
+
+// This should, in theory, redirect to Login on an [Authorize] Controller access
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+        options.SlidingExpiration = true;
+        options.AccessDeniedPath = "/Login/";
+    });
 
 builder.Services.AddScoped<IWebSessionContext, WebSessionContext>();
 builder.Services.AddScoped<ApiService>(serviceProvider =>
@@ -94,7 +104,11 @@ app.UseRouting();
 app.UseSession();
 
 app.UseSession();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
+
 
 app.MapControllerRoute(
     name: "default",

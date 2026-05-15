@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers;
 
+//[Authorize]
 public class SavingsController : WebControllerBase
 {
     private const string OverviewTab = "overview";

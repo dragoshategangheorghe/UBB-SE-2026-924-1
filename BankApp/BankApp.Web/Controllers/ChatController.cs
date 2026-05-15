@@ -2,6 +2,7 @@
 
 namespace BankApp.Web.Controllers
 {
+    //[Authorize]
     public class ChatController : Controller
     {
         public IActionResult Index()
