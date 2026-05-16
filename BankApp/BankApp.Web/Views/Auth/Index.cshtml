@@ -1,21 +1,23 @@
-﻿c@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model LoginModel
 @{
+    ViewData["Title"] = "Login";
+
 }
 
-<form class="col gap-3 min-vw-100 min-vh-100 text-white p-2" style="background-color: #202020;">
-    <div class="col gap-1">
-        <label for="email">Email</label>
-        <input type="email" name="email"/>
-    </div>
-    <div class="col gap-2">
-        <label for="password">Password</label>
-        <input type="password" name="password" />
-    </div>
-    <div class="row gap-2">
-        <input type="checkbox" value="Remember me"/>
-        <a>Forgot Password?</a>
-    </div>
-    <input type="submit" value="SIGN IN"/>
-</form>
+<div class="vh-100 p-5 vw-100 align-items-center justify-content-center" style="background-color: #202020;">
+    <form asp-action="Login" method="post" class="text-white stack-form p-2">
+        <div class="col gap-1">
+            <label asp-for="LoginForm.Email">Email</label>
+            <input asp-for="LoginForm.Email" type="email" name="email"/>
+        </div>
+        <div class="col gap-2">
+            <label asp-for="LoginForm.Password">Password</label>
+            <input asp-for="LoginForm.Password" type="password" name="password" />
+        </div>
+        <div class="form-check form-switch">
+            <input asp-for="LoginForm.RememberMe" class="form-check-input" />
+            <label asp-for="LoginForm.RememberMe" class="form-check-label"></label>
+        </div>
+        <input type="submit" value="SIGN IN"/>
+    </form>
+</div>

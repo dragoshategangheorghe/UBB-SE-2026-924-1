@@ -6,7 +6,7 @@ using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Savings;
 using BankApp.Web.Infrastructure;
-using BankApp.Web.ViewModels.Savings;
+using BankApp.Web.Models.Savings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers;

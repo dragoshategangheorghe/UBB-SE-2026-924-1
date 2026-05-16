@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
 
-namespace BankApp.Web.ViewModels.Savings;
+namespace BankApp.Web.Models.Savings;
 
 public class SavingsPageViewModel
 {

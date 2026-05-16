@@ -30,7 +30,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
         options.SlidingExpiration = true;
-        options.AccessDeniedPath = "/Auth/";
+        options.AccessDeniedPath = "/Auth/Denied";
+        options.LoginPath = "/Auth/";
     });
 
 builder.Services.AddScoped<IWebSessionContext, WebSessionContext>();
@@ -105,7 +106,6 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapControllerRoute(
     name: "default",

@@ -5,7 +5,7 @@ using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
 using BankApp.Web.Infrastructure;
-using BankApp.Web.ViewModels.Loans;
+using BankApp.Web.Models.Loans;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers;

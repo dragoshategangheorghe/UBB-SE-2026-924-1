@@ -4,7 +4,7 @@ using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
 
-namespace BankApp.Web.ViewModels.Loans;
+namespace BankApp.Web.Models.Loans;
 
 public class LoansPageViewModel
 {
