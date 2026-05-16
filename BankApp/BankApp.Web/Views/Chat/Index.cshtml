@@ -1,0 +1,67 @@
+@model BankApp.Web.Models.Chat.ChatIndexViewModel
+
+@{
+    ViewData["Title"] = "Support";
+}
+
+<div class="p-4 d-flex flex-column" style="background-color: #F4F6FA; height: calc(100vh - 80px); width: auto;">
+    <h2 class="fw-bold mb-4" style="color: #1A1A2E;">Support Chats</h2>
+
+    <div class="bg-white p-4 rounded-3 shadow-sm mb-4">
+        <h5 class="fw-bold mb-1">Welcome to support chat.</h5>
+        <form asp-action="Create" method="post" class="d-flex gap-2">
+            <select name="issueCategory" class="form-select w-auto" style="min-width: 260px;">
+                @foreach (var cat in Model.Categories)
+                {
+                    <option value="@cat">@cat</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-primary px-4" style="background-color: #2D7DFF; border: none;">
+                Start New Chat
+            </button>
+        </form>
+    </div>
+    <div class="flex-grow-1 bg-white rounded-3 shadow-sm overflow-auto">
+        <div class="list-group list-group-flush">
+            @if (!Model.Sessions.Any())
+            {
+                <div class="p-4 text-center text-muted">No active support sessions.</div>
+            }
+            @foreach (var session in Model.Sessions)
+            {
+                <a asp-action="Details" asp-route-id="@session.Id" class="list-group-item list-group-item-action p-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-bold">@session.IssueCategory - #@session.Id</h6>
+                            <span class="badge @(session.SessionStatus == "Open" ? "bg-success" : "bg-secondary")">
+                                @session.SessionStatus
+                            </span>
+                        </div>
+                        <div class="text-end text-muted small">
+                            @session.StartedAt.ToString("g")
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+<style>
+    main { padding: 0 !important; }
+    .container { 
+        max-width: 100% !important; 
+        padding: 0 !important; 
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto !important;
+        min-width: 0;
+    }
+    .list-group-item {
+        width: 100%;
+        min-width: 0;
+    }
+    .d-flex.justify-content-between {
+        width: 100%;
+    }
+</style>

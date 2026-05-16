@@ -4,6 +4,8 @@
 	ViewData["Title"] = "Dashboard";
 }
 
+<link rel="stylesheet" href="~/css/dashboard.css" type="text/css"/>
+
 <div class="dashboard-container p-4" style="background-color: #F4F6FA; min-height: 100vh;">
     
     <div class="mb-4">
@@ -146,73 +148,7 @@
         </div>
     </div>
 </div>
-<style>
-    .dashboard-container {
-        font-family: 'Inter', sans-serif;
-    }
-    .action-btn {
-        background: white;
-        border: none;
-        border-radius: 12px;
-        width: 90px;
-        height: 85px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 500;
-        color: #333;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    }
-    .action-btn:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.06);
-        background: #fdfdfd;
-        color: #000;
-    }
-    .action-btn i { color: #1A1A2E; }
-    
-    .tracking-wider { letter-spacing: 0.15em; }
-    
-    .dot {
-        width: 8px;
-        height: 8px;
-        background-color: rgba(78, 205, 196, 0.4);
-        border-radius: 50%;
-        transition: all 0.3s ease;
-    }
-    .dot.active {
-        width: 18px;
-        border-radius: 10px;
-        background-color: #4ECDC4;
-    }
-</style>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var myCarousel = document.getElementById('cardCarousel');
-        var dots = document.querySelectorAll('.dot');
-        
-        myCarousel.addEventListener('slide.bs.carousel', function (e) {
-            dots.forEach(dot => dot.classList.remove('active'));
-            dots[e.to].classList.add('active');
-        });
-    });
 
-    function showCardDetails(type, brand, number, holder, expiry, status, contactless, online) {
-    const infoContent = 
-        `Card Type:     ${type}\n` +
-        `Card Brand:    ${brand}\n` +
-        `Card Number:   ${number}\n` +
-        `Cardholder:    ${holder}\n` +
-        `Expiry Date:   ${expiry}\n` +
-        `Status:        ${status}\n` +
-        `Contactless:   ${contactless}\n` +
-        `Online Payments: ${online}`;
-    document.getElementById('modalCardInfo').textContent = infoContent;
-    
-    var myModal = new bootstrap.Modal(document.getElementById('cardDetailsModal'));
-    myModal.show();
+@section Scripts {
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
 }
-</script>

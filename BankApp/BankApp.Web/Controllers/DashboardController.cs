@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Web.Controllers
 {
-    //[Authorize]
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;
