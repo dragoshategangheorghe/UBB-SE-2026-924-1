@@ -118,7 +118,7 @@
                             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Profile" ? "custom-active" : "")" asp-area="" asp-controller="Profile" asp-action="Index">&#xE80F;<span class="ms-2 d-none d-sm-inline">Profile</span></a>
                         </li>
                         <li class="nav-item mt-5">
-                            <a class="nav-link" onmouseout="this.style.color='#FF6B6B'" onmouseover="this.style.color='#d84545'" style="color: #FF6B6B" asp-area="" asp-controller="Home" asp-action="Index">&#xE77B;<span class="ms-2 d-none d-sm-inline">Log Out</span></a>
+                            <a class="nav-link" onmouseout="this.style.color='#FF6B6B'" onmouseover="this.style.color='#d84545'" style="color: #FF6B6B" asp-area="" asp-controller="Auth" asp-action="LogOut">&#xE77B;<span class="ms-2 d-none d-sm-inline">Log Out</span></a>
                         </li>
                     </ul>
                 </div>

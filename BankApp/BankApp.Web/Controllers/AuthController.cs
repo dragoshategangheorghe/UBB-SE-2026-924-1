@@ -78,4 +78,10 @@ public class AuthController(IAuthService authService, IWebSessionContext webSess
             return View("Index", loginForm);
         }
     }
+
+    public async Task<IActionResult?> LogOut()
+    {
+        webSessionContext.Clear();
+        return View("Index", new LoginModel());
+    }
 }

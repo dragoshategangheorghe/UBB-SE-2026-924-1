@@ -20,6 +20,8 @@
         </div>
         <input type="submit" value="SIGN IN"/>
     </form>
+    @if (!string.IsNullOrWhiteSpace(Model.Login.LoginState))
+    {
         <div class="alert alert-danger shadow-sm w-50" role="alert">@Model.Login.LoginState</div>
-    
+    }
 </div>
