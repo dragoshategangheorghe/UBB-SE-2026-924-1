@@ -1,0 +1,130 @@
+﻿@model BankApp.Web.Models.Chat.ChatDetailsViewModel
+
+@{
+    ViewData["Title"] = "Support Chat #" + Model.Session.Id;
+}
+
+<div class="chat-root-container w-100" style="height: calc(100vh - 60px); background-color: #F4F6FA;">
+    <div class="bg-white p-3 shadow-sm d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-0 fw-bold">@Model.Session.IssueCategory - #@Model.Session.Id</h4>
+            <small class="text-muted">Status: @Model.Session.SessionStatus</small>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-danger"
+                    onClick="endSession(@Model.Session.Id)">
+                    End Session
+            </button>
+        </div>
+    </div>
+    <div id="messageContainer" class="flex-grow-1 p-4 overflow-auto d-flex flex-column gap-3">
+        @foreach (var msg in Model.Messages)
+        {
+            var isUser = msg.SenderType == "User";
+            <div class="d-flex @(isUser ? "justify-content-end" : "justify-content-start")">
+                <div class="p-3 shadow-sm" style="
+                    max-width: 70%; 
+                    border-radius: 12px;
+                    background-color: @(isUser ? "#2D7DFF" : "#FFFFFF");
+                    color: @(isUser ? "white" : "#1A1A2E");
+                ">
+                    <div class="fw-bold small mb-1">@msg.SenderType</div>
+                    <div>@msg.Content</div>
+                    <div class="text-end mt-1" style="font-size: 10px; opacity: 0.7;">
+                        @msg.SentAt.ToString("HH:mm")
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="bg-white p-3 border-top">
+        <form asp-action="SendMessage" method="post" class="d-flex gap-2 mx-auto" style="max-width: 800px;">
+            <input type="hidden" name="sessionId" value="@Model.Session.Id" />
+            
+            <select name="content" class="form-select">
+                <option value="" disabled selected>Select a question...</option>
+                @foreach (var q in Model.PresetQuestions)
+                {
+                    <option value="@q">@q</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-primary px-4" style="background-color: #2D7DFF; border: none;">
+                Ask
+            </button>
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h4 class="modal-title fw-bold" style="color: #1A1A2E;">Rate your support experience</h4>
+            </div>
+            <form asp-action="SubmitFeedback" method="post">
+                <input type="hidden" name="id" value="@Model.Session.Id" />
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Rating (1-5)</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3">3 - Average</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="1">1 - Terrible</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Feedback (Optional)</label>
+                        <textarea name="feedback" class="form-control" rows="3" placeholder="Optional written feedback..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 bg-light rounded-bottom-4">
+                    <button type="submit" class="btn btn-primary px-5 py-2" style="background-color: #2D7DFF; border-radius: 8px;">Submit</button>
+                    <a asp-action="Index" class="btn btn-link text-muted text-decoration-none">Skip</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+    main { padding: 0 !important; }
+    .container { 
+        max-width: 100% !important; 
+        padding: 0 !important; 
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: auto !important;
+        flex-grow: 1 !important;
+    }
+    .chat-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: justify-content-between;
+        align-items: center;
+    }
+    .message-bubble {
+        word-break: break-word;
+        max-width: 85%;
+    }
+    .chat-root-container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        var container = document.getElementById('messageContainer');
+        container.scrollTop = container.scrollHeight;
+
+        function endSession(sessionId){
+                $.post('/Chat/EndSession', { id : sessionId }, function() {
+                    var feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+                    feedbackModal.show();l
+                });
+        }
+    </script>
+}

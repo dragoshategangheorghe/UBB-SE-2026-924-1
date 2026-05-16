@@ -7,16 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Views\Chat\**" />
     <Compile Remove="Views\Crypto\**" />
     <Compile Remove="wwwroot\NewFolder\**" />
-    <Content Remove="Views\Chat\**" />
     <Content Remove="Views\Crypto\**" />
     <Content Remove="wwwroot\NewFolder\**" />
-    <EmbeddedResource Remove="Views\Chat\**" />
     <EmbeddedResource Remove="Views\Crypto\**" />
     <EmbeddedResource Remove="wwwroot\NewFolder\**" />
-    <None Remove="Views\Chat\**" />
     <None Remove="Views\Crypto\**" />
     <None Remove="wwwroot\NewFolder\**" />
   </ItemGroup>
