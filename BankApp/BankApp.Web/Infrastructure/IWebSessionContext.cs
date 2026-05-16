@@ -8,5 +8,7 @@ public interface IWebSessionContext
 
     bool IsAuthenticated { get; }
 
+    void Authenticate(string accessToken, int currentUserId);
+
     void Clear();
 }

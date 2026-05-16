@@ -1,23 +1,25 @@
 ﻿@model LoginModel
 @{
     ViewData["Title"] = "Login";
-
 }
 
-<div class="vh-100 p-5 vw-100 align-items-center justify-content-center" style="background-color: #202020;">
-    <form asp-action="Login" method="post" class="text-white stack-form p-2">
-        <div class="col gap-1">
-            <label asp-for="LoginForm.Email">Email</label>
-            <input asp-for="LoginForm.Email" type="email" name="email"/>
+<div class="vh-100 p-5 align-items-center justify-content-center" style="background-color: #202020;">
+    <form asp-action="Login" asp-controller="Auth" method="post" class="text-white  p-2">
+        @Html.AntiForgeryToken()
+        <div class="flex-column gap-1">
+            <label asp-for="Login.Email">Email</label>
+            <input asp-for="Login.Email" type="email" name="email"/>
         </div>
         <div class="col gap-2">
-            <label asp-for="LoginForm.Password">Password</label>
-            <input asp-for="LoginForm.Password" type="password" name="password" />
+            <label asp-for="Login.Password">Password</label>
+            <input asp-for="Login.Password" type="password" name="password"/>
         </div>
         <div class="form-check form-switch">
-            <input asp-for="LoginForm.RememberMe" class="form-check-input" />
-            <label asp-for="LoginForm.RememberMe" class="form-check-label"></label>
+            <input asp-for="Login.RememberMe" class="form-check-input"/>
+            <label asp-for="Login.RememberMe" class="form-check-label"></label>
         </div>
         <input type="submit" value="SIGN IN"/>
     </form>
+        <div class="alert alert-danger shadow-sm w-50" role="alert">@Model.Login.LoginState</div>
+    
 </div>

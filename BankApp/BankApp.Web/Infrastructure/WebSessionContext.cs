@@ -24,6 +24,12 @@ public sealed class WebSessionContext : IWebSessionContext
         Session.Remove(WebSessionKeys.CurrentUserId);
     }
 
+    public void Authenticate(string accessToken, int currentUserId)
+    {
+        Session.SetString(WebSessionKeys.AccessToken, accessToken);
+        Session.SetInt32(WebSessionKeys.CurrentUserId, currentUserId);
+    }
+
     private ISession Session =>
         _httpContextAccessor.HttpContext?.Session
         ?? throw new InvalidOperationException("An active HTTP session is required.");
