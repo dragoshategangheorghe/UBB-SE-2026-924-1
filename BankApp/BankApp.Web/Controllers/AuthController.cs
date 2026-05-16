@@ -16,6 +16,8 @@ public class AuthController(IAuthService authService, IWebSessionContext webSess
 
     public IActionResult Index(string? returnUrl = null)
     {
+        if (webSessionContext.IsAuthenticated)
+            return Redirect("/Dashboard");
         //ViewData["ReturnUrl"] = returnUrl;
         return View(new LoginModel());
     }
