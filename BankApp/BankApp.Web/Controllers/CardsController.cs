@@ -24,8 +24,6 @@ namespace BankApp.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ApplyBearerToken();
-
             GetCardsResponse? response = await _cardService.GetCardsAsync();
 
             CardManagementPageViewModel model = new CardManagementPageViewModel();
@@ -47,8 +45,6 @@ namespace BankApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateSort([FromBody] UpdateCardSortPreferenceRequest request)
         {
-            ApplyBearerToken();
-
             CardCommandResponse? response = await _cardService.UpdateSortPreferenceAsync(request);
 
             return Json(response ?? new CardCommandResponse
@@ -61,8 +57,6 @@ namespace BankApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Freeze([FromBody] CardIdRequest request)
         {
-            ApplyBearerToken();
-
             CardCommandResponse? response = await _cardService.FreezeCardAsync(request.CardId);
 
             return Json(response ?? new CardCommandResponse
@@ -75,8 +69,6 @@ namespace BankApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Unfreeze([FromBody] CardIdRequest request)
         {
-            ApplyBearerToken();
-
             CardCommandResponse? response = await _cardService.UnfreezeCardAsync(request.CardId);
 
             return Json(response ?? new CardCommandResponse
@@ -89,8 +81,6 @@ namespace BankApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateSettings([FromBody] CardSettingsRequest request)
         {
-            ApplyBearerToken();
-
             UpdateCardSettingsRequest apiRequest = new UpdateCardSettingsRequest
             {
                 SpendingLimit = request.SpendingLimit,
@@ -110,8 +100,6 @@ namespace BankApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Reveal([FromBody] RevealCardPageRequest request)
         {
-            ApplyBearerToken();
-
             RevealCardRequest apiRequest = new RevealCardRequest
             {
                 Password = request.Password,
@@ -136,20 +124,20 @@ namespace BankApp.Web.Controllers
         //        _apiService.SetToken(token);
         //    }
         //}
-        private void ApplyBearerToken()
-        {
-            string? token = HttpContext.Session.GetString("AuthToken");
+        //private void ApplyBearerToken()
+        //{
+        //    string? token = HttpContext.Session.GetString("AuthToken");
 
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZXhwIjoxNzc5MzkxMDc0fQ.qRdG-1nnSaJ_-AOm2Powdsn3lG0GImD6vbr0A_uXPjs";
-            }
+        //    if (string.IsNullOrWhiteSpace(token))
+        //    {
+        //        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiZXhwIjoxNzc5MzkxMDc0fQ.qRdG-1nnSaJ_-AOm2Powdsn3lG0GImD6vbr0A_uXPjs";
+        //    }
 
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                _apiService.SetToken(token);
-            }
-        }
+        //    if (!string.IsNullOrWhiteSpace(token))
+        //    {
+        //        _apiService.SetToken(token);
+        //    }
+        //}
 
     }
 
