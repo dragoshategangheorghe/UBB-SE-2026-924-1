@@ -1,0 +1,26 @@
+title Login
+
+actor User
+
+User->Login Page:Submit Login Request
+
+Login Page -> Login Request: Create Login Request
+Login Page <-- Login Request: Credentials Format Error
+Login Page -> Login Workflow: Submit Login Request
+Login Workflow -> Login Controller: Check Credentials
+database BankApp
+
+alt#yellow #green #red;2;dashed Credentials match
+Login Controller -> BankApp: Get User Data
+                    Login Controller -> Login Page :Login Response
+                    Login Page -> User: Dashboard View
+                   
+                    else #pink #yellow;5;dashed Invalid Credentials
+                    Login Controller -> Login Page:Invalid Credentials Error 
+                    else #pink #yellow;5;dashed Locked Account
+                   Login Controller -> Login Page:Account is Locked Error 
+                    else #pink #yellow;5;dashed Null Response
+                    Login Controller -> Login Page:Null Response Error
+                    else #pink #yellow;5;dashed 2FA
+                    Login Controller -> Login Page: 2FA Error
+                    end
