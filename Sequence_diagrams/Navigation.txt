@@ -1,0 +1,35 @@
+title Navigation
+
+actor User
+
+User->Any Page:Is On a page LOGGED IN
+Any Page -> Navigation: Click Navigation Item
+
+alt#yellow #green #red;2;dashed Dashboard Link
+Navigation -> Any Page: Returns Accounts View 
+else Accounts Link
+Navigation -> Any Page: Returns Transfers View 
+else Transfers Link
+Navigation -> Any Page: Returns Bill Payments View 
+else Bill Payments Link
+Navigation -> Any Page: Returns Cards View 
+else Cards Link
+Navigation -> Any Page: Returns Transfer History View 
+else Transfer History Link
+Navigation -> Any Page: Returns Currency Exchangr View 
+else Currency Exchangr
+Navigation -> Any Page: Returns Savings & Loans
+else Savings & Loans
+Navigation -> Any Page:Returns Investments & Trading  
+else Investments & Trading  
+Navigation -> Any Page:Returns Statistics
+else Dashboard Link
+Navigation -> Any Page:Returns Support
+else Dashboard Link
+Navigation -> Any Page:Returns Profile
+
+else Log Out Action 
+Navigation -> Any Page: no
+Any Page -> User: Logges User Out of the Session
+
+                    end
