@@ -1,0 +1,137 @@
+﻿@{
+    ViewData["Title"] = "Crypto Exchange Trading";
+    decimal currentAvailableBalance = ViewBag.WalletBalance ?? 0m;
+}
+
+<div class="container py-4" style="max-width: 700px;">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-secondary">← Back to Portfolio Overview</a>
+        <h2 class="fw-bold mt-2">Execute Crypto Order</h2>
+        <p class="text-muted">Place real-time market execution buy or sell orders for assets.</p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger shadow-sm">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+        <div class="me-3 fs-3">⚠️</div>
+        <div>
+            <strong>High Volatility Asset Warning</strong>
+            <div class="small text-dark">Digital crypto asset metrics change rapidly. Ensure target capitalization bounds fit your strategy risks before trading.</div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="ExecuteTrade" method="post" id="webTradingForm">
+                
+                <div class="mb-3">
+                    <label for="ticker" class="form-label fw-semibold">Select Asset Token</label>
+                    <select class="form-select" id="ticker" name="ticker">
+                        <option value="BTC" selected>BTC (Bitcoin)</option>
+                        <option value="ETH">ETH (Ethereum)</option>
+                        <option value="SOL">SOL (Solana)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-block fw-semibold">Transaction Path</label>
+                    <div class="form-check form-check-inline me-4">
+                        <input class="form-check-input" type="radio" name="actionType" id="typeBuy" value="BUY" checked>
+                        <label class="form-check-label fw-medium text-success" for="typeBuy">Buy Position</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="actionType" id="typeSell" value="SELL">
+                        <label class="form-check-label fw-medium text-danger" for="typeSell">Sell Position</label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="quantity" class="form-label fw-semibold">Volume / Quantity</label>
+                    <input type="number" class="form-control font-monospace" id="quantity" name="quantity" step="0.0001" min="0.0001" placeholder="0.0000" required autocomplete="off" />
+                </div>
+
+                <div id="webClientFeedbackMessage" class="alert alert-info d-none py-2 small fw-medium"></div>
+
+                <div class="card bg-light border-0 p-3 mb-4">
+                    <div class="d-flex justify-content-between mb-2 small text-muted">
+                        <span>Portfolio Spending Limit Threshold:</span>
+                        <span id="labelCashLimit" class="font-monospace fw-bold" data-balance="@currentAvailableBalance">@currentAvailableBalance.ToString("N2") RON</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small text-muted">
+                        <span>Execution Routing Fee (1.5%):</span>
+                        <span id="labelWebFee" class="font-monospace">0.00 RON</span>
+                    </div>
+                    <hr class="my-2" />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Estimated Order Total:</span>
+                        <span id="labelWebTotal" class="h4 mb-0 fw-bold text-primary font-monospace">0.00 RON</span>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnWebSubmitOrder" class="btn btn-primary w-100 py-2 fw-bold">Submit Market Order</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Live order calculation matching client desktop logic pipelines
+            function updateCryptoExchangeTotals() {
+                var selectedToken = $('#ticker').val();
+                var rawQuantityValue = $('#quantity').val();
+                var chosenActionType = $('input[name="actionType"]:checked').val();
+                var cashThresholdLimit = parseFloat($('#labelCashLimit').data('balance'));
+
+                var numericQty = parseFloat(rawQuantityValue);
+                if (isNaN(numericQty) || numericQty <= 0) {
+                    $('#labelWebFee').text('0.00 RON');
+                    $('#labelWebTotal').text('0.00 RON');
+                    $('#webClientFeedbackMessage').addClass('d-none').text('');
+                    $('#btnWebSubmitOrder').prop('disabled', false);
+                    return;
+                }
+
+                var priceScalarValue = 0;
+                switch (selectedToken) {
+                    case 'BTC': priceScalarValue = 65000.00; break;
+                    case 'ETH': priceScalarValue = 2550.00; break;
+                    case 'SOL': priceScalarValue = 145.00; break;
+                }
+
+                var baseCostValuation = numericQty * priceScalarValue;
+                var estimatedFeeNode = Math.round((baseCostValuation * 0.015) * 100) / 100;
+                var netCalculatedTotal = Math.round((baseCostValuation + estimatedFeeNode) * 100) / 100;
+
+                // Output calculations directly to screen summary labels
+                $('#labelWebFee').text(estimatedFeeNode.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' RON');
+                $('#labelWebTotal').text(netCalculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' RON');
+                
+                $('#webClientFeedbackMessage')
+                    .removeClass('d-none alert-danger alert-info')
+                    .addClass('alert-info')
+                    .text('Routing network quotes at ' + priceScalarValue.toLocaleString('en-US') + ' RON valuation per unit token.');
+
+                // UI safety balance checking guard rule protection parameters
+                if (chosenActionType === 'BUY' && netCalculatedTotal > cashThresholdLimit) {
+                    $('#webClientFeedbackMessage')
+                        .removeClass('alert-info')
+                        .addClass('alert-danger')
+                        .text('⚠️ Order execution locked: Total value limits exceed portfolio spending margins.');
+                    $('#btnWebSubmitOrder').prop('disabled', true);
+                } else {
+                    $('#btnWebSubmitOrder').prop('disabled', false);
+                }
+            }
+
+            // Bind triggers to update calculation components instantly
+            $('#quantity').on('input', updateCryptoExchangeTotals);
+            $('#ticker').on('change', updateCryptoExchangeTotals);
+            $('input[name="actionType"]').on('change', updateCryptoExchangeTotals);
+        });
+    </script>
+}

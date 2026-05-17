@@ -1,0 +1,114 @@
+﻿@model BankApp.Models.Entities.Portfolio
+
+@{
+    ViewData["Title"] = "Investments Portfolio";
+}
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="mb-3">
+                <h2 class="fw-bold">Investments & Trading</h2>
+                <p class="text-muted">Monitor asset allocations, evaluate net returns, and submit live exchange executions.</p>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-uppercase text-muted small fw-bold">Portfolio Metric Valuation</h5>
+                    <div class="my-3">
+                        <div class="small text-muted">Total Portfolio Value</div>
+                        <h3 class="fw-bold text-primary">@Model.TotalValue.ToString("N2") RON</h3>
+                    </div>
+                    <hr />
+                    <div>
+                        <div class="small text-muted">Total Profit / Loss</div>
+                        @{
+                            string glClass = Model.TotalGainLoss >= 0 ? "text-success" : "text-danger";
+                            string glSign = Model.TotalGainLoss >= 0 ? "+" : "";
+                        }
+                        <h4 class="fw-bold @glClass">@glSign@Model.TotalGainLoss.ToString("N2") RON</h4>
+                        <span class="small fw-semibold @glClass">(@((Model.GainLossPercent * 100).ToString("N2"))%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Filter Holdings</h5>
+                    <div class="list-group" id="filterButtonGroup">
+                        <button type="button" class="list-group-item list-group-item-action filter-item active" data-filter="All">All Asset Classes</button>
+                        <button type="button" class="list-group-item list-group-item-action filter-item" data-filter="Stock">Equities / Stocks</button>
+                        <button type="button" class="list-group-item list-group-item-action filter-item" data-filter="Crypto">Cryptocurrencies</button>
+                    </div>
+                    <div class="mt-3">
+                        <a asp-action="Trade" class="btn btn-primary w-100 fw-medium">Trade Assets</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="fw-bold mb-3">Asset Positions</h4>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="webHoldingsTable">
+                            <thead class="table-light">
+                                <tr class="small text-muted text-uppercase">
+                                    <th>Asset Ticker</th>
+                                    <th>Classification</th>
+                                    <th class="text-end">Owned Quantity</th>
+                                    <th class="text-end">Avg Position Cost</th>
+                                    <th class="text-end">Live Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Holdings != null && Model.Holdings.Any())
+                                {
+                                    foreach (var holding in Model.Holdings)
+                                    {
+                                        <tr class="holding-row-item" data-type="@holding.AssetType">
+                                            <td><span class="fw-bold text-dark">@holding.Ticker</span></td>
+                                            <td><span class="badge bg-light text-secondary border">@holding.AssetType</span></td>
+                                            <td class="text-end font-monospace fw-semibold">@holding.Quantity.ToString("N4")</td>
+                                            <td class="text-end font-monospace text-muted">@holding.AvgPurchasePrice.ToString("N2") RON</td>
+                                            <td class="text-end font-monospace text-primary fw-semibold">@holding.CurrentPrice.ToString("N2") RON</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr id="emptyRowState">
+                                        <td colspan="5" class="text-center text-muted py-4">No active holding asset positions found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // High-performance jQuery client-side filtering matching WinUI desktop interaction speeds
+        $(document).ready(function () {
+            $('.filter-item').click(function () {
+                $('.filter-item').removeClass('active');
+                $(this).addClass('active');
+
+                var selectedAssetFilter = $(this).data('filter');
+
+                if (selectedAssetFilter === 'All') {
+                    $('.holding-row-item').show();
+                } else {
+                    $('.holding-row-item').hide();
+                    $('.holding-row-item[data-type="' + selectedAssetFilter + '"]').show();
+                }
+            });
+        });
+    </script>
+}
