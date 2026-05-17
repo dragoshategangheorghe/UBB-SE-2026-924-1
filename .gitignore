@@ -9,3 +9,4 @@ obj/
 build_diag*.txt
 BankApp/BankApp.Server/appsettings.json
 BankApp/TestResults
+/BankApp/BankApp.Web/appsettings.json

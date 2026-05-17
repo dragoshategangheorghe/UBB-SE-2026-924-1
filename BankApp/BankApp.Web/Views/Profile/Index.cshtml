@@ -1,0 +1,807 @@
+﻿@model BankApp.Web.Models.Profile.ProfilePageViewModel
+@using BankApp.Web.Models.Profile
+@using BankApp.Models.Entities
+
+@{
+    ViewData["Title"] = "Profile / Settings";
+    var user = Model.ProfileInfo;
+    string tab = Model.ActiveTab;
+}
+
+<!-- Hidden input read by profile.js to activate the correct tab on load -->
+<input type="hidden" id="active-tab-input" value="@tab" />
+
+<style>
+    /* ── Color tokens (mirrors desktop palette) ───────────────── */
+    :root {
+        --primary:      #1A3C6E;
+        --accent:       #2563EB;
+        --accent-hover: #1D55D4;
+        --accent-press: #1848BC;
+        --accent-light: #EFF4FF;
+        --danger:       #EF4444;
+        --danger-hover: #DC2626;
+        --card-bg:      #FFFFFF;
+        --page-bg:      #F4F6FA;
+        --border:       #E2E8F0;
+        --text-primary: #1E293B;
+        --text-muted:   #64748B;
+        --text-faint:   #94A3B8;
+        --input-bg:     #F8FAFC;
+        --input-hover:  #F1F5F9;
+        --section-bg:   #FAFBFF;
+    }
+
+    body { background: var(--page-bg); }
+
+    /* ── Page title ───────────────────────────────────────────── */
+    .profile-page-title       { font-size: 1.375rem; font-weight: 600; color: var(--text-primary); }
+    .profile-page-title-sub   { font-size: 1.375rem; font-weight: 400; color: var(--text-faint); }
+
+    /* ── Card shell ───────────────────────────────────────────── */
+    .profile-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+
+    /* ── Sidebar profile card ─────────────────────────────────── */
+    .profile-sidebar-header {
+        background: linear-gradient(135deg, #16213E 0%, #4169E1 100%);
+        border-radius: 16px 16px 0 0;
+        padding: 20px 16px 22px;
+        text-align: center;
+    }
+    .profile-avatar {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: #7393B3;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 10px;
+    }
+    .profile-avatar i { font-size: 1.6rem; color: #fff; }
+    .profile-sidebar-name { font-size: .9rem; font-weight: 600; color: #fff; }
+
+    .profile-sidebar-body { padding: 14px 16px 4px; }
+    .profile-sidebar-label {
+        font-size: .65rem; font-weight: 600; color: var(--text-faint);
+        letter-spacing: .06em; text-transform: uppercase;
+    }
+    .profile-sidebar-value { font-size: .78rem; color: var(--text-primary); word-break: break-word; }
+    .profile-sidebar-divider { height: 1px; background: #F1F5F9; margin: 10px 0; }
+
+    /* ── Tab bar ──────────────────────────────────────────────── */
+    .profile-tabs {
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(to bottom, #fff 0%, #F8FAFC 100%);
+        border-radius: 16px 16px 0 0;
+        padding: 0 6px;
+    }
+    .profile-tab-btn {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 12px 18px;
+        font-size: .8125rem;
+        font-weight: 600;
+        color: var(--text-faint);
+        cursor: pointer;
+        transition: color .15s, border-color .15s;
+    }
+    .profile-tab-btn:hover  { color: var(--text-primary); background: #F8FAFC; }
+    .profile-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── Section header ───────────────────────────────────────── */
+    .section-icon-wrap {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: var(--accent-light);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .section-icon-wrap i { color: var(--accent); font-size: 1rem; }
+    .section-title    { font-size: .9375rem; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+    .section-subtitle { font-size: .75rem; color: var(--text-faint); }
+
+    /* ── Inner bordered section ───────────────────────────────── */
+    .inner-section {
+        background: var(--section-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 20px 18px;
+    }
+
+    /* ── Field labels & inputs ────────────────────────────────── */
+    .field-label {
+        font-size: .75rem; font-weight: 600;
+        color: var(--text-muted); margin-bottom: 5px;
+    }
+    .profile-input {
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-size: .8125rem;
+        color: var(--text-primary);
+        transition: border-color .15s, background .15s;
+        height: 36px;
+    }
+    .profile-input:focus {
+        border-color: var(--accent);
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    .profile-input[readonly] { opacity: .6; cursor: default; }
+    .profile-input.input-unlocked { opacity: 1; background: #fff; }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn-primary-custom {
+        background: var(--accent); color: #fff;
+        border: none; border-radius: 8px;
+        padding: 8px 20px; font-size: .8125rem; font-weight: 600;
+        height: 38px; cursor: pointer;
+        transition: background .15s;
+    }
+    .btn-primary-custom:hover    { background: var(--accent-hover); color: #fff; }
+    .btn-primary-custom:active   { background: var(--accent-press); }
+    .btn-primary-custom:disabled { background: #93B4F0; cursor: not-allowed; }
+
+    .btn-outline-custom {
+        background: transparent; color: var(--accent);
+        border: 1px solid var(--accent); border-radius: 7px;
+        padding: 7px 14px; font-size: .75rem; font-weight: 600;
+        cursor: pointer; transition: background .15s;
+    }
+    .btn-outline-custom:hover  { background: var(--accent-light); }
+    .btn-outline-custom:active { background: #DBEAFE; }
+
+    .btn-danger-custom {
+        background: var(--danger); color: #fff;
+        border: none; border-radius: 8px;
+        padding: 8px 20px; font-size: .8125rem; font-weight: 600;
+        height: 38px; cursor: pointer;
+        transition: background .15s;
+    }
+    .btn-danger-custom:hover  { background: var(--danger-hover); color: #fff; }
+    .btn-danger-custom:active { background: #B91C1C; }
+
+    /* ── Info note ────────────────────────────────────────────── */
+    .info-note { font-size: .71875rem; color: var(--text-faint); }
+    .info-note i { font-size: .7rem; margin-right: 5px; }
+
+    /* ── 2FA toggle row ───────────────────────────────────────── */
+    .twofa-row-icon { font-size: 1.125rem; color: var(--text-muted); margin-right: 15px; }
+    .twofa-row-title { font-size: .8125rem; font-weight: 600; color: var(--text-primary); }
+    .twofa-row-sub   { font-size: .75rem; color: var(--text-faint); }
+
+    /* ── Status badge ─────────────────────────────────────────── */
+    .status-badge {
+        display: inline-block;
+        padding: 1px 6px; border-radius: 4px;
+        font-size: .625rem; font-weight: 600;
+        background: #F1F5F9; color: var(--text-muted);
+        margin-left: 8px; vertical-align: middle;
+    }
+    .status-badge.verified   { background: #DCFCE7; color: #15803D; }
+    .status-badge.unverified { background: #FFF7ED; color: #C2410C; }
+
+    /* ── Password danger strip ────────────────────────────────── */
+    .danger-strip {
+        background: linear-gradient(to right, #FFF5F5, #fff);
+        border: 1px solid #FECACA;
+        border-radius: 12px;
+        padding: 16px 18px;
+    }
+    .danger-icon-wrap {
+        width: 30px; height: 30px; border-radius: 8px;
+        background: #FEE2E2;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; margin-right: 10px;
+    }
+    .danger-icon-wrap i { color: var(--danger); font-size: .875rem; }
+
+    /* ── Connected accounts ───────────────────────────────────── */
+    .oauth-provider-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 0; font-size: .8125rem;
+    }
+
+    /* ── Notification preference row ──────────────────────────── */
+    .notif-row { padding: 8px 0; border-bottom: 1px solid #F1F5F9; }
+    .notif-row:last-child { border-bottom: none; }
+    .notif-name { font-size: .8125rem; color: var(--text-primary); }
+    .notif-channel-label { font-size: .7rem; color: var(--text-muted); margin-bottom: 2px; }
+
+    /* ── Bootstrap modal customisation ───────────────────────── */
+    .modal-header-custom {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        border-radius: 12px 12px 0 0;
+        padding: 22px 24px 20px;
+    }
+    .modal-icon-wrap {
+        width: 44px; height: 44px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin-right: 14px; flex-shrink: 0;
+    }
+    .modal-icon-wrap.danger  { background: #FEE2E2; }
+    .modal-icon-wrap.accent  { background: var(--accent-light); }
+    .modal-icon-wrap.danger i { color: var(--danger); font-size: 1.25rem; }
+    .modal-icon-wrap.accent i { color: var(--accent); font-size: 1.25rem; }
+    .modal-title-text    { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+    .modal-subtitle-text { font-size: .75rem; color: var(--text-faint); }
+
+    .modal-content { border-radius: 16px; border: none; background: #F8FAFC; }
+    .modal-body    { padding: 24px; }
+    .modal-footer  { border-top: 1px solid var(--border); padding: 14px 24px; }
+
+    .modal-field-label {
+        font-size: .78125rem; font-weight: 600;
+        color: #475569; margin-bottom: 6px;
+    }
+    .modal-input {
+        background: #fff; border: 1.5px solid #CBD5E1;
+        border-radius: 8px; padding: 9px 12px;
+        font-size: .84375rem; color: var(--text-primary);
+        height: 42px; width: 100%;
+        transition: border-color .15s;
+    }
+    .modal-input:focus {
+        border-color: var(--accent); outline: none;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    .modal-hint {
+        background: var(--accent-light); border-radius: 8px;
+        padding: 10px 12px; font-size: .71875rem; color: #1D4ED8;
+    }
+    .modal-hint i { color: var(--accent); margin-right: 7px; }
+    .modal-rules {
+        background: #F8FAFC; border: 1px solid var(--border);
+        border-radius: 8px; padding: 12px 14px;
+        font-size: .75rem; color: var(--text-muted);
+    }
+    .modal-rules li { margin-bottom: 4px; list-style: none; padding-left: 0; }
+    .modal-rules li::before { content: "✓ "; color: var(--text-muted); }
+
+    .modal-error {
+        background: #FEF2F2; border: 1px solid #FECACA;
+        color: #B91C1C; border-radius: 8px;
+        padding: 9px 12px; font-size: .78125rem;
+    }
+
+    /* ── Divider ──────────────────────────────────────────────── */
+    .section-divider { height: 1px; background: #F1F5F9; margin: 4px 0; }
+
+    /* ── Form check (Bootstrap toggle override) ───────────────── */
+    .form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+</style>
+
+<!-- ═══════════════════════  PAGE HEADER  ═══════════════════════ -->
+<div class="mb-3">
+    <span class="profile-page-title">Profile</span>
+    <span class="profile-page-title-sub"> / Settings</span>
+</div>
+
+<!-- ═══════════════════════  ALERTS  ════════════════════════════ -->
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success alert-dismissible alert-autodismiss fade show d-flex align-items-center mb-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @Model.StatusMessage
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible alert-autodismiss fade show d-flex align-items-center mb-3" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @Model.ErrorMessage
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- ═══════════════════════  BODY GRID  ═════════════════════════ -->
+<div class="row g-0" style="column-gap:18px; flex-wrap:nowrap; align-items:flex-start;">
+
+    <!-- ───────────────────  SIDEBAR CARD  ───────────────────── -->
+    <div style="width:210px; flex-shrink:0;">
+        <div class="profile-card">
+            <!-- Header strip -->
+            <div class="profile-sidebar-header">
+                <div class="profile-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="profile-sidebar-name">@(user?.FullName ?? "—")</div>
+            </div>
+            <!-- Details -->
+            <div class="profile-sidebar-body">
+                <div class="mb-2">
+                    <div class="profile-sidebar-label">Email</div>
+                    <div class="profile-sidebar-value" id="sidebar-email">@(user?.Email ?? "—")</div>
+                </div>
+                <div class="profile-sidebar-divider"></div>
+                <div class="mb-2">
+                    <div class="profile-sidebar-label">Phone</div>
+                    <div class="profile-sidebar-value" id="sidebar-phone">@(user?.PhoneNumber ?? "—")</div>
+                </div>
+                <div class="profile-sidebar-divider"></div>
+                <div class="mb-2">
+                    <div class="profile-sidebar-label">Address</div>
+                    <div class="profile-sidebar-value" id="sidebar-address" style="white-space:pre-wrap;">@(user?.Address ?? "—")</div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(user?.Nationality))
+                {
+                    <div class="profile-sidebar-divider"></div>
+                    <div class="mb-2">
+                        <div class="profile-sidebar-label">Nationality</div>
+                        <div class="profile-sidebar-value">@user.Nationality</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ───────────────────  TAB PANEL  ──────────────────────── -->
+    <div class="flex-fill" style="min-width:0;">
+        <div class="profile-card">
+
+            <!-- Tab header -->
+            <div class="profile-tabs d-flex">
+                <button class="profile-tab-btn" data-tab="@ProfilePageViewModel.TabPersonal">
+                    Personal Information
+                </button>
+                <button class="profile-tab-btn" data-tab="@ProfilePageViewModel.TabSecurity">
+                    Security Settings
+                </button>
+                <button class="profile-tab-btn" data-tab="@ProfilePageViewModel.TabNotifications">
+                    Notification Preferences
+                </button>
+            </div>
+
+            <!-- Tab content -->
+            <div style="padding:26px 26px 26px;">
+
+                <!-- ══════  TAB 1 — Personal Information  ══════ -->
+                <div id="panel-personal">
+
+                    <!-- Section header -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="section-icon-wrap me-3">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div>
+                            <div class="section-title">Personal Information</div>
+                            <div class="section-subtitle">View and update your personal details</div>
+                        </div>
+                    </div>
+
+                    <!-- Fields -->
+                    <div class="inner-section mb-3">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="field-label">Full Name</div>
+                                <input class="profile-input w-100" type="text"
+                                       value="@(user?.FullName ?? string.Empty)" readonly />
+                            </div>
+                            <div class="col-6">
+                                <div class="field-label">Email Address</div>
+                                <input class="profile-input w-100" type="email"
+                                       value="@(user?.Email ?? string.Empty)" readonly />
+                            </div>
+                            <div class="col-6">
+                                <div class="field-label">Phone Number</div>
+                                <input id="phone-input" class="profile-input w-100"
+                                       name="UpdatePersonalInfo.PhoneNumber" type="tel"
+                                       value="@(Model.UpdatePersonalInfo.PhoneNumber ?? string.Empty)"
+                                       readonly />
+                            </div>
+                            <div class="col-6">
+                                <div class="field-label">Address</div>
+                                <input id="address-input" class="profile-input w-100"
+                                       name="UpdatePersonalInfo.Address" type="text"
+                                       value="@(Model.UpdatePersonalInfo.Address ?? string.Empty)"
+                                       readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info note -->
+                    <p class="info-note mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        You must verify your password before editing your information.
+                    </p>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button id="unlock-edit-btn" type="button" class="btn-outline-custom" style="height:40px; flex:1;">
+                            Unlock Update
+                        </button>
+                        <!-- Save form — hidden until unlocked -->
+                        <form asp-action="UpdatePersonalInfo" asp-controller="Profile" method="post" style="flex:1; display:none;" id="save-personal-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="UpdatePersonalInfo.PhoneNumber" id="save-phone-field" />
+                            <input type="hidden" name="UpdatePersonalInfo.Address" id="save-address-field" />
+                            <input type="hidden" name="UpdatePersonalInfo.VerifiedPassword" id="save-verified-pwd-field" />
+                            <button id="save-changes-btn" type="button"
+                                    class="btn-primary-custom w-100" style="height:40px;"
+                                    disabled>
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+
+                </div><!-- /panel-personal -->
+                <!-- ══════  TAB 2 — Security Settings  ══════ -->
+                <div id="panel-security" style="display:none;">
+
+                    <!-- Section header -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="section-icon-wrap me-3">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <div>
+                            <div class="section-title">Security Settings</div>
+                            <div class="section-subtitle">Manage your authentication and password</div>
+                        </div>
+                    </div>
+
+                    <!-- 2FA block -->
+                    <div class="inner-section mb-3">
+
+                        <!-- Block header -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="section-icon-wrap me-3" style="width:36px; height:36px;">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <div>
+                                <div class="section-title" style="font-size:.875rem;">Two-Factor Authentication</div>
+                                <div class="section-subtitle">Methods must be verified before they can be used.</div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider mb-3"></div>
+
+                        <!-- Master 2FA toggle -->
+                        <form asp-action="Toggle2FA" asp-controller="Profile" method="post" id="twofa-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Toggle2FA.Enable" id="twofa-enable-field" value="@(user?.Is2FAEnabled == true ? "true" : "false")" />
+                            <input type="hidden" name="Toggle2FA.Method" value="Email" />
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-shield-check twofa-row-icon"></i>
+                                    <div>
+                                        <div class="twofa-row-title">Enable Two-Factor Authentication</div>
+                                        <div class="twofa-row-sub">Require a verification code when signing in</div>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           id="twofa-toggle" style="width:2.5em; height:1.25em; cursor:pointer;"
+                                    @(user?.Is2FAEnabled == true ? "checked" : "") />
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="section-divider mb-3"></div>
+
+                        <!-- Phone 2FA row -->
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-phone twofa-row-icon"></i>
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="twofa-row-title">Phone Verification</span>
+                                        @if (string.IsNullOrWhiteSpace(user?.PhoneNumber))
+                                        {
+                                            <span class="status-badge">No phone set</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge unverified">Unverified</span>
+                                        }
+                                    </div>
+                                    <div class="twofa-row-sub">
+                                        @(string.IsNullOrWhiteSpace(user?.PhoneNumber) ? "Not configured" : user.PhoneNumber)
+                                    </div>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(user?.PhoneNumber))
+                            {
+                                <button type="button" class="btn-outline-custom" style="width:80px;" disabled
+                                        title="Phone verification coming soon">
+                                    Verify
+                                </button>
+                            }
+                        </div>
+
+                        <div class="section-divider mb-3"></div>
+
+                        <!-- Email 2FA row -->
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-envelope twofa-row-icon"></i>
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="twofa-row-title">Email Verification</span>
+                                        <span class="status-badge unverified">Unverified</span>
+                                    </div>
+                                    <div class="twofa-row-sub">@(user?.Email ?? "Not configured")</div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-outline-custom" style="width:80px;" disabled
+                                    title="Email verification coming soon">
+                                Verify
+                            </button>
+                        </div>
+
+                    </div><!-- /2FA block -->
+                    <!-- Connected accounts block -->
+                    <div class="inner-section mb-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="section-icon-wrap me-3" style="width:30px; height:30px; border-radius:8px;">
+                                <i class="bi bi-link-45deg" style="font-size:.875rem;"></i>
+                            </div>
+                            <div>
+                                <div class="section-title" style="font-size:.84375rem;">Connected Accounts</div>
+                                <div class="section-subtitle" style="font-size:.71875rem;">Manage third-party sign-in providers</div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider mb-3"></div>
+
+                        @if (Model.OAuthLinks.Count == 0)
+                        {
+                            <p class="section-subtitle mb-2">No connected accounts.</p>
+                        }
+                        else
+                        {
+                            foreach (var link in Model.OAuthLinks)
+                            {
+                                <div class="oauth-provider-row">
+                                    <span>@(link.ProviderEmail ?? link.Provider)</span>
+                                    <button type="button" class="btn-outline-custom" disabled
+                                            title="Account unlinking coming soon">
+                                        Remove
+                                    </button>
+                                </div>
+                            }
+                        }
+
+                        <button type="button" class="btn-outline-custom mt-2" disabled
+                                title="Coming soon">
+                            <i class="bi bi-gear me-1"></i> Manage Connected Accounts
+                        </button>
+                    </div>
+
+                    <!-- Change password strip -->
+                    <div class="danger-strip d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="danger-icon-wrap">
+                                <i class="bi bi-key-fill"></i>
+                            </div>
+                            <div>
+                                <div class="section-title" style="font-size:.84375rem;">Password Settings</div>
+                                <div class="section-subtitle" style="font-size:.71875rem;">Change your account password</div>
+                            </div>
+                        </div>
+                        <button id="change-password-btn" type="button" class="btn-danger-custom">
+                            <i class="bi bi-key-fill me-2"></i>Change Password
+                        </button>
+                    </div>
+
+                </div><!-- /panel-security -->
+                <!-- ══════  TAB 3 — Notification Preferences  ══════ -->
+                <div id="panel-notifications" style="display:none;">
+
+                    <!-- Section header -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="section-icon-wrap me-3">
+                            <i class="bi bi-bell-fill"></i>
+                        </div>
+                        <div>
+                            <div class="section-title">Notification Preferences</div>
+                            <div class="section-subtitle">Choose which alerts you want to receive</div>
+                        </div>
+                    </div>
+
+                    <form asp-action="UpdateNotificationPreferences" asp-controller="Profile"
+                          method="post" id="notifications-form">
+                        @Html.AntiForgeryToken()
+
+                        <div class="inner-section">
+
+                            @if (Model.NotificationPreferences.Count == 0)
+                            {
+                                <p class="section-subtitle">No notification preferences available.</p>
+                            }
+                            else
+                            {
+                                <!-- Header row -->
+                                <div class="row mb-2">
+                                    <div class="col-5"></div>
+                                    <div class="col text-center notif-channel-label">Email</div>
+                                    <div class="col text-center notif-channel-label">SMS</div>
+                                    <div class="col text-center notif-channel-label">Push</div>
+                                </div>
+
+                                for (int i = 0; i < Model.NotificationPreferences.Count; i++)
+                                {
+                                    var pref = Model.NotificationPreferences[i];
+                                    <!-- Hidden inputs for this preference -->
+                                    <input type="hidden" name="NotificationPrefs.Items[@i].Id"
+                                           value="@pref.Id" />
+                                    <input type="hidden" name="NotificationPrefs.Items[@i].EmailEnabled"
+                                           id="notif-@(pref.Id)-email" value="@pref.EmailEnabled.ToString().ToLower()" />
+                                    <input type="hidden" name="NotificationPrefs.Items[@i].SmsEnabled"
+                                           id="notif-@(pref.Id)-sms" value="@pref.SmsEnabled.ToString().ToLower()" />
+                                    <input type="hidden" name="NotificationPrefs.Items[@i].PushEnabled"
+                                           id="notif-@(pref.Id)-push" value="@pref.PushEnabled.ToString().ToLower()" />
+
+                                    <div class="notif-row row align-items-center">
+                                        <div class="col-5 notif-name">@pref.Category.ToString()</div>
+                                        <div class="col text-center">
+                                            <div class="form-check form-switch d-flex justify-content-center mb-0">
+                                                <input class="form-check-input notif-toggle"
+                                                       type="checkbox" role="switch"
+                                                       data-pref-id="@pref.Id" data-channel="email"
+                                                       style="width:2em; height:1em; cursor:pointer;"
+                                                @(pref.EmailEnabled ? "checked" : "") />
+                                            </div>
+                                        </div>
+                                        <div class="col text-center">
+                                            <div class="form-check form-switch d-flex justify-content-center mb-0">
+                                                <input class="form-check-input notif-toggle"
+                                                       type="checkbox" role="switch"
+                                                       data-pref-id="@pref.Id" data-channel="sms"
+                                                       style="width:2em; height:1em; cursor:pointer;"
+                                                @(pref.SmsEnabled ? "checked" : "") />
+                                            </div>
+                                        </div>
+                                        <div class="col text-center">
+                                            <div class="form-check form-switch d-flex justify-content-center mb-0">
+                                                <input class="form-check-input notif-toggle"
+                                                       type="checkbox" role="switch"
+                                                       data-pref-id="@pref.Id" data-channel="push"
+                                                       style="width:2em; height:1em; cursor:pointer;"
+                                                @(pref.PushEnabled ? "checked" : "") />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                    </form>
+                </div><!-- /panel-notifications -->
+
+            </div><!-- /tab content -->
+        </div><!-- /profile-card -->
+    </div><!-- /flex-fill -->
+</div><!-- /row -->
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL 1 — VERIFY PASSWORD
+     (used for: unlock personal info edit)
+═══════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="verifyPasswordModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header-custom d-flex align-items-center">
+                <div class="modal-icon-wrap danger">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                    <div class="modal-title-text" id="verifyModalLabel">Verify Your Identity</div>
+                    <div class="modal-subtitle-text">Confirm your password to continue</div>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="verify-modal-error" class="modal-error d-none mb-3"></div>
+
+                <div class="mb-3">
+                    <div class="modal-field-label">Current Password</div>
+                    <input id="verify-password-input" class="modal-input"
+                           type="password" placeholder="Enter your current password" autocomplete="current-password" />
+                </div>
+
+                <div class="modal-hint d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill"></i>
+                    This verification keeps your account secure.
+                </div>
+
+            </div>
+
+            <div class="modal-footer d-flex justify-content-end gap-2">
+                <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                <button id="verify-confirm-btn" type="button" class="btn-primary-custom" style="min-width:110px;">
+                    Continue
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form submitted by the verify modal -->
+<form id="verify-password-form" asp-action="UpdatePersonalInfo" asp-controller="Profile" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="UpdatePersonalInfo.PhoneNumber" id="vf-phone" value="@(Model.UpdatePersonalInfo.PhoneNumber ?? string.Empty)" />
+    <input type="hidden" name="UpdatePersonalInfo.Address" id="vf-address" value="@(Model.UpdatePersonalInfo.Address ?? string.Empty)" />
+    <input type="hidden" name="UpdatePersonalInfo.VerifiedPassword" id="verify-password-field" />
+    <input type="hidden" id="verify-intent-field" />
+</form>
+<input type="hidden" id="verify-modal-intent" value="edit" />
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL 2 — CHANGE PASSWORD
+═══════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header-custom d-flex align-items-center">
+                <div class="modal-icon-wrap accent">
+                    <i class="bi bi-key-fill"></i>
+                </div>
+                <div>
+                    <div class="modal-title-text" id="changePasswordModalLabel">Set New Password</div>
+                    <div class="modal-subtitle-text">Choose a strong password for your account</div>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="cp-modal-error" class="modal-error d-none mb-3"></div>
+
+                <div class="mb-3">
+                    <div class="modal-field-label">Current Password</div>
+                    <input id="cp-current-input" class="modal-input"
+                           type="password" placeholder="Enter your current password" autocomplete="current-password" />
+                </div>
+
+                <div class="mb-3">
+                    <div class="modal-field-label">New Password</div>
+                    <input id="cp-new-input" class="modal-input"
+                           type="password" placeholder="Enter new password" autocomplete="new-password" />
+                </div>
+
+                <div class="mb-3">
+                    <div class="modal-field-label">Confirm Password</div>
+                    <input id="cp-confirm-input" class="modal-input"
+                           type="password" placeholder="Re-enter new password" autocomplete="new-password" />
+                </div>
+
+                <ul class="modal-rules">
+                    <li>Minimum 8 characters</li>
+                    <li>Mix of letters, numbers and symbols</li>
+                </ul>
+
+            </div>
+
+            <div class="modal-footer d-flex justify-content-end gap-2">
+                <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                <button id="change-password-confirm-btn" type="button" class="btn-primary-custom" style="min-width:140px;">
+                    Update Password
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form submitted by the change-password modal -->
+<form id="change-password-form" asp-action="ChangePassword" asp-controller="Profile" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="ChangePassword.CurrentPassword" id="cp-current-field" />
+    <input type="hidden" name="ChangePassword.NewPassword" id="cp-new-field" />
+    <input type="hidden" name="ChangePassword.ConfirmPassword" id="cp-confirm-field" />
+</form>
+
+
+@section Scripts {
+    <script src="~/js/profile.js"></script>
+}

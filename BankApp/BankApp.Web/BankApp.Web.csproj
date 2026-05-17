@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BankApp.Client.Shared\BankApp.Client.Shared.csproj" />
     <ProjectReference Include="..\BankApp.Models\BankApp.Models.csproj" />
   </ItemGroup>
@@ -26,6 +31,7 @@
     <Folder Include="Views\Accounts\" />
     <Folder Include="Views\Loans\" />
     <Folder Include="Views\Profile\" />
+    <Folder Include="Views\Investments\" />
     <Folder Include="Views\Statistics\" />
     <Folder Include="Views\Transactions\" />
     <Folder Include="Views\Savings\" />

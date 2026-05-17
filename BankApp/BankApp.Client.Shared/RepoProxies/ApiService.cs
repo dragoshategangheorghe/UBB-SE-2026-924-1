@@ -93,7 +93,7 @@ namespace BankApp.Client.RepoProxies
                 return parsed;
             }
 
-            string truncated = json.Length > JsonTruncateLength ? json[..JsonTruncateLength] + "â€¦" : json;
+            string truncated = json.Length > JsonTruncateLength ? json[..JsonTruncateLength] + "..." : json;
             throw new HttpRequestException(
                 $"Request to '{endpoint}' failed: {(int)response.StatusCode} {response.StatusCode}. Body: {truncated}",
                 null,
