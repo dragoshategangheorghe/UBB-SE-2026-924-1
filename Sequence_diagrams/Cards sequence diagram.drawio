@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0" version="29.6.1">
+  <diagram name="Page-1" id="FWWJAFC2u1ZCwYHEB9gf">
+    <mxGraphModel dx="906" dy="490" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="&lt;div&gt;User&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="30" x="90" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-2" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;div&gt;Cards Web UI&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="260" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-3" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;div&gt;CardsController&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="470" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-4" parent="1" style="html=1;whiteSpace=wrap;" value="Shared CardService" vertex="1">
+          <mxGeometry height="50" width="110" x="680" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-5" parent="1" style="html=1;whiteSpace=wrap;" value="Server Cards API" vertex="1">
+          <mxGeometry height="50" width="110" x="890" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-6" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;div&gt;Database&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="1140" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-8" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;div&gt;Cards Web UI&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="260" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-9" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;div&gt;CardsController&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="470" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-10" parent="1" style="html=1;whiteSpace=wrap;" value="Shared CardService" vertex="1">
+          <mxGeometry height="50" width="110" x="680" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-11" parent="1" style="html=1;whiteSpace=wrap;" value="Server Cards API" vertex="1">
+          <mxGeometry height="50" width="110" x="890" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-13" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="vDzOsf-PQ-9MtvroTonT-2" value="Open page / Card actions">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="120" y="319.23" as="sourcePoint" />
+            <mxPoint x="200" y="319.23" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-14" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;entryPerimeter=0;" value="HTTP request">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="370" y="254.57" as="sourcePoint" />
+            <mxPoint x="470" y="254.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-15" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;entryPerimeter=0;" value="CardAction">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="580" y="254.57" as="sourcePoint" />
+            <mxPoint x="680" y="254.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-16" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;entryPerimeter=0;" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;API call&lt;/div&gt;">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="790" y="254.57" as="sourcePoint" />
+            <mxPoint x="890" y="254.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-17" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" target="vDzOsf-PQ-9MtvroTonT-6" value="&lt;div&gt;Read/Update card data&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="1000" y="254.57" as="sourcePoint" />
+            <mxPoint x="1100" y="254.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-18" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="vDzOsf-PQ-9MtvroTonT-11" value="&lt;div&gt;Response&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1140" y="350" as="sourcePoint" />
+            <mxPoint x="1060" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-19" edge="1" parent="1" source="vDzOsf-PQ-9MtvroTonT-11" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="vDzOsf-PQ-9MtvroTonT-10" value="&lt;div&gt;Response DTO&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="890" y="400" as="sourcePoint" />
+            <mxPoint x="750" y="455" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-20" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" value="&lt;div&gt;View / Json response&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="470" y="404.57" as="sourcePoint" />
+            <mxPoint x="370" y="404.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-21" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" value="&lt;div&gt;Response DTO&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="404.57" as="sourcePoint" />
+            <mxPoint x="580" y="404.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vDzOsf-PQ-9MtvroTonT-22" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="vDzOsf-PQ-9MtvroTonT-1" value="Show updated state">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="260" y="404.57" as="sourcePoint" />
+            <mxPoint x="160" y="404.57" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
