@@ -1,0 +1,441 @@
+﻿@model BankApp.Web.Models.Transactions.TransactionHistoryPageViewModel
+
+@{
+    ViewData["Title"] = "Transactions";
+}
+
+<link rel="stylesheet" href="~/css/transactions.css" asp-append-version="true" />
+
+<div class="container">
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") mb-4">
+            @Model.StatusMessage
+        </div>
+    }
+
+    <h1>Transaction History</h1>
+
+    <!-- Filters -->
+    <div class="card">
+
+        <h2>Filters</h2>
+
+        <form method="get"
+              asp-controller="Transactions"
+              asp-action="Index">
+
+            <input asp-for="SelectedTransactionId" type="hidden" />
+
+            <div class="grid-3">
+
+                <div class="form-group">
+                    <label asp-for="SearchTerm">Search</label>
+
+                    <input asp-for="SearchTerm"
+                           class="form-control"
+                           placeholder="Merchant, reference, description" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="FromDate">From Date</label>
+
+                    <input asp-for="FromDate"
+                           type="date"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ToDate">To Date</label>
+
+                    <input asp-for="ToDate"
+                           type="date"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="MinimumAmount">Minimum Amount</label>
+
+                    <input asp-for="MinimumAmount"
+                           type="number"
+                           step="0.01"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="MaximumAmount">Maximum Amount</label>
+
+                    <input asp-for="MaximumAmount"
+                           type="number"
+                           step="0.01"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedTransactionType">Type</label>
+
+                    <select asp-for="SelectedTransactionType"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.TransactionTypeOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedAccountId">Account</label>
+
+                    <select asp-for="SelectedAccountId"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.AccountOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedCardId">Card</label>
+
+                    <select asp-for="SelectedCardId"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.CardOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedStatus">Status</label>
+
+                    <select asp-for="SelectedStatus"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.StatusOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedDirection">Direction</label>
+
+                    <select asp-for="SelectedDirection"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.DirectionOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedSortField">Sort</label>
+
+                    <select asp-for="SelectedSortField"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.SortOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="grid-4">
+
+                <div class="form-group">
+                    <label asp-for="SelectedSortDirection">
+                        Sort Direction
+                    </label>
+
+                    <select asp-for="SelectedSortDirection"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.SortDirectionOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div></div>
+                <div></div>
+
+                <div class="button-row">
+
+                    <button type="submit">
+                        Apply
+                    </button>
+
+                    <a asp-controller="Transactions"
+                           asp-action="Index"
+                           class="secondary-btn text-decoration-none d-flex align-items-center justify-content-center">
+                        Reset
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+
+        <h2>Export</h2>
+
+        <div class="button-row">
+
+            <a asp-action="ExportCsv"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                   asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                   asp-route-minimumAmount="@Model.MinimumAmount"
+                   asp-route-maximumAmount="@Model.MaximumAmount"
+                   asp-route-selectedAccountId="@Model.SelectedAccountId"
+                   asp-route-selectedCardId="@Model.SelectedCardId"
+                   asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                   asp-route-selectedStatus="@Model.SelectedStatus"
+                   asp-route-selectedDirection="@Model.SelectedDirection"
+                   asp-route-selectedSortField="@Model.SelectedSortField"
+                   asp-route-selectedSortDirection="@Model.SelectedSortDirection"
+                   class="text-decoration-none">
+                <button type="button">
+                    CSV
+                </button>
+            </a>
+
+            <a asp-action="ExportPdf"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                   asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                   asp-route-minimumAmount="@Model.MinimumAmount"
+                   asp-route-maximumAmount="@Model.MaximumAmount"
+                   asp-route-selectedAccountId="@Model.SelectedAccountId"
+                   asp-route-selectedCardId="@Model.SelectedCardId"
+                   asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                   asp-route-selectedStatus="@Model.SelectedStatus"
+                   asp-route-selectedDirection="@Model.SelectedDirection"
+                   asp-route-selectedSortField="@Model.SelectedSortField"
+                   asp-route-selectedSortDirection="@Model.SelectedSortDirection"
+                   class="text-decoration-none">
+                <button type="button">
+                    PDF
+                </button>
+            </a>
+
+            <a asp-action="ExportXlsx"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                   asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                   asp-route-minimumAmount="@Model.MinimumAmount"
+                   asp-route-maximumAmount="@Model.MaximumAmount"
+                   asp-route-selectedAccountId="@Model.SelectedAccountId"
+                   asp-route-selectedCardId="@Model.SelectedCardId"
+                   asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                   asp-route-selectedStatus="@Model.SelectedStatus"
+                   asp-route-selectedDirection="@Model.SelectedDirection"
+                   asp-route-selectedSortField="@Model.SelectedSortField"
+                   asp-route-selectedSortDirection="@Model.SelectedSortDirection"
+                   class="text-decoration-none">
+                <button type="button">
+                    XLSX
+                </button>
+            </a>
+
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.LastExportPath))
+        {
+            <p class="muted" style="margin-top: 12px;">
+                @Model.LastExportPath
+            </p>
+        }
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-grid">
+
+        <!-- Transactions -->
+        <div class="card">
+
+            <h2>Transactions</h2>
+
+            @if (Model.Transactions.Any())
+            {
+                <div class="transaction-list">
+
+                    @foreach (var transaction in Model.Transactions)
+                    {
+                        <a asp-controller="Transactions"
+                               asp-action="Index"
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                               asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                               asp-route-minimumAmount="@Model.MinimumAmount"
+                               asp-route-maximumAmount="@Model.MaximumAmount"
+                               asp-route-selectedAccountId="@Model.SelectedAccountId"
+                               asp-route-selectedCardId="@Model.SelectedCardId"
+                               asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                               asp-route-selectedStatus="@Model.SelectedStatus"
+                               asp-route-selectedDirection="@Model.SelectedDirection"
+                               asp-route-selectedSortField="@Model.SelectedSortField"
+                               asp-route-selectedSortDirection="@Model.SelectedSortDirection"
+                               asp-route-selectedTransactionId="@transaction.Id"
+                               class="transaction-item text-decoration-none text-dark @(Model.SelectedTransactionId == transaction.Id ? "selected" : string.Empty)">
+
+                            <div class="transaction-left">
+
+                                <strong>
+                                    @transaction.CounterpartyOrMerchant
+                                </strong>
+
+                                <span class="muted">
+                                    @transaction.ReferenceNumber
+                                </span>
+
+                                <span class="muted">
+                                    @transaction.Timestamp.ToString("dd MMM yyyy HH:mm")
+                                </span>
+
+                            </div>
+
+                            <div class="transaction-right">
+
+                                <strong>
+                                    @transaction.Amount.ToString("N2")
+                                </strong>
+
+                                <span>
+                                    @transaction.Currency
+                                </span>
+
+                                <span class="status">
+                                    @transaction.Status
+                                </span>
+
+                            </div>
+
+                        </a>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <p class="muted">
+                    No transactions found.
+                </p>
+            }
+
+        </div>
+
+        <!-- Details -->
+        <div class="card">
+
+            <h2>Details</h2>
+
+            @if (Model.SelectedTransaction != null)
+            {
+                var selected = Model.SelectedTransaction;
+
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+
+                    <h3>
+                        @selected.ReferenceNumber
+                    </h3>
+
+                    <p class="muted">
+                        @selected.Timestamp.ToString("dd MMM yyyy HH:mm")
+                    </p>
+
+                    <p>
+                        <strong>Counterparty:</strong>
+                        @selected.CounterpartyOrMerchant
+                    </p>
+
+                    <p>
+                        <strong>Description:</strong><br />
+                        @selected.Description
+                    </p>
+
+                    <div class="details-grid">
+
+                        <div class="details-column">
+
+                            <div>
+                                <div class="detail-label">
+                                    Amount
+                                </div>
+
+                                <div>
+                                    @selected.Amount.ToString("N2")
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">
+                                    Currency
+                                </div>
+
+                                <div>
+                                    @selected.Currency
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">
+                                    Direction
+                                </div>
+
+                                <div>
+                                    @selected.Direction
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">
+                                    Status
+                                </div>
+
+                                <div>
+                                    @selected.Status
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="details-column">
+
+                            <div>
+                                <div class="detail-label">
+                                    Fee
+                                </div>
+
+                                <div>
+                                    @selected.Fee
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">
+                                    Exchange Rate
+                                </div>
+
+                                <div>
+                                    @selected.ExchangeRate
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <a asp-action="ExportReceipt"
+                       asp-route-transactionId="@selected.Id"
+                       class="text-decoration-none">
+                        <button type="button" style="width: fit-content; margin-top: 10px;">
+                            Download PDF Receipt
+                        </button>
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <p class="muted">
+                    Select a transaction to see its details.
+                </p>
+            }
+
+        </div>
+
+    </div>
+
+</div>
