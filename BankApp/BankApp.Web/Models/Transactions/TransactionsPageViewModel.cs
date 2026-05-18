@@ -1,5 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
 using BankApp.Models.DTOs.Transactions;
 
 namespace BankApp.Web.Models.Transactions
@@ -8,7 +6,6 @@ namespace BankApp.Web.Models.Transactions
     {
         public List<TransactionHistoryItemDto> Transactions { get; set; } = new();
 
-        // Filters
         public string SearchTerm { get; set; } = string.Empty;
 
         public DateTime? FromDate { get; set; }
@@ -19,86 +16,141 @@ namespace BankApp.Web.Models.Transactions
 
         public decimal? MaximumAmount { get; set; }
 
+        public int? SelectedAccountId { get; set; }
+
+        public int? SelectedCardId { get; set; }
+
         public string SelectedTransactionType { get; set; } = string.Empty;
 
         public string SelectedStatus { get; set; } = string.Empty;
 
         public string SelectedDirection { get; set; } = string.Empty;
 
-        public string SelectedSortField { get; set; } = TransactionSortOptions.Date;
+        public string SelectedSortField { get; set; } = TransactionSortFields.Date;
 
         public string SelectedSortDirection { get; set; } = SortDirections.Desc;
 
-        // Dropdown Options
+        public int? SelectedTransactionId { get; set; }
+
+        public TransactionHistoryItemDto? SelectedTransaction =>
+            SelectedTransactionId.HasValue
+                ? Transactions.FirstOrDefault(transaction => transaction.Id == SelectedTransactionId.Value) ?? Transactions.FirstOrDefault()
+                : Transactions.FirstOrDefault();
+
+        public List<TransactionFilterItemViewModel> AccountOptions { get; set; } = new()
+        {
+            new TransactionFilterItemViewModel { Value = string.Empty, Label = "All Accounts" }
+        };
+
+        public List<TransactionFilterItemViewModel> CardOptions { get; set; } = new()
+        {
+            new TransactionFilterItemViewModel { Value = string.Empty, Label = "All Cards" }
+        };
+
         public List<TransactionFilterItemViewModel> TransactionTypeOptions { get; set; } = new()
         {
-            new TransactionFilterItemViewModel { Value = "", Label = "All Types" },
-            new TransactionFilterItemViewModel { Value = "Transfer", Label = "Transfer" },
-            new TransactionFilterItemViewModel { Value = "CardPayment", Label = "Card Payment" },
-            new TransactionFilterItemViewModel { Value = "Withdrawal", Label = "Withdrawal" },
-            new TransactionFilterItemViewModel { Value = "Deposit", Label = "Deposit" }
+            new TransactionFilterItemViewModel { Value = string.Empty, Label = "All Types" }
         };
 
         public List<TransactionFilterItemViewModel> StatusOptions { get; set; } = new()
         {
-            new TransactionFilterItemViewModel { Value = "", Label = "All Statuses" },
-            new TransactionFilterItemViewModel { Value = "Completed", Label = "Completed" },
-            new TransactionFilterItemViewModel { Value = "Pending", Label = "Pending" },
-            new TransactionFilterItemViewModel { Value = "Failed", Label = "Failed" }
+            new TransactionFilterItemViewModel { Value = string.Empty, Label = "All Statuses" }
         };
 
         public List<TransactionFilterItemViewModel> DirectionOptions { get; set; } = new()
         {
-            new TransactionFilterItemViewModel { Value = "", Label = "All Directions" },
-            new TransactionFilterItemViewModel { Value = "Incoming", Label = "Incoming" },
-            new TransactionFilterItemViewModel { Value = "Outgoing", Label = "Outgoing" }
+            new TransactionFilterItemViewModel { Value = string.Empty, Label = "All Directions" }
         };
 
         public List<TransactionSortItemViewModel> SortOptions { get; set; } = new()
         {
             new TransactionSortItemViewModel
             {
-                Value = TransactionSortOptions.Date,
+                Value = TransactionSortFields.Date,
                 Label = "Date"
             },
             new TransactionSortItemViewModel
             {
-                Value = TransactionSortOptions.Amount,
+                Value = TransactionSortFields.Amount,
                 Label = "Amount"
-            },
-            new TransactionSortItemViewModel
-            {
-                Value = TransactionSortOptions.Status,
-                Label = "Status"
-            },
-            new TransactionSortItemViewModel
-            {
-                Value = TransactionSortOptions.Type,
-                Label = "Type"
             }
         };
 
         public List<TransactionSortItemViewModel> SortDirectionOptions { get; set; } = new()
         {
+            // These are flipped for some reason
             new TransactionSortItemViewModel
             {
                 Value = SortDirections.Asc,
-                Label = "Ascending"
+                Label = "Descending"
             },
             new TransactionSortItemViewModel
             {
                 Value = SortDirections.Desc,
-                Label = "Descending"
+                Label = "Ascending"
             }
         };
 
-        // Export
         public string LastExportPath { get; set; } = string.Empty;
 
-        // Status
         public string StatusMessage { get; set; } = string.Empty;
 
         public bool IsSuccess { get; set; }
+
+        public TransactionHistoryRequest ToHistoryRequest()
+        {
+            return new TransactionHistoryRequest
+            {
+                SearchTerm = SearchTerm,
+                FromDate = FromDate,
+                ToDate = ToDate,
+                TransactionType = SelectedTransactionType,
+                MinimumAmount = MinimumAmount,
+                MaximumAmount = MaximumAmount,
+                AccountId = SelectedAccountId,
+                CardId = SelectedCardId,
+                Status = SelectedStatus,
+                Direction = SelectedDirection,
+                SortField = SelectedSortField,
+                SortDirection = SelectedSortDirection
+            };
+        }
+
+        public TransactionExportRequest ToExportRequest(string format)
+        {
+            return new TransactionExportRequest
+            {
+                Format = format,
+                SearchTerm = SearchTerm,
+                FromDate = FromDate,
+                ToDate = ToDate,
+                TransactionType = SelectedTransactionType,
+                MinimumAmount = MinimumAmount,
+                MaximumAmount = MaximumAmount,
+                AccountId = SelectedAccountId,
+                CardId = SelectedCardId,
+                Status = SelectedStatus,
+                Direction = SelectedDirection,
+                SortField = SelectedSortField,
+                SortDirection = SelectedSortDirection
+            };
+        }
+
+        public void ApplyFilters(TransactionHistoryRequest filters)
+        {
+            SearchTerm = filters.SearchTerm ?? string.Empty;
+            FromDate = filters.FromDate;
+            ToDate = filters.ToDate;
+            SelectedTransactionType = filters.TransactionType ?? string.Empty;
+            MinimumAmount = filters.MinimumAmount;
+            MaximumAmount = filters.MaximumAmount;
+            SelectedAccountId = filters.AccountId;
+            SelectedCardId = filters.CardId;
+            SelectedStatus = filters.Status ?? string.Empty;
+            SelectedDirection = filters.Direction ?? string.Empty;
+            SelectedSortField = filters.SortField;
+            SelectedSortDirection = filters.SortDirection;
+        }
     }
 
     public class TransactionFilterItemViewModel
@@ -113,23 +165,5 @@ namespace BankApp.Web.Models.Transactions
         public string Value { get; set; } = string.Empty;
 
         public string Label { get; set; } = string.Empty;
-    }
-
-    public static class TransactionSortOptions
-    {
-        public const string Date = "Date";
-
-        public const string Amount = "Amount";
-
-        public const string Status = "Status";
-
-        public const string Type = "Type";
-    }
-
-    public static class SortDirectionOptions
-    {
-        public const string Ascending = "Ascending";
-
-        public const string Descending = "Descending";
     }
 }

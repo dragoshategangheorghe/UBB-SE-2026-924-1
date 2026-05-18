@@ -26,6 +26,8 @@
               asp-controller="Transactions"
               asp-action="Index">
 
+            <input asp-for="SelectedTransactionId" type="hidden" />
+
             <div class="grid-3">
 
                 <div class="form-group">
@@ -76,6 +78,24 @@
                     <select asp-for="SelectedTransactionType"
                             class="form-select"
                             asp-items="@(new SelectList(Model.TransactionTypeOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedAccountId">Account</label>
+
+                    <select asp-for="SelectedAccountId"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.AccountOptions, "Value", "Label"))">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedCardId">Card</label>
+
+                    <select asp-for="SelectedCardId"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.CardOptions, "Value", "Label"))">
                     </select>
                 </div>
 
@@ -152,6 +172,18 @@
         <div class="button-row">
 
             <a asp-action="ExportCsv"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                   asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                   asp-route-minimumAmount="@Model.MinimumAmount"
+                   asp-route-maximumAmount="@Model.MaximumAmount"
+                   asp-route-selectedAccountId="@Model.SelectedAccountId"
+                   asp-route-selectedCardId="@Model.SelectedCardId"
+                   asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                   asp-route-selectedStatus="@Model.SelectedStatus"
+                   asp-route-selectedDirection="@Model.SelectedDirection"
+                   asp-route-selectedSortField="@Model.SelectedSortField"
+                   asp-route-selectedSortDirection="@Model.SelectedSortDirection"
                    class="text-decoration-none">
                 <button type="button">
                     CSV
@@ -159,6 +191,18 @@
             </a>
 
             <a asp-action="ExportPdf"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                   asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                   asp-route-minimumAmount="@Model.MinimumAmount"
+                   asp-route-maximumAmount="@Model.MaximumAmount"
+                   asp-route-selectedAccountId="@Model.SelectedAccountId"
+                   asp-route-selectedCardId="@Model.SelectedCardId"
+                   asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                   asp-route-selectedStatus="@Model.SelectedStatus"
+                   asp-route-selectedDirection="@Model.SelectedDirection"
+                   asp-route-selectedSortField="@Model.SelectedSortField"
+                   asp-route-selectedSortDirection="@Model.SelectedSortDirection"
                    class="text-decoration-none">
                 <button type="button">
                     PDF
@@ -166,6 +210,18 @@
             </a>
 
             <a asp-action="ExportXlsx"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                   asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                   asp-route-minimumAmount="@Model.MinimumAmount"
+                   asp-route-maximumAmount="@Model.MaximumAmount"
+                   asp-route-selectedAccountId="@Model.SelectedAccountId"
+                   asp-route-selectedCardId="@Model.SelectedCardId"
+                   asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                   asp-route-selectedStatus="@Model.SelectedStatus"
+                   asp-route-selectedDirection="@Model.SelectedDirection"
+                   asp-route-selectedSortField="@Model.SelectedSortField"
+                   asp-route-selectedSortDirection="@Model.SelectedSortDirection"
                    class="text-decoration-none">
                 <button type="button">
                     XLSX
@@ -199,8 +255,20 @@
                     {
                         <a asp-controller="Transactions"
                                asp-action="Index"
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                               asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                               asp-route-minimumAmount="@Model.MinimumAmount"
+                               asp-route-maximumAmount="@Model.MaximumAmount"
+                               asp-route-selectedAccountId="@Model.SelectedAccountId"
+                               asp-route-selectedCardId="@Model.SelectedCardId"
+                               asp-route-selectedTransactionType="@Model.SelectedTransactionType"
+                               asp-route-selectedStatus="@Model.SelectedStatus"
+                               asp-route-selectedDirection="@Model.SelectedDirection"
+                               asp-route-selectedSortField="@Model.SelectedSortField"
+                               asp-route-selectedSortDirection="@Model.SelectedSortDirection"
                                asp-route-selectedTransactionId="@transaction.Id"
-                               class="transaction-item text-decoration-none text-dark">
+                               class="transaction-item text-decoration-none text-dark @(Model.SelectedTransactionId == transaction.Id ? "selected" : string.Empty)">
 
                             <div class="transaction-left">
 
@@ -253,9 +321,9 @@
 
             <h2>Details</h2>
 
-            @if (Model.Transactions.Any())
+            @if (Model.SelectedTransaction != null)
             {
-                var selected = Model.Transactions.First();
+                var selected = Model.SelectedTransaction;
 
                 <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
 
@@ -287,7 +355,7 @@
                                 </div>
 
                                 <div>
-                                    @* @transaction.Amount.ToString("N2") *@
+                                    @selected.Amount.ToString("N2")
                                 </div>
                             </div>
 
@@ -349,9 +417,13 @@
 
                     </div>
 
-                    <button style="width: fit-content; margin-top: 10px;">
-                        Download PDF Receipt
-                    </button>
+                    <a asp-action="ExportReceipt"
+                       asp-route-transactionId="@selected.Id"
+                       class="text-decoration-none">
+                        <button type="button" style="width: fit-content; margin-top: 10px;">
+                            Download PDF Receipt
+                        </button>
+                    </a>
 
                 </div>
             }

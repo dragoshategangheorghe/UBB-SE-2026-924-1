@@ -146,6 +146,11 @@ button {
         background: #eef2ff;
     }
 
+    .transaction-item.selected {
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+    }
+
 .transaction-left,
 .transaction-right {
     display: flex;
