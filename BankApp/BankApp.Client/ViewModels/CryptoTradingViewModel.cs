@@ -98,7 +98,7 @@ namespace BankApp.Client.ViewModels
             // --- CLIENT-SIDE PROTECTION: BUY ORDER WALLET LIMIT ---
             if (ActionType == "BUY" && TotalAmount > CurrentBalance)
             {
-                StatusMessage = $"⚠️ Insufficient Funds: Total cost ({TotalAmount:N2} RON) exceeds your wallet balance ({CurrentBalance:N2} RON).";
+                StatusMessage = $" Insufficient Funds: Total cost ({TotalAmount:N2} RON) exceeds your wallet balance ({CurrentBalance:N2} RON).";
                 return;
             }
 
@@ -120,7 +120,7 @@ namespace BankApp.Client.ViewModels
 
                 if (!userId.HasValue)
                 {
-                    StatusMessage = "⚠️ Session expired. Please log in again.";
+                    StatusMessage = " Session expired. Please log in again.";
                     return;
                 }
 
@@ -151,21 +151,21 @@ namespace BankApp.Client.ViewModels
                         {
                             int detailStart = jsonBody.IndexOf("\"detail\":\"") + 10;
                             int detailEnd = jsonBody.IndexOf("\"", detailStart);
-                            StatusMessage = $"⚠️ {jsonBody.Substring(detailStart, detailEnd - detailStart)}";
+                            StatusMessage = $" {jsonBody.Substring(detailStart, detailEnd - detailStart)}";
                         }
                         else
                         {
-                            StatusMessage = "⚠️ Transaction rejected by server validations.";
+                            StatusMessage = " Transaction rejected by server validations.";
                         }
                     }
                     catch
                     {
-                        StatusMessage = "⚠️ Validation processing failure.";
+                        StatusMessage = " Validation processing failure.";
                     }
                 }
                 else
                 {
-                    StatusMessage = $"⚠️ Connection Error: {ex.Message}";
+                    StatusMessage = $" Connection Error: {ex.Message}";
                 }
 
                 Debug.WriteLine($"Trade Failure Trace: {ex.Message}");

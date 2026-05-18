@@ -1,0 +1,43 @@
+title Card Freeze / Unfreeze
+
+actor User
+participant CardManagementView
+participant CardManagementViewModel
+participant CardService
+participant "CardRepoProxy (API)" as CardRepoProxy
+
+participant CardsController
+participant CardRepository
+database Database
+
+User->CardManagementView: Select card, click Freeze or Unfreeze
+CardManagementView->CardManagementViewModel: FreezeCommand / UnfreezeCommand
+CardManagementViewModel->CardService: FreezeCardAsync(cardId) or UnfreezeCardAsync(cardId)
+CardService->CardRepoProxy: PUT /api/cards/{cardId}/freeze or /unfreeze
+CardRepoProxy->CardsController: HTTP PUT (Bearer token)
+CardsController->CardsController: GetAuthenticatedUserId()
+
+CardsController->CardRepository: GetOwnedCard(userId, cardId)
+alt Card not found or not owned
+    CardsController-->CardRepoProxy: 400 "Card not found."
+    CardRepoProxy-->CardManagementViewModel: Success = false
+    CardManagementViewModel-->User: Error message
+else Card belongs to user
+    CardsController->CardsController: ChangeCardStatus(cardId, "Frozen" or "Active")
+
+    alt Status already Frozen / Active
+        CardsController-->CardRepoProxy: 200 OK (no DB change)
+    else Status must change
+        CardsController->CardRepository: UpdateStatus(cardId, new status)
+        CardRepository->Database: UPDATE Card.Status
+        Database-->CardRepository: OK
+        CardsController->CardRepository: GetCardById(cardId)
+        CardRepository->Database: SELECT card
+        Database-->CardsController: Updated card
+        CardsController-->CardRepoProxy: 200 OK + CardSummaryDto
+    end
+
+    CardRepoProxy-->CardManagementViewModel: Success + updated card
+    CardManagementViewModel-->CardManagementView: Refresh card in UI
+    CardManagementView-->User: "Card frozen/unfrozen successfully"
+end

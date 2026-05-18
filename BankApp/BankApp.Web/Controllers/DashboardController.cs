@@ -1,9 +1,12 @@
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Dashboard;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 
 namespace BankApp.Web.Controllers
 {
+   // [Authorize]
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;

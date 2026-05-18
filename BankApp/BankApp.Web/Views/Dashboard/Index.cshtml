@@ -1,1 +1,154 @@
-﻿
+﻿@model BankApp.Models.DTOs.Dashboard.DashboardResponse
+
+@{
+	ViewData["Title"] = "Dashboard";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css" type="text/css"/>
+
+<div class="dashboard-container p-4" style="background-color: #F4F6FA; min-height: 100vh;">
+    
+    <div class="mb-4">
+        <h5 class="text-muted mb-0">Welcome back,</h5>
+        <h2 style="color: #1A1A2E; font-weight: 700;">@Model.CurrentUser.FullName</h2>
+    </div>
+    <div class="card-section mb-5">
+        <h6 class="text-secondary fw-semibold mb-3">Card Details</h6>
+        <div id="cardCarousel" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner">
+                @for (int i = 0; i < Model.Cards.Count; i++)
+                {
+                    var card = Model.Cards[i];
+                    var maskedNumber = card.CardNumber.Length >= 4 
+                        ? $"**** **** **** {card.CardNumber.Substring(card.CardNumber.Length - 4)}" 
+                        : "**** **** **** ****";
+                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                        <div class="bank-card mx-auto" 
+                        onclick="showCardDetails('@card.CardType', '@(card.CardBrand ?? "Mastercard")',
+                        '@card.CardNumber', '@card.CardholderName', '@card.ExpiryDate.ToString("MM/yy")',
+                        '@card.Status', '@(card.IsContactlessEnabled ? "Enabled" : "Disabled")',
+                        '@(card.IsOnlineEnabled ? "Enabled" : "Disabled")')"
+                        style="
+                            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+                            border-radius: 16px;
+                            height: 220px;
+                            max-width: 400px;
+                            padding: 25px;
+                            color: white;
+                            box-shadow: 0 10px 20px rgba(247, 147, 30, 0.3);
+                            position: relative;
+                            cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold fs-5">PC𐂂BAMBI</span>
+                                <span class="opacity-75 fw-semibold">@(string.IsNullOrEmpty(card.CardBrand) ? "Mastercard" : card.CardBrand)</span>
+                            </div>
+                            
+                            <div class="mb-3 opacity-50">
+                                <i class="bi bi-broadcast fs-3"></i>
+                            </div>
+                            
+                            <div class="card-number my-3 fs-4 tracking-wider fw-medium">
+                                @maskedNumber
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-auto">
+                                <div>
+                                    <small class="d-block opacity-75" style="font-size: 9px; letter-spacing: 0.1em;">CARD HOLDER</small>
+                                    <span class="fw-semibold text-uppercase" style="font-size: 13px;">@card.CardholderName</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="d-block opacity-75" style="font-size: 9px; letter-spacing: 0.1em;">VALID THRU</small>
+                                    <span class="fw-semibold" style="font-size: 13px;">@card.ExpiryDate.ToString("MM/yy")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="d-flex justify-content-center align-items-center mt-3 gap-3">
+                <button class="btn btn-sm btn-light rounded-circle shadow-sm" type="button" data-bs-target="#cardCarousel" data-bs-slide="prev" style="width: 35px; height: 35px;">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                
+                <div class="carousel-indicators-manual d-flex gap-2">
+                    @for (int i = 0; i < Model.Cards.Count; i++)
+                    {
+                        <div class="dot @(i == 0 ? "active" : "")" data-bs-target="#cardCarousel" data-bs-slide-to="@i"></div>
+                    }
+                </div>
+                <button class="btn btn-sm btn-light rounded-circle shadow-sm" type="button" data-bs-target="#cardCarousel" data-bs-slide="next" style="width: 35px; height: 35px;">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="mb-5">
+        <h6 class="text-secondary fw-semibold mb-3">Quick Actions</h6>
+        <div class="d-flex gap-3 justify-content-start flex-wrap">
+            <button class="action-btn" onclick="alert('Transfer feature works!')">
+                <i class="bi bi-arrow-left-right fs-4 mb-1"></i>
+                <span>Transfer</span>
+            </button>
+            <button class="action-btn" onclick="alert('Pay Bill feature works!')">
+                <i class="bi bi-receipt fs-4 mb-1"></i>
+                <span>Pay Bill</span>
+            </button>
+            <button class="action-btn" onclick="alert('Currency Exchange feature works!')">
+                <i class="bi bi-currency-exchange fs-4 mb-1"></i>
+                <span>Exchange</span>
+            </button>
+            <button class="action-btn" onclick="alert('Transaction History feature works!')">
+                <i class="bi bi-clock-history fs-4 mb-1"></i>
+                <span>History</span>
+            </button>
+        </div>
+    </div>
+    <div class="mb-4">
+        <h6 class="text-secondary fw-semibold mb-3">Recent Transactions</h6>
+        <div class="bg-white rounded-3 shadow-sm overflow-hidden border-0">
+            <table class="table table-hover mb-0">
+                <thead style="background-color: #F8F9FA;">
+                    <tr>
+                        <th class="border-0 text-muted small fw-semibold ps-4 py-3">Merchant</th>
+                        <th class="border-0 text-muted small fw-semibold py-3">Type</th>
+                        <th class="border-0 text-muted small fw-semibold py-3">Amount</th>
+                        <th class="border-0 text-muted small fw-semibold pe-4 py-3">Currency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tx in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td class="border-0 ps-4 py-3 fw-medium" style="color: #1A1A2E;">@tx.MerchantName</td>
+                            <td class="border-0 py-3 text-muted small">@tx.Type</td>
+                            <td class="border-0 py-3 fw-bold" style="color: #1A1A2E;">@tx.Amount</td>
+                            <td class="border-0 py-3 fw-semibold pe-4" style="color: #4ECDC4;">@tx.Currency</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="cardDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h4 class="modal-title fw-bold" style="color: #1A1A2E;">Card Details</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="d-flex flex-column gap-2" id="modalCardInfo" style="font-family: monospace; white-space: pre;"> 
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-outline-secondary px-5 py-2" data-bs-dismiss="modal" style="border-radius: 8px;">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,52 @@
+title Card Reveal Details
+
+actor User
+
+participant CardManagementView
+participant CardManagementViewModel
+participant CardService
+participant "CardRepoProxy" as CardRepoProxy
+participant CardsController
+participant CardRepository
+participant HashService
+participant OTPService
+database Database
+
+User->CardManagementView: Select card, click "Reveal Details"
+CardManagementView-->User: Password dialog
+User->CardManagementView: Enter password
+CardManagementView->CardManagementViewModel: RevealSensitiveDetailsAsync(password)
+CardManagementViewModel->CardService: RevealCardAsync(cardId, request)
+CardService->CardRepoProxy: POST /api/cards/{cardId}/reveal
+CardRepoProxy->CardsController: HTTP POST (Bearer token)
+CardsController->CardRepository: GetOwnedCard(userId, cardId)
+CardRepository->Database: SELECT card
+Database-->CardsController: Card
+
+alt Card not found
+    CardsController-->User: 404 "Card not found."
+else Password wrong
+    CardsController->HashService: Verify(password, PasswordHash)
+    HashService-->CardsController: false
+    CardsController-->User: 400 "Password verification failed."
+else Password correct, 2FA on, OTP missing
+    CardsController->OTPService: GenerateTOTP + send email
+    CardsController-->CardManagementViewModel: RequiresOtp = true
+    CardManagementView-->User: OTP dialog
+    User->CardManagementView: Enter OTP
+    CardManagementView->CardManagementViewModel: RevealSensitiveDetailsAsync(password, otp)
+    CardManagementViewModel->CardRepoProxy: POST /api/cards/{cardId}/reveal
+    CardRepoProxy->CardsController: Request with OtpCode
+    CardsController->OTPService: VerifyTOTP(userId, otp)
+
+    alt Invalid OTP
+        CardsController-->User: 400 "Invalid or expired OTP"
+    else OTP valid
+        CardsController->OTPService: InvalidateOTP(userId)
+        CardsController-->CardManagementViewModel: CardNumber + CVV
+        CardManagementViewModel-->User: Show details, auto-hide after timeout
+    end
+else Password correct (2FA off)
+    CardsController-->CardManagementViewModel: CardNumber + CVV + duration
+    CardManagementViewModel-->User: Show details, auto-hide after timeout
+end

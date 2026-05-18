@@ -28,7 +28,7 @@
 
             <Border Background="#FFF4CE" BorderBrush="#FFD666" BorderThickness="1" CornerRadius="8" Padding="16">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <TextBlock Text="⚠️" FontSize="20" VerticalAlignment="Center" />
+                    <TextBlock Text="" FontSize="20" VerticalAlignment="Center" />
                     <StackPanel>
                         <TextBlock Text="High Volatility Warning" FontWeight="SemiBold" Foreground="#8A6D3B" />
                         <TextBlock

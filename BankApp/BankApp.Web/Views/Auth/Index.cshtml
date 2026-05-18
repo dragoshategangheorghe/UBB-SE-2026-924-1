@@ -1,27 +1,81 @@
-﻿@model LoginModel
+﻿@model BankApp.Web.Models.LoginViewModel
 @{
     ViewData["Title"] = "Login";
+    Layout = null;
 }
 
-<div class="vh-100 p-5 align-items-center justify-content-center" style="background-color: #202020;">
-    <form asp-action="Login" asp-controller="Auth" method="post" class="text-white  p-2">
-        @Html.AntiForgeryToken()
-        <div class="flex-column gap-1">
-            <label asp-for="Login.Email">Email</label>
-            <input asp-for="Login.Email" type="email" name="email"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - BankApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body style="background-color: #202020; overflow-x: hidden;">
+    <div class="row vh-100 m-0">
+        <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5" style="background-color: #1A1A2E;">
+            <div class="rounded-4 d-flex align-items-center justify-content-center mb-4" style="width: 70px; height: 70px; background-color: #16213E;">
+                <span class="fs-1 fw-bold" style="color: #4ECDC4;">B</span>
+            </div>
+            <h1 class="fw-bold text-white mb-2">BankApp</h1>
+            <p class="fs-5" style="color: #888;">Your finances, simplified.</p>
+            <div class="mt-auto small" style="color: #555;">&copy; 2026 BankingApp</div>
         </div>
-        <div class="col gap-2">
-            <label asp-for="Login.Password">Password</label>
-            <input asp-for="Login.Password" type="password" name="password"/>
+
+        <div class="col-md-7 d-flex justify-content-center align-items-center p-5 text-white">
+            <div style="max-width: 360px; width: 100%;">
+                <h2 class="fw-semibold mb-4">Welcome back</h2>
+
+                <button type="button" class="btn btn-light w-100 mb-4 fw-semibold text-dark" style="height: 42px; background-color: #F5F5F5; border: 1px solid #DDD;">
+                    Continue with Google
+                </button>
+
+                <div class="d-flex align-items-center mb-4">
+                    <hr class="flex-grow-1 m-0" style="border-color: #DDD;">
+                    <span class="px-3 small" style="color: #999;">or</span>
+                    <hr class="flex-grow-1 m-0" style="border-color: #DDD;">
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger shadow-sm p-2 small" role="alert">@Model.ErrorMessage</div>
+                }
+
+                <form asp-action="Index" asp-controller="Auth" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label small" style="color: #ccc;"></label>
+                        <input asp-for="Email" class="form-control text-white" style="background-color: #2b2b2b; border: 1px solid #444;" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label small" style="color: #ccc;"></label>
+                        <input asp-for="Password" type="password" class="form-control text-white" style="background-color: #2b2b2b; border: 1px solid #444;" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input" style="background-color: #2b2b2b; border-color: #444;" />
+                            <label asp-for="RememberMe" class="form-check-label small" style="color: #ccc;">Remember me</label>
+                        </div>
+                        <a asp-action="ForgotPassword" class="text-decoration-none small" style="color: #4ECDC4;">Forgot Password?</a>
+                    </div>
+
+                    <input type="submit" value="SIGN IN" class="btn w-100 fw-semibold" style="height: 42px; background-color: #4ECDC4; color: white;" />
+                </form>
+
+                <div class="text-center mt-4 small" style="color: #888;">
+                    Don't have an account? <a asp-action="Register" class="text-decoration-none" style="color: #4ECDC4;">Create one</a>
+                </div>
+            </div>
         </div>
-        <div class="form-check form-switch">
-            <input asp-for="Login.RememberMe" class="form-check-input"/>
-            <label asp-for="Login.RememberMe" class="form-check-label"></label>
-        </div>
-        <input type="submit" value="SIGN IN"/>
-    </form>
-    @if (!string.IsNullOrWhiteSpace(Model.Login.LoginState))
-    {
-        <div class="alert alert-danger shadow-sm w-50" role="alert">@Model.Login.LoginState</div>
-    }
-</div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>
