@@ -1,17 +1,4 @@
-﻿/**
- * profile.js
- * Handles all client-side behaviour for the Profile / Settings page:
- *   - Tab switching (preserves active tab across redirects via query param)
- *   - Verify-password → unlock-edit flow for personal info
- *   - Bootstrap modal orchestration (verify password, change password)
- *   - 2FA toggle with confirmation modal
- *   - Notification preference toggles (live form patching)
- *   - Auto-dismiss alerts
- */
-
-'use strict';
-
-$(function () {
+﻿$(function () {
 
     const TAB_PERSONAL = 'personal';
     const TAB_SECURITY = 'security';
