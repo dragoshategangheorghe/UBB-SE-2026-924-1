@@ -28,7 +28,6 @@
     <Folder Include="Views\Investments\" />
     <Folder Include="Views\Profile\" />
     <Folder Include="Views\Statistics\" />
-    <Folder Include="Views\Transactions\" />
     <Folder Include="Views\Savings\" />
   </ItemGroup>
 

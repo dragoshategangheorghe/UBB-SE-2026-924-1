@@ -1,0 +1,255 @@
+﻿@* @model BankApp.Models.DTOs.Dashboard.DashboardResponse *@
+
+@{
+	ViewData["Title"] = "Transfers";
+}
+
+
+<link rel="stylesheet" href="~/css/transactions.css" type="text/css" />
+
+<body>
+
+    <div class="container">
+
+        <div class="info-bar">
+            Status message goes here...
+        </div>
+
+        <h1>Transaction History</h1>
+
+        <!-- Filters -->
+        <div class="card">
+            <h2>Filters</h2>
+
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Search</label>
+                    <input type="text" placeholder="Merchant, reference, description" />
+                </div>
+
+                <div class="form-group">
+                    <label>From Date</label>
+                    <input type="date" />
+                </div>
+
+                <div class="form-group">
+                    <label>To Date</label>
+                    <input type="date" />
+                </div>
+
+                <div class="form-group">
+                    <label>Minimum Amount</label>
+                    <input type="number" />
+                </div>
+
+                <div class="form-group">
+                    <label>Maximum Amount</label>
+                    <input type="number" />
+                </div>
+
+                <div class="form-group">
+                    <label>Account</label>
+                    <select>
+                        <option>Select account</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Card</label>
+                    <select>
+                        <option>Select card</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Type</label>
+                    <select>
+                        <option>Select type</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select>
+                        <option>Select status</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>Direction</label>
+                    <select>
+                        <option>Select direction</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Sort</label>
+                    <select>
+                        <option>Date</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Sort Direction</label>
+                    <select>
+                        <option>Ascending</option>
+                        <option>Descending</option>
+                    </select>
+                </div>
+
+                <div class="button-row">
+                    <button>Apply</button>
+                    <button class="secondary-btn">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export -->
+        <div class="card">
+            <h2>Export</h2>
+
+            <div class="button-row">
+                <button>CSV</button>
+                <button>PDF</button>
+                <button>XLSX</button>
+            </div>
+
+            <p class="muted" style="margin-top: 12px;">
+                Last export path will appear here...
+            </p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+
+            <!-- Transactions -->
+            <div class="card">
+                <h2>Transactions</h2>
+
+                <div class="transaction-list">
+
+                    <div class="transaction-item">
+                        <div class="transaction-left">
+                            <strong>Amazon</strong>
+                            <span class="muted">REF-2026-001</span>
+                            <span class="muted">2026-05-18 14:32</span>
+                        </div>
+
+                        <div class="transaction-right">
+                            <strong>$120.00</strong>
+                            <span>USD</span>
+                            <span class="status">Completed</span>
+                        </div>
+                    </div>
+
+                    <div class="transaction-item">
+                        <div class="transaction-left">
+                            <strong>Netflix</strong>
+                            <span class="muted">REF-2026-002</span>
+                            <span class="muted">2026-05-17 09:15</span>
+                        </div>
+
+                        <div class="transaction-right">
+                            <strong>$15.99</strong>
+                            <span>USD</span>
+                            <span class="status">Completed</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="card">
+                <h2>Details</h2>
+
+                <p class="muted">
+                    Select a transaction to see its details.
+                </p>
+
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+
+                    <h3>REF-2026-001</h3>
+
+                    <p class="muted">2026-05-18 14:32</p>
+
+                    <p><strong>Type:</strong> Card Payment</p>
+                    <p><strong>Counterparty:</strong> Amazon</p>
+
+                    <p>
+                        <strong>Description:</strong><br />
+                        Online purchase from Amazon marketplace.
+                    </p>
+
+                    <div class="details-grid">
+
+                        <div class="details-column">
+                            <div>
+                                <div class="detail-label">Amount</div>
+                                <div>$120.00</div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">Currency</div>
+                                <div>USD</div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">Direction</div>
+                                <div>Outgoing</div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">Status</div>
+                                <div>Completed</div>
+                            </div>
+                        </div>
+
+                        <div class="details-column">
+                            <div>
+                                <div class="detail-label">Running Balance</div>
+                                <div>$5,320.00</div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">Fee</div>
+                                <div>$0.00</div>
+                            </div>
+
+                            <div>
+                                <div class="detail-label">Exchange Rate</div>
+                                <div>1.00</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Source IBAN</div>
+                        <div>RO49AAAA1B31007593840000</div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Destination IBAN</div>
+                        <div>RO49BBBB1B31007593840001</div>
+                    </div>
+
+                    <button style="width: fit-content; margin-top: 10px;">
+                        Download PDF Receipt
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay">
+        <div class="loader"></div>
+    </div>
+
+</body>
+</html>
