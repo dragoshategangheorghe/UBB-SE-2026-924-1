@@ -1,239 +1,352 @@
-﻿@* @model BankApp.Models.DTOs.Dashboard.DashboardResponse *@
+﻿@model BankApp.Web.Models.Transactions.TransactionHistoryPageViewModel
 
 @{
-	ViewData["Title"] = "Transfers";
+    ViewData["Title"] = "Transactions";
 }
 
+<link rel="stylesheet" href="~/css/transactions.css" asp-append-version="true" />
 
-<link rel="stylesheet" href="~/css/transactions.css" type="text/css" />
+<div class="container">
 
-<body>
-
-    <div class="container">
-
-        <div class="info-bar">
-            Status message goes here...
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") mb-4">
+            @Model.StatusMessage
         </div>
+    }
 
-        <h1>Transaction History</h1>
+    <h1>Transaction History</h1>
 
-        <!-- Filters -->
-        <div class="card">
-            <h2>Filters</h2>
+    <!-- Filters -->
+    <div class="card">
+
+        <h2>Filters</h2>
+
+        <form method="get"
+              asp-controller="Transactions"
+              asp-action="Index">
 
             <div class="grid-3">
+
                 <div class="form-group">
-                    <label>Search</label>
-                    <input type="text" placeholder="Merchant, reference, description" />
+                    <label asp-for="SearchTerm">Search</label>
+
+                    <input asp-for="SearchTerm"
+                           class="form-control"
+                           placeholder="Merchant, reference, description" />
                 </div>
 
                 <div class="form-group">
-                    <label>From Date</label>
-                    <input type="date" />
+                    <label asp-for="FromDate">From Date</label>
+
+                    <input asp-for="FromDate"
+                           type="date"
+                           class="form-control" />
                 </div>
 
                 <div class="form-group">
-                    <label>To Date</label>
-                    <input type="date" />
+                    <label asp-for="ToDate">To Date</label>
+
+                    <input asp-for="ToDate"
+                           type="date"
+                           class="form-control" />
                 </div>
 
                 <div class="form-group">
-                    <label>Minimum Amount</label>
-                    <input type="number" />
+                    <label asp-for="MinimumAmount">Minimum Amount</label>
+
+                    <input asp-for="MinimumAmount"
+                           type="number"
+                           step="0.01"
+                           class="form-control" />
                 </div>
 
                 <div class="form-group">
-                    <label>Maximum Amount</label>
-                    <input type="number" />
+                    <label asp-for="MaximumAmount">Maximum Amount</label>
+
+                    <input asp-for="MaximumAmount"
+                           type="number"
+                           step="0.01"
+                           class="form-control" />
                 </div>
 
                 <div class="form-group">
-                    <label>Account</label>
-                    <select>
-                        <option>Select account</option>
+                    <label asp-for="SelectedTransactionType">Type</label>
+
+                    <select asp-for="SelectedTransactionType"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.TransactionTypeOptions, "Value", "Label"))">
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Card</label>
-                    <select>
-                        <option>Select card</option>
+                    <label asp-for="SelectedStatus">Status</label>
+
+                    <select asp-for="SelectedStatus"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.StatusOptions, "Value", "Label"))">
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Type</label>
-                    <select>
-                        <option>Select type</option>
+                    <label asp-for="SelectedDirection">Direction</label>
+
+                    <select asp-for="SelectedDirection"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.DirectionOptions, "Value", "Label"))">
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Status</label>
-                    <select>
-                        <option>Select status</option>
+                    <label asp-for="SelectedSortField">Sort</label>
+
+                    <select asp-for="SelectedSortField"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.SortOptions, "Value", "Label"))">
                     </select>
                 </div>
+
             </div>
 
             <div class="grid-4">
+
                 <div class="form-group">
-                    <label>Direction</label>
-                    <select>
-                        <option>Select direction</option>
+                    <label asp-for="SelectedSortDirection">
+                        Sort Direction
+                    </label>
+
+                    <select asp-for="SelectedSortDirection"
+                            class="form-select"
+                            asp-items="@(new SelectList(Model.SortDirectionOptions, "Value", "Label"))">
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Sort</label>
-                    <select>
-                        <option>Date</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Sort Direction</label>
-                    <select>
-                        <option>Ascending</option>
-                        <option>Descending</option>
-                    </select>
-                </div>
+                <div></div>
+                <div></div>
 
                 <div class="button-row">
-                    <button>Apply</button>
-                    <button class="secondary-btn">Reset</button>
+
+                    <button type="submit">
+                        Apply
+                    </button>
+
+                    <a asp-controller="Transactions"
+                           asp-action="Index"
+                           class="secondary-btn text-decoration-none d-flex align-items-center justify-content-center">
+                        Reset
+                    </a>
+
                 </div>
+
             </div>
+
+        </form>
+
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+
+        <h2>Export</h2>
+
+        <div class="button-row">
+
+            <a asp-action="ExportCsv"
+                   class="text-decoration-none">
+                <button type="button">
+                    CSV
+                </button>
+            </a>
+
+            <a asp-action="ExportPdf"
+                   class="text-decoration-none">
+                <button type="button">
+                    PDF
+                </button>
+            </a>
+
+            <a asp-action="ExportXlsx"
+                   class="text-decoration-none">
+                <button type="button">
+                    XLSX
+                </button>
+            </a>
+
         </div>
 
-        <!-- Export -->
-        <div class="card">
-            <h2>Export</h2>
-
-            <div class="button-row">
-                <button>CSV</button>
-                <button>PDF</button>
-                <button>XLSX</button>
-            </div>
-
+        @if (!string.IsNullOrWhiteSpace(Model.LastExportPath))
+        {
             <p class="muted" style="margin-top: 12px;">
-                Last export path will appear here...
+                @Model.LastExportPath
             </p>
-        </div>
+        }
 
-        <!-- Main Content -->
-        <div class="main-grid">
+    </div>
 
-            <!-- Transactions -->
-            <div class="card">
-                <h2>Transactions</h2>
+    <!-- Main Content -->
+    <div class="main-grid">
 
+        <!-- Transactions -->
+        <div class="card">
+
+            <h2>Transactions</h2>
+
+            @if (Model.Transactions.Any())
+            {
                 <div class="transaction-list">
 
-                    <div class="transaction-item">
-                        <div class="transaction-left">
-                            <strong>Amazon</strong>
-                            <span class="muted">REF-2026-001</span>
-                            <span class="muted">2026-05-18 14:32</span>
-                        </div>
+                    @foreach (var transaction in Model.Transactions)
+                    {
+                        <a asp-controller="Transactions"
+                               asp-action="Index"
+                               asp-route-selectedTransactionId="@transaction.Id"
+                               class="transaction-item text-decoration-none text-dark">
 
-                        <div class="transaction-right">
-                            <strong>$120.00</strong>
-                            <span>USD</span>
-                            <span class="status">Completed</span>
-                        </div>
-                    </div>
+                            <div class="transaction-left">
 
-                    <div class="transaction-item">
-                        <div class="transaction-left">
-                            <strong>Netflix</strong>
-                            <span class="muted">REF-2026-002</span>
-                            <span class="muted">2026-05-17 09:15</span>
-                        </div>
+                                <strong>
+                                    @transaction.CounterpartyOrMerchant
+                                </strong>
 
-                        <div class="transaction-right">
-                            <strong>$15.99</strong>
-                            <span>USD</span>
-                            <span class="status">Completed</span>
-                        </div>
-                    </div>
+                                <span class="muted">
+                                    @transaction.ReferenceNumber
+                                </span>
+
+                                <span class="muted">
+                                    @transaction.Timestamp.ToString("dd MMM yyyy HH:mm")
+                                </span>
+
+                            </div>
+
+                            <div class="transaction-right">
+
+                                <strong>
+                                    @transaction.Amount.ToString("N2")
+                                </strong>
+
+                                <span>
+                                    @transaction.Currency
+                                </span>
+
+                                <span class="status">
+                                    @transaction.Status
+                                </span>
+
+                            </div>
+
+                        </a>
+                    }
 
                 </div>
-            </div>
-
-            <!-- Details -->
-            <div class="card">
-                <h2>Details</h2>
-
+            }
+            else
+            {
                 <p class="muted">
-                    Select a transaction to see its details.
+                    No transactions found.
                 </p>
+            }
+
+        </div>
+
+        <!-- Details -->
+        <div class="card">
+
+            <h2>Details</h2>
+
+            @if (Model.Transactions.Any())
+            {
+                var selected = Model.Transactions.First();
 
                 <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
 
-                    <h3>REF-2026-001</h3>
+                    <h3>
+                        @selected.ReferenceNumber
+                    </h3>
 
-                    <p class="muted">2026-05-18 14:32</p>
+                    <p class="muted">
+                        @selected.Timestamp.ToString("dd MMM yyyy HH:mm")
+                    </p>
 
-                    <p><strong>Type:</strong> Card Payment</p>
-                    <p><strong>Counterparty:</strong> Amazon</p>
+                    <p>
+                        <strong>Counterparty:</strong>
+                        @selected.CounterpartyOrMerchant
+                    </p>
 
                     <p>
                         <strong>Description:</strong><br />
-                        Online purchase from Amazon marketplace.
+                        @selected.Description
                     </p>
 
                     <div class="details-grid">
 
                         <div class="details-column">
+
                             <div>
-                                <div class="detail-label">Amount</div>
-                                <div>$120.00</div>
+                                <div class="detail-label">
+                                    Amount
+                                </div>
+
+                                <div>
+                                    @* @transaction.Amount.ToString("N2") *@
+                                </div>
                             </div>
 
                             <div>
-                                <div class="detail-label">Currency</div>
-                                <div>USD</div>
+                                <div class="detail-label">
+                                    Currency
+                                </div>
+
+                                <div>
+                                    @selected.Currency
+                                </div>
                             </div>
 
                             <div>
-                                <div class="detail-label">Direction</div>
-                                <div>Outgoing</div>
+                                <div class="detail-label">
+                                    Direction
+                                </div>
+
+                                <div>
+                                    @selected.Direction
+                                </div>
                             </div>
 
                             <div>
-                                <div class="detail-label">Status</div>
-                                <div>Completed</div>
+                                <div class="detail-label">
+                                    Status
+                                </div>
+
+                                <div>
+                                    @selected.Status
+                                </div>
                             </div>
+
                         </div>
 
                         <div class="details-column">
+
                             <div>
-                                <div class="detail-label">Running Balance</div>
-                                <div>$5,320.00</div>
+                                <div class="detail-label">
+                                    Fee
+                                </div>
+
+                                <div>
+                                    @selected.Fee
+                                </div>
                             </div>
 
                             <div>
-                                <div class="detail-label">Fee</div>
-                                <div>$0.00</div>
+                                <div class="detail-label">
+                                    Exchange Rate
+                                </div>
+
+                                <div>
+                                    @selected.ExchangeRate
+                                </div>
                             </div>
 
-                            <div>
-                                <div class="detail-label">Exchange Rate</div>
-                                <div>1.00</div>
-                            </div>
                         </div>
 
-                    </div>
-
-                    <div>
-                        <div class="detail-label">Source IBAN</div>
-                        <div>RO49AAAA1B31007593840000</div>
-                    </div>
-
-                    <div>
-                        <div class="detail-label">Destination IBAN</div>
-                        <div>RO49BBBB1B31007593840001</div>
                     </div>
 
                     <button style="width: fit-content; margin-top: 10px;">
@@ -241,15 +354,16 @@
                     </button>
 
                 </div>
-            </div>
+            }
+            else
+            {
+                <p class="muted">
+                    Select a transaction to see its details.
+                </p>
+            }
 
         </div>
+
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay">
-        <div class="loader"></div>
-    </div>
-
-</body>
-</html>
+</div>

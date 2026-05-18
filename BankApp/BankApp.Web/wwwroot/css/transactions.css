@@ -105,6 +105,13 @@ button {
 .secondary-btn {
     background: #e5e7eb;
     color: #111827;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid #d9dee8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
 }
 
     .secondary-btn:hover {
