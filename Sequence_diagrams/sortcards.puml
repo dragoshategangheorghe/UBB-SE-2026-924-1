@@ -1,0 +1,77 @@
+@startuml
+
+actor User
+
+participant "Cards Page" as CardsPage
+participant "Web CardsController" as WebCardsController
+participant "CardService" as CardService
+participant "CardRepoProxy" as CardRepoProxy
+participant "ApiService" as ApiService
+participant "Server CardsController" as ServerCardsController
+participant "CardRepository" as CardRepository
+database "Database" as Database
+
+User -> CardsPage : chooseSortOption(sortOption)
+User -> CardsPage : clickApplySort()
+
+activate CardsPage
+
+CardsPage -> CardsPage : validateSortOption()
+
+alt Sort option valid
+
+    CardsPage -> WebCardsController : UpdateSort(sortOption)
+    activate WebCardsController
+
+    WebCardsController -> CardService : UpdateSortPreferenceAsync(request)
+    activate CardService
+
+    CardService -> CardRepoProxy : UpdateSortPreferenceAsync(request)
+    activate CardRepoProxy
+
+    CardRepoProxy -> ApiService : PUT /api/cards/preferences/sort
+    activate ApiService
+
+    ApiService -> ServerCardsController : request + bearer token
+    activate ServerCardsController
+
+    ServerCardsController -> ServerCardsController : validateSortOption()
+
+    ServerCardsController -> CardRepository : SaveSortPreference(userId, sortOption)
+    activate CardRepository
+
+    CardRepository -> Database : update preference
+    activate Database
+
+    Database --> CardRepository : success
+    deactivate Database
+
+    CardRepository --> ServerCardsController : saved
+    deactivate CardRepository
+
+    ServerCardsController --> ApiService : CardCommandResponse
+    deactivate ServerCardsController
+
+    ApiService --> CardRepoProxy : CardCommandResponse
+    deactivate ApiService
+
+    CardRepoProxy --> CardService : CardCommandResponse
+    deactivate CardRepoProxy
+
+    CardService --> WebCardsController : CardCommandResponse
+    deactivate CardService
+
+    WebCardsController --> CardsPage : JSON success response
+    deactivate WebCardsController
+
+    CardsPage -> CardsPage : reloadAndDisplaySortedCards()
+
+else Invalid sort option
+
+    CardsPage -> CardsPage : displayErrorMessage()
+
+end
+
+deactivate CardsPage
+
+@enduml
