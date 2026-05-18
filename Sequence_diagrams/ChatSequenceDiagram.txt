@@ -1,0 +1,51 @@
+note over User, View: Viewing past chat sessions
+User->View: Navigate to Chat index
+View->ChatController: GET /Chat/Index
+ChatController->ChatService: GetSessionsAsync()
+ChatController<--ChatService: List of sessions
+View<--ChatController: Return Index View
+User<--View: Display Chat Index
+
+note over User, View: Start a chat session
+User->View: Select category and click "Start new chat"
+View->ChatController: POST /Chat/Create (IssueCategory)
+ChatController->ChatService: CreateSessionAsync(issueCategory)
+ChatController<--ChatService: SessionResponse (SUccess, SessionId)
+View<--ChatController: RedirectToAction("Details", id)
+
+note over User, View: Loading chat messages
+View->ChatController: GET /Chat/Details/{id}
+ChatController->ChatService: GetSessionAsync(id)
+ChatController<--ChatService: Session details
+ChatController->ChatService: GetMessagesAsync(id)
+ChatController<--ChatService: List of messages
+View<--ChatController: Return Details View
+User<--View: Display chat messages
+
+note over User, View: Sending chat messages
+User->View: Select preset question and click "Ask"
+View->ChatController: POST /Chat/SendMessage (sessionId, content)
+ChatController->ChatService: CreateMessageAsync(sessionId, "User", content)
+ChatController<--ChatService: Success
+View<--ChatController: RedirectToAction("Index", id)
+View->ChatController: GET /Chat/Details/{id}
+View<--ChatController: Return Details View
+User<--View: Display updated messages
+
+note over User, View: Closing chat session
+User->View: Click "End session"
+View->ChatController: POST /Chat/Endsession (id)
+ChatController->ChatService: UpdateSessionStatusAsync(id, "Closed")
+ChatController<--ChatService: Success
+View<--ChatController: Return Ok (200)
+User<--View: Display feedback modal
+
+note over User, View: Submit support feedback
+User->View: Fill rating, feedback and submit
+View->ChatController: POST /Chat/SubmitFeedback (id, rating, feedback)
+ChatController->ChatService: SaveFeedbackAsync(id, rating, feedback)
+ChatController<--ChatService: Success
+View<--ChatController: RedirectToAction("Index")
+View->ChatController: GET /Chat/Index
+View<--ChatController: Return Index View
+User<--View: Display chat index
