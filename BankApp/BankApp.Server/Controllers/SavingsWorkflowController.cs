@@ -1,6 +1,5 @@
 ﻿using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Features.Investments;
-using BankApp.Models.Features.Savings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
@@ -33,7 +32,7 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("default-close-destination")]
-        public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<SavingsAccount> destinationAccounts)
+        public ActionResult<int> GetDefaultCloseDestinationId([FromBody] IEnumerable<SavingsAccountSnapshotDto> destinationAccounts)
         {
             if (destinationAccounts == null)
             {

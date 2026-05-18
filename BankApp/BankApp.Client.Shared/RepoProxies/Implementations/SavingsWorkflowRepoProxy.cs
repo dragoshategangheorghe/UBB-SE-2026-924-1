@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -34,7 +35,8 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<int> GetDefaultCloseDestinationId(IEnumerable<SavingsAccount> destinationAccounts)
         {
-            return await _apiService.PostAsync<IEnumerable<SavingsAccount>, int>("/api/savings-workflow/default-close-destination", destinationAccounts);
+            var accountSnapshots = destinationAccounts.Select(SavingsAccountSnapshotDto.FromAccount).ToList();
+            return await _apiService.PostAsync<IEnumerable<SavingsAccountSnapshotDto>, int>("/api/savings-workflow/default-close-destination", accountSnapshots);
         }
 
         public async Task<FundingSourceOption> GetDefaultFundingSource(IEnumerable<FundingSourceOption> fundingSources)

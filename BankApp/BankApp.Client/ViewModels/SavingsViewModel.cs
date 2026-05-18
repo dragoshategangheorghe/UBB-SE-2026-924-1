@@ -282,7 +282,7 @@ namespace BankApp.Client.ViewModels
             {
                 return;
             }
-            if (this.SelectedAccount == null)
+            if (this.SelectedAccount == null || string.IsNullOrWhiteSpace(this.DepositAmountText))
             {
                 this.LivePreview = string.Empty;
                 return;
@@ -311,6 +311,16 @@ namespace BankApp.Client.ViewModels
                 return;
             }
             if (!this.WithdrawHasEarlyRisk)
+            {
+                this.WithdrawEstimatedPenalty = ZeroAmount;
+                this.WithdrawNetAmount = ZeroAmount;
+                this.WithdrawHasPenalty = false;
+                this.WithdrawPenaltyBreakdownText = string.Empty;
+                this.WithdrawNetAmountText = string.Empty;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.WithdrawAmountText))
             {
                 this.WithdrawEstimatedPenalty = ZeroAmount;
                 this.WithdrawNetAmount = ZeroAmount;
@@ -832,11 +842,12 @@ namespace BankApp.Client.ViewModels
             var autoDeposit = new AutoDeposit
             {
                 Id = this.currentAutoDeposit?.Id ?? default,
-                SavingsAccount = this.SelectedAccount!,
+                SavingsAccountId = this.SelectedAccount!.IdentificationNumber,
                 Amount = amount,
                 Frequency = frequency,
                 NextRunDate = this.AutoDepositStartDate?.DateTime ?? DateTime.Now.AddDays(InitialAutoDepositDelayDays),
                 IsActive = this.AutoDepositIsActive,
+                SourceAccountId = this.SelectedAccount.FundingAccount?.Id,
             };
 
             await this.savingsService.SaveAutoDepositAsync(autoDeposit);

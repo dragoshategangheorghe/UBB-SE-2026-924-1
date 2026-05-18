@@ -79,7 +79,11 @@ namespace BankApp.Client.Views
                 this.FundingSourceComboBox.ItemsSource = this.ViewModel.FundingSources;
                 if (this.ViewModel.FundingSources.Any())
                 {
-                    this.FundingSourceComboBox.SelectedIndex = FirstItemIndex;
+                    var defaultFundingSource = this.ViewModel.FundingSources
+                        .FirstOrDefault(source => source.Id == this.ViewModel.SelectedFundingSource?.Id)
+                        ?? this.ViewModel.FundingSources[FirstItemIndex];
+                    this.FundingSourceComboBox.SelectedItem = defaultFundingSource;
+                    this.ViewModel.SelectedFundingSource = defaultFundingSource;
                 }
             }
 
@@ -213,7 +217,11 @@ namespace BankApp.Client.Views
             this.DepositSourceComboBox.ItemsSource = this.ViewModel.FundingSources;
             if (this.ViewModel.FundingSources.Any())
             {
-                this.DepositSourceComboBox.SelectedIndex = FirstItemIndex;
+                var defaultFundingSource = this.ViewModel.FundingSources
+                    .FirstOrDefault(source => source.Id == this.ViewModel.SelectedFundingSource?.Id)
+                    ?? this.ViewModel.FundingSources[FirstItemIndex];
+                this.DepositSourceComboBox.SelectedItem = defaultFundingSource;
+                this.ViewModel.DepositSource = defaultFundingSource.DisplayName;
             }
 
             // Sync amount field
@@ -239,8 +247,11 @@ namespace BankApp.Client.Views
             this.WithdrawDestComboBox.ItemsSource = this.ViewModel.FundingSources;
             if (this.ViewModel.FundingSources.Any())
             {
-                this.WithdrawDestComboBox.SelectedIndex = FirstItemIndex;
-                this.ViewModel.WithdrawDestination = this.ViewModel.FundingSources[FirstItemIndex];
+                var defaultFundingSource = this.ViewModel.FundingSources
+                    .FirstOrDefault(source => source.Id == this.ViewModel.SelectedFundingSource?.Id)
+                    ?? this.ViewModel.FundingSources[FirstItemIndex];
+                this.WithdrawDestComboBox.SelectedItem = defaultFundingSource;
+                this.ViewModel.WithdrawDestination = defaultFundingSource;
             }
 
             this.WithdrawAmountTextBox.Text = string.Empty;

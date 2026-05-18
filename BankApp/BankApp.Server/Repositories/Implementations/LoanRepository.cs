@@ -1,3 +1,6 @@
+using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using BankApp.Models.DTOs.Loans;
 using BankApp.Models.Enums;
 using BankApp.Models.Features.Loans;
@@ -31,7 +34,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetAllLoansAsync()
         {
-            return await _dbContext.Loans.AsNoTracking().ToListAsync();
+            return await ReadLoansAsync();
         }
 
         /// <summary>
@@ -39,7 +42,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<Loan> GetLoanByIdAsync(int id)
         {
-            return await _dbContext.Loans.AsNoTracking().FirstOrDefaultAsync(loan => loan.Id == id);
+            return (await ReadLoansAsync("WHERE Id = @id", ("@id", DbType.Int32, id))).FirstOrDefault();
         }
 
         /// <summary>
@@ -47,10 +50,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetLoansByUserAsync(int userId)
         {
-            return await _dbContext.Loans
-                .AsNoTracking()
-                .Where(loan => EF.Property<int>(loan, "UserId") == userId)
-                .ToListAsync();
+            return await ReadLoansAsync("WHERE UserId = @userId", ("@userId", DbType.Int32, userId));
         }
 
         /// <summary>
@@ -58,10 +58,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetLoansByTypeAsync(LoanType loanType)
         {
-            return await _dbContext.Loans
-                .AsNoTracking()
-                .Where(loan => loan.LoanType == loanType)
-                .ToListAsync();
+            return await ReadLoansAsync("WHERE LoanType = @loanType", ("@loanType", DbType.Int32, (int)loanType));
         }
 
         /// <summary>
@@ -69,10 +66,7 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<Loan>> GetLoansByStatusAsync(LoanStatus loanStatus)
         {
-            return await _dbContext.Loans
-                .AsNoTracking()
-                .Where(loan => loan.LoanStatus == loanStatus)
-                .ToListAsync();
+            return await ReadLoansAsync("WHERE LoanStatus = @loanStatus", ("@loanStatus", DbType.Int32, (int)loanStatus));
         }
 
         /// <summary>
@@ -110,11 +104,14 @@ namespace BankApp.Server.Repositories.Implementations
         /// </summary>
         public async Task<List<AmortizationRow>> GetAmortizationAsync(int loanId)
         {
-            return await _dbContext.AmortizationRows
+            var rows = await _dbContext.AmortizationRows
                 .AsNoTracking()
                 .Where(amortizationRow => amortizationRow.LoanId == loanId)
                 .OrderBy(amortizationRow => amortizationRow.InstallmentNumber)
                 .ToListAsync();
+
+            MarkCurrentAmortizationRow(rows);
+            return rows;
         }
 
         /// <summary>
@@ -135,26 +132,27 @@ namespace BankApp.Server.Repositories.Implementations
 
             _dbContext.LoanApplications.Add(loanApplication);
             await _dbContext.SaveChangesAsync();
-            return loanApplication.UserId;
+            return loanApplication.Id;
         }
 
         /// <summary>
         /// Updates review status and optional rejection reason for an application using EF Core tracking.
         /// </summary>
         public async Task UpdateLoanApplicationStatusAsync(
-            int userId,
+            int applicationId,
             LoanApplicationStatus loanApplicationStatus,
             string? reason)
         {
-            var application = await _dbContext.LoanApplications.FirstOrDefaultAsync(loanApplication => loanApplication.UserId == userId);
-            if (application == null)
-            {
-                return;
-            }
-
-            application.ApplicationStatus = loanApplicationStatus;
-            application.RejectionReason = reason;
-            await _dbContext.SaveChangesAsync();
+            await ExecuteNonQueryAsync(
+                """
+                UPDATE LoanApplication
+                SET ApplicationStatus = @status,
+                    RejectionReason = @reason
+                WHERE Id = @applicationId
+                """,
+                ("@status", DbType.Int32, (int)loanApplicationStatus),
+                ("@reason", DbType.String, (object?)reason ?? DBNull.Value),
+                ("@applicationId", DbType.Int32, applicationId));
         }
 
         /// <summary>
@@ -176,16 +174,180 @@ namespace BankApp.Server.Repositories.Implementations
             int newRemainingMonths,
             LoanStatus newStatus)
         {
-            var loan = await _dbContext.Loans.FirstOrDefaultAsync(loan => loan.Id == loanId);
-            if (loan == null)
+            await ExecuteNonQueryAsync(
+                """
+                UPDATE Loan
+                SET OutstandingBalance = @newBalance,
+                    RemainingMonths = @newRemainingMonths,
+                    LoanStatus = @newStatus
+                WHERE Id = @loanId
+                """,
+                ("@newBalance", DbType.Decimal, newBalance),
+                ("@newRemainingMonths", DbType.Int32, newRemainingMonths),
+                ("@newStatus", DbType.Int32, (int)newStatus),
+                ("@loanId", DbType.Int32, loanId));
+        }
+
+        private async Task<List<Loan>> ReadLoansAsync(
+            string? whereClause = null,
+            params (string Name, DbType Type, object Value)[] parameters)
+        {
+            var connection = _dbContext.Database.GetDbConnection();
+            var shouldCloseConnection = connection.State != ConnectionState.Open;
+
+            if (shouldCloseConnection)
             {
-                return;
+                await connection.OpenAsync();
             }
 
-            loan.OutstandingBalance = newBalance;
-            loan.RemainingMonths = newRemainingMonths;
-            loan.LoanStatus = newStatus;
-            await _dbContext.SaveChangesAsync();
+            try
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText =
+                    $"""
+                     SELECT
+                         Id,
+                         UserId,
+                         LoanType,
+                         Principal,
+                         OutstandingBalance,
+                         InterestRate,
+                         MonthlyInstallment,
+                         RemainingMonths,
+                         LoanStatus,
+                         TermInMonths,
+                         StartDate
+                     FROM Loan
+                     {whereClause}
+                     """;
+
+                foreach (var (name, type, value) in parameters)
+                {
+                    AddParameter(command, name, type, value);
+                }
+
+                await using var reader = await command.ExecuteReaderAsync();
+                var loans = new List<Loan>();
+
+                while (await reader.ReadAsync())
+                {
+                    loans.Add(new Loan
+                    {
+                        Id = ReadInt32(reader, "Id"),
+                        UserId = ReadInt32(reader, "UserId"),
+                        LoanType = ReadEnum<LoanType>(reader, "LoanType"),
+                        Principal = ReadDecimal(reader, "Principal"),
+                        OutstandingBalance = ReadDecimal(reader, "OutstandingBalance"),
+                        InterestRate = ReadDecimal(reader, "InterestRate"),
+                        MonthlyInstallment = ReadDecimal(reader, "MonthlyInstallment"),
+                        RemainingMonths = ReadInt32(reader, "RemainingMonths"),
+                        LoanStatus = ReadEnum<LoanStatus>(reader, "LoanStatus"),
+                        TermInMonths = ReadInt32(reader, "TermInMonths"),
+                        StartDate = ReadDateTime(reader, "StartDate"),
+                    });
+                }
+
+                return loans;
+            }
+            finally
+            {
+                if (shouldCloseConnection)
+                {
+                    await connection.CloseAsync();
+                }
+            }
+        }
+
+        private async Task ExecuteNonQueryAsync(
+            string commandText,
+            params (string Name, DbType Type, object Value)[] parameters)
+        {
+            var connection = _dbContext.Database.GetDbConnection();
+            var shouldCloseConnection = connection.State != ConnectionState.Open;
+
+            if (shouldCloseConnection)
+            {
+                await connection.OpenAsync();
+            }
+
+            try
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = commandText;
+
+                foreach (var (name, type, value) in parameters)
+                {
+                    AddParameter(command, name, type, value);
+                }
+
+                await command.ExecuteNonQueryAsync();
+            }
+            finally
+            {
+                if (shouldCloseConnection)
+                {
+                    await connection.CloseAsync();
+                }
+            }
+        }
+
+        private static void AddParameter(DbCommand command, string name, DbType type, object value)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = name;
+            parameter.DbType = type;
+            parameter.Value = value;
+            command.Parameters.Add(parameter);
+        }
+
+        private static int ReadInt32(IDataRecord record, string columnName)
+        {
+            return Convert.ToInt32(record[columnName], CultureInfo.InvariantCulture);
+        }
+
+        private static decimal ReadDecimal(IDataRecord record, string columnName)
+        {
+            return Convert.ToDecimal(record[columnName], CultureInfo.InvariantCulture);
+        }
+
+        private static DateTime ReadDateTime(IDataRecord record, string columnName)
+        {
+            return Convert.ToDateTime(record[columnName], CultureInfo.InvariantCulture);
+        }
+
+        private static void MarkCurrentAmortizationRow(List<AmortizationRow> rows)
+        {
+            var isCurrentSet = false;
+            foreach (var row in rows)
+            {
+                if (!isCurrentSet && row.DueDate.Date >= DateTime.Today)
+                {
+                    row.IsCurrent = true;
+                    isCurrentSet = true;
+                }
+                else
+                {
+                    row.IsCurrent = false;
+                }
+            }
+        }
+
+        private static TEnum ReadEnum<TEnum>(IDataRecord record, string columnName)
+            where TEnum : struct, Enum
+        {
+            var value = record[columnName];
+
+            if (value is string textValue)
+            {
+                if (Enum.TryParse<TEnum>(textValue, true, out var enumByName))
+                {
+                    return enumByName;
+                }
+
+                return (TEnum)Enum.ToObject(typeof(TEnum), Convert.ToInt32(textValue, CultureInfo.InvariantCulture));
+            }
+
+            return (TEnum)Enum.ToObject(typeof(TEnum), Convert.ToInt32(value, CultureInfo.InvariantCulture));
         }
     }
 }

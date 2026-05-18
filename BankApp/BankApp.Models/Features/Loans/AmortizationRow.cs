@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
 /// Represents a single row from a loan amortization schedule.
@@ -53,6 +54,7 @@ namespace BankApp.Models.Features.Loans
         /// <summary>
         /// Gets or sets a value indicating whether this row is the current installment.
         /// </summary>
+        [NotMapped]
         public bool IsCurrent { get; set; }
     }
 }

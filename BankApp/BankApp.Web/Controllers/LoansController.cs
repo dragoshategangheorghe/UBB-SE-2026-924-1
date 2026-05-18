@@ -174,6 +174,7 @@ public class LoansController : WebControllerBase
             }
 
             decimal paymentAmount;
+            var minimumDue = Math.Min(loan.MonthlyInstallment, loan.OutstandingBalance);
             if (useCustomAmount)
             {
                 var parsedAmount = _loansService.ParseCustomPaymentAmount(customAmount ?? string.Empty);
@@ -186,17 +187,17 @@ public class LoansController : WebControllerBase
                 }
 
                 paymentAmount = parsedAmount.Value;
-                if (paymentAmount < loan.MonthlyInstallment)
+                if (paymentAmount < minimumDue)
                 {
                     return Json(new LoanPaymentPreviewViewModel
                     {
-                        ErrorMessage = "Custom amount must be at least the minimum installment.",
+                        ErrorMessage = "Custom amount must be at least the amount currently due.",
                     });
                 }
             }
             else
             {
-                paymentAmount = loan.MonthlyInstallment;
+                paymentAmount = minimumDue;
             }
 
             if (paymentAmount > loan.OutstandingBalance)
@@ -292,8 +293,15 @@ public class LoansController : WebControllerBase
         const decimal ZeroAmount = 0m;
         const int ZeroCount = 0;
 
-        var paymentAmount = customAmount ?? loan.MonthlyInstallment;
+        var minimumDue = Math.Min(loan.MonthlyInstallment, loan.OutstandingBalance);
+        var paymentAmount = customAmount ?? minimumDue;
         var balanceAfterPayment = Math.Max(ZeroAmount, loan.OutstandingBalance - paymentAmount);
+
+        if (balanceAfterPayment <= ZeroAmount)
+        {
+            return (ZeroAmount, ZeroCount);
+        }
+
         var monthsPaid = customAmount.HasValue
             ? paymentAmount <= ZeroAmount
                 ? ZeroCount

@@ -119,9 +119,9 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("auto-deposit")]
-        public async Task<IActionResult> SaveAutoDepositAsync([FromBody] AutoDeposit autoDeposit)
+        public async Task<IActionResult> SaveAutoDepositAsync([FromBody] AutoDepositUpsertDto autoDeposit)
         {
-            await _savingsRepository.SaveAutoDepositAsync(autoDeposit);
+            await _savingsRepository.SaveAutoDepositAsync(autoDeposit.ToAutoDeposit());
             return Ok();
         }
 

@@ -59,7 +59,7 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<int> CreateLoanAsync(Loan loan)
         {
-            int result = await _apiService.PostAsync<Loan, int>("/api/loans", loan);
+            int result = await _apiService.PostAsync<LoanCreateDto, int>("/api/loans", LoanCreateDto.FromLoan(loan));
             return result;
         }
 
@@ -77,7 +77,9 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task SaveAmortizationAsync(int loanId, List<AmortizationRow> rows)
         {
-            await _apiService.PostAsync<List<AmortizationRow>, object>($"/api/loans/{loanId}/amortization-schedule", rows);
+            await _apiService.PostAsync<List<AmortizationRowUpsertDto>, object>(
+                $"/api/loans/{loanId}/amortization-schedule",
+                rows.ConvertAll(AmortizationRowUpsertDto.FromAmortizationRow));
         }
     }
 }

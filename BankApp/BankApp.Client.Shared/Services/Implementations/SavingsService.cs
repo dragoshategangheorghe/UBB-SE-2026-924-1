@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BankApp.Client.RepoProxies.Interfaces;
@@ -20,6 +21,7 @@ namespace BankApp.Client.Services.Implementations
         private const int MinPage = 1;
         private const int MaxPageSize = 100;
         private const int DefaultPageSize = 20;
+        private const string InvalidPositiveAmountMessage = "Invalid amount. Please enter a positive number.";
 
         private const decimal FixedDepositApy = 0.04m;
         private const decimal GoalSavingsApy = 0.03m;
@@ -104,20 +106,8 @@ namespace BankApp.Client.Services.Implementations
 
             // Business rule: validate ownership and status before deposit.
             var userAccountsList = await _savingsRepoProxy.GetSavingsAccountsByUserIdAsync(userId, true);
-
-            // Note: I changed the code a bit, in order to catch the ArgumentNullException from
-            //  Find() and throw InvalidOperationException (if the viewmodels depend on this type of operation)
-            //  I know that it's not the best to throw an exception from a catch block but I'm just not sure
-            //  if me changing the exception type here will break the viewmodels
-            SavingsAccount? destinationAccount;
-            try
-            {
-                destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId);
-            }
-            catch (NullReferenceException e)
-            {
-                throw new InvalidOperationException("Account not found or does not belong to you.");
-            }
+            var destinationAccount = userAccountsList.FirstOrDefault(account => account.IdentificationNumber == accountId)
+                ?? throw new InvalidOperationException("Account not found or does not belong to you.");
 
             if (destinationAccount.AccountStatus == "Closed")
             {
@@ -177,19 +167,8 @@ namespace BankApp.Client.Services.Implementations
             }
 
             var userAccountsList = await _savingsRepoProxy.GetSavingsAccountsByUserIdAsync(userId, true);
-            // Note: I changed the code a bit, in order to catch the ArgumentNullException from
-            //  Find() and throw InvalidOperationException (if the viewmodels depend on this type of operation)
-            //  I know that it's not the best to throw an exception from a catch block but I'm just not sure
-            //  if me changing the exception type here will break the viewmodels
-            SavingsAccount? destinationAccount;
-            try
-            {
-                destinationAccount = userAccountsList.Find(account => account.IdentificationNumber == accountId);
-            }
-            catch (NullReferenceException e)
-            {
-                throw new InvalidOperationException("Account not found or does not belong to you.");
-            }
+            var destinationAccount = userAccountsList.FirstOrDefault(account => account.IdentificationNumber == accountId)
+                ?? throw new InvalidOperationException("Account not found or does not belong to you.");
 
             if (destinationAccount.AccountStatus == "Closed")
             {
@@ -272,7 +251,16 @@ namespace BankApp.Client.Services.Implementations
             return Task.FromResult(penaltyRate);
         }
 
-        public Task<decimal> ParsePositiveAmountAsync(string text) => _savingsUiRules.ParsePositiveAmount(text);
+        public Task<decimal> ParsePositiveAmountAsync(string text)
+        {
+            if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount) ||
+                amount <= MinPositiveAmount)
+            {
+                throw new InvalidOperationException(InvalidPositiveAmountMessage);
+            }
+
+            return Task.FromResult(amount);
+        }
 
         public Task<string> GetDepositPreviewAsync(string depositAmountText, SavingsAccount selectedAccount) =>
             _savingsUiRules.GetDepositPreview(depositAmountText, selectedAccount);

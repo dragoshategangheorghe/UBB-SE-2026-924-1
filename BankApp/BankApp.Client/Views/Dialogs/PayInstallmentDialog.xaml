@@ -29,12 +29,12 @@
             <TextBlock Text="Payment Type" FontWeight="SemiBold" />
 
             <RadioButton x:Name="StandardRadio"
-                         Content="Standard — pay minimum installment"
+                         Content="Standard - pay amount currently due"
                          IsChecked="True"
                          Checked="OnStandardChecked" />
 
             <RadioButton x:Name="CustomRadio"
-                         Content="Custom — pay a different amount"
+                         Content="Custom - pay a different amount"
                          Checked="OnCustomChecked" />
 
             <StackPanel x:Name="CustomAmountPanel"
@@ -49,7 +49,7 @@
                            Foreground="#FF6B6B"
                            FontSize="12"
                            TextWrapping="Wrap" />
-                <TextBlock Text="Must be at least the minimum installment"
+                <TextBlock Text="Must be at least the amount currently due"
                            FontSize="11" Foreground="Gray" />
             </StackPanel>
 

@@ -117,16 +117,17 @@ namespace BankApp.Client.Services.Implementations
                 throw new InvalidOperationException("This loan is already closed.");
             }
 
-            var paymentAmount = customAmount ?? loan.MonthlyInstallment;
+            var minimumDue = GetMinimumDue(loan.MonthlyInstallment, loan.OutstandingBalance);
+            var paymentAmount = customAmount ?? minimumDue;
 
             if (paymentAmount <= ZeroAmount)
             {
                 throw new ArgumentException("Payment amount must be greater than zero.");
             }
 
-            if (customAmount.HasValue && paymentAmount < loan.MonthlyInstallment)
+            if (customAmount.HasValue && paymentAmount < minimumDue)
             {
-                throw new InvalidOperationException("Payment amount must be at least the minimum installment.");
+                throw new InvalidOperationException("Payment amount must be at least the amount currently due.");
             }
 
             if (paymentAmount > loan.OutstandingBalance)
@@ -139,7 +140,7 @@ namespace BankApp.Client.Services.Implementations
                 loan.OutstandingBalance,
                 loan.RemainingMonths,
                 isStandardPayment: !customAmount.HasValue,
-                customPaymentAmount: customAmount ?? ZeroAmount);
+                customPaymentAmount: paymentAmount);
 
             var newStatus = newBalance <= ZeroAmount || newRemainingMonths == MinimumIdExclusive
                 ? LoanStatus.Passed
@@ -266,6 +267,11 @@ namespace BankApp.Client.Services.Implementations
             };
         }
 
+        private static decimal GetMinimumDue(decimal monthlyInstallment, decimal outstandingBalance)
+        {
+            return Math.Min(monthlyInstallment, outstandingBalance);
+        }
+
         private (decimal BalanceAfterPayment, int RemainingMonths) CalculatePaymentPreview(
             decimal monthlyInstallment,
             decimal outstandingBalance,
@@ -294,8 +300,14 @@ namespace BankApp.Client.Services.Implementations
                 bool isStandardPayment,
                 decimal customPaymentAmount = LocalZeroAmount)
             {
-                var paymentAmount = isStandardPayment ? monthlyInstallment : customPaymentAmount;
+                var minimumDue = GetMinimumDue(monthlyInstallment, outstandingBalance);
+                var paymentAmount = isStandardPayment ? minimumDue : customPaymentAmount;
                 var balanceAfterPayment = Math.Max(LocalZeroAmount, outstandingBalance - paymentAmount);
+
+                if (balanceAfterPayment <= LocalZeroAmount)
+                {
+                    return (LocalZeroAmount, ZeroMonths);
+                }
 
                 var monthsPaid = isStandardPayment
                     ? SingleMonth

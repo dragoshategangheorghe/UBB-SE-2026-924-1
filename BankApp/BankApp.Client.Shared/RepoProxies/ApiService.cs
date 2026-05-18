@@ -183,6 +183,11 @@ namespace BankApp.Client.RepoProxies
                 return default;
             }
 
+            if (typeof(T) == typeof(string))
+            {
+                return (T?)(object)ReadStringBody(body);
+            }
+
             try
             {
                 return JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web));
@@ -198,6 +203,23 @@ namespace BankApp.Client.RepoProxies
                     $"Failed to parse JSON response as {typeof(T).Name}. Raw body: {body}",
                     jsonEx);
             }
+        }
+
+        private static string ReadStringBody(string body)
+        {
+            if (body.Length >= 2 && body[0] == '"' && body[^1] == '"')
+            {
+                try
+                {
+                    return JsonSerializer.Deserialize<string>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web)) ?? string.Empty;
+                }
+                catch (JsonException)
+                {
+                    // Fall back to the raw response body if the server returned plain text.
+                }
+            }
+
+            return body;
         }
 
         private static async Task<DownloadResponse> CreateDownloadResponseAsync(HttpResponseMessage response)

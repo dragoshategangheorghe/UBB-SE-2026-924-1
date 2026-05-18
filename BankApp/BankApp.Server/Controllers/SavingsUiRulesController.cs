@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
-using BankApp.Models.Features.Savings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApp.Server.Controllers
@@ -25,7 +24,7 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("deposit-preview")]
-        public ActionResult<string> GetDepositPreview([FromQuery] string depositAmountText, [FromBody] SavingsAccount selectedAccount)
+        public ActionResult<string> GetDepositPreview([FromQuery] string depositAmountText, [FromBody] SavingsAccountSnapshotDto selectedAccount)
         {
             string previewText;
             bool isDepositTextPositiveAmount = SavingsUiRulesController.TryParsePositiveAmount(depositAmountText, out var amount);

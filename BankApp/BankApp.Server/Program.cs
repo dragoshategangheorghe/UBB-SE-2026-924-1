@@ -22,6 +22,13 @@ Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Avoid the default Windows Event Log provider in local desktop runs.
+// It can turn ordinary EF warnings into request-killing exceptions when the
+// process does not have permission to write to the machine event log.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // --- INVESTMENTS & TRADING REGISTRATION ---
 builder.Services.AddScoped<IInvestmentRepository, InvestmentRepository>();
 

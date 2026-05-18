@@ -409,8 +409,15 @@ namespace BankApp.Client.ViewModels
             Loan loan,
             decimal? customAmount = null)
         {
-            var paymentAmount = customAmount ?? loan.MonthlyInstallment;
+            var minimumDue = Math.Min(loan.MonthlyInstallment, loan.OutstandingBalance);
+            var paymentAmount = customAmount ?? minimumDue;
             var balanceAfterPayment = Math.Max(ZeroAmount, loan.OutstandingBalance - paymentAmount);
+
+            if (balanceAfterPayment <= ZeroAmount)
+            {
+                return (ZeroAmount, ZeroCount);
+            }
+
             var monthsPaid = customAmount.HasValue
                 ? paymentAmount <= ZeroAmount
                     ? ZeroCount

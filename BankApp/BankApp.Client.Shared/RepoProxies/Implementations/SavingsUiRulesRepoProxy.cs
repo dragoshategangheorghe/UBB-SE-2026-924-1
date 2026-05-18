@@ -19,7 +19,8 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task<string> GetDepositPreview(string depositAmountText, SavingsAccount selectedAccount)
         {
-            return await _apiService.PostAsync<SavingsAccount, string>($"/api/savings-ui-rules/deposit-preview?depositAmountText={depositAmountText}", selectedAccount);
+            var accountSnapshot = SavingsAccountSnapshotDto.FromAccount(selectedAccount);
+            return await _apiService.PostAsync<SavingsAccountSnapshotDto, string>($"/api/savings-ui-rules/deposit-preview?depositAmountText={depositAmountText}", accountSnapshot);
         }
 
         public async Task<int> GetTotalPages(int totalCount, int pageSize)

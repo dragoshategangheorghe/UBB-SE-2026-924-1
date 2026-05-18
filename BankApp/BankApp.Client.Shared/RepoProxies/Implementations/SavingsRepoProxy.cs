@@ -77,7 +77,9 @@ namespace BankApp.Client.RepoProxies.Implementations
 
         public async Task SaveAutoDepositAsync(AutoDeposit autoDeposit)
         {
-            await _apiService.PostAsync<AutoDeposit, object>("/api/savings/auto-deposit", autoDeposit);
+            await _apiService.PostAsync<AutoDepositUpsertDto, object>(
+                "/api/savings/auto-deposit",
+                AutoDepositUpsertDto.FromAutoDeposit(autoDeposit));
         }
 
         public async Task<WithdrawResponseDto> WithdrawAsync(int accountId, decimal amount, string destinationLabel, decimal earlyWithdrawalPenalty)

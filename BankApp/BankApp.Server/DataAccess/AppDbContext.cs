@@ -60,6 +60,14 @@ namespace BankApp.Server.DataAccess
         {
             base.OnModelCreating(modelBuilder);
 
+            foreach (var decimalProperty in modelBuilder.Model.GetEntityTypes()
+                         .SelectMany(entityType => entityType.GetProperties())
+                         .Where(property => property.ClrType == typeof(decimal) || property.ClrType == typeof(decimal?)))
+            {
+                decimalProperty.SetPrecision(18);
+                decimalProperty.SetScale(2);
+            }
+
             // Table Name Mappings
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Session>().ToTable("Session");

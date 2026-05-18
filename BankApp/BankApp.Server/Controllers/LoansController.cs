@@ -84,11 +84,11 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> CreateLoanAsync([FromBody] Loan loan)
+        public async Task<ActionResult<int>> CreateLoanAsync([FromBody] LoanCreateDto loan)
         {
             try
             {
-                var id = await _loanRepository.CreateLoanAsync(loan);
+                var id = await _loanRepository.CreateLoanAsync(loan.ToLoan());
                 return Ok(id);
             }
             catch (Exception ex)
@@ -123,7 +123,7 @@ namespace BankApp.Server.Controllers
         }
 
         [HttpPost("{loanId:int}/amortization-schedule")]
-        public async Task<IActionResult> SaveAmortizationAsync([FromRoute] int loanId, [FromBody] List<AmortizationRow> rows)
+        public async Task<IActionResult> SaveAmortizationAsync([FromRoute] int loanId, [FromBody] List<AmortizationRowUpsertDto> rows)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace BankApp.Server.Controllers
                     return BadRequest("Invalid amortization rows payload.");
                 }
 
-                await _loanRepository.SaveAmortizationAsync(rows);
+                await _loanRepository.SaveAmortizationAsync(rows.Select(row => row.ToAmortizationRow()).ToList());
                 return Ok();
             }
             catch (Exception ex)

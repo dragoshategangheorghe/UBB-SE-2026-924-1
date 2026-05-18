@@ -217,6 +217,57 @@ namespace BankApp.Client.Tests.Services
                 10,
                 LoanStatus.Active), Times.Once);
         }
+
+        [Fact]
+        public async Task PayInstallmentAsync_StandardPayment_WhenOutstandingIsBelowInstallment_PaysOffLoan()
+        {
+            int targetLoanId = 1;
+            Loan activeLoanRecord = new Loan
+            {
+                UserId = 1,
+                RemainingMonths = 1,
+                LoanStatus = LoanStatus.Active,
+                MonthlyInstallment = 100m,
+                OutstandingBalance = 90m
+            };
+
+            mockLoansRepoProxy.Setup(proxy => proxy.GetLoanByIdAsync(targetLoanId))
+                .ReturnsAsync(activeLoanRecord);
+
+            await loansService.PayInstallmentAsync(targetLoanId, null);
+
+            mockLoansRepoProxy.Verify(proxy => proxy.UpdateLoanAfterPaymentAsync(
+                targetLoanId,
+                0m,
+                0,
+                LoanStatus.Passed), Times.Once);
+        }
+
+        [Fact]
+        public async Task PayInstallmentAsync_CustomPayment_WhenItPaysOffRemainingBalanceBelowInstallment_PaysOffLoan()
+        {
+            int targetLoanId = 1;
+            decimal customPaymentAmount = 90m;
+            Loan activeLoanRecord = new Loan
+            {
+                UserId = 1,
+                RemainingMonths = 1,
+                LoanStatus = LoanStatus.Active,
+                MonthlyInstallment = 100m,
+                OutstandingBalance = 90m
+            };
+
+            mockLoansRepoProxy.Setup(proxy => proxy.GetLoanByIdAsync(targetLoanId))
+                .ReturnsAsync(activeLoanRecord);
+
+            await loansService.PayInstallmentAsync(targetLoanId, customPaymentAmount);
+
+            mockLoansRepoProxy.Verify(proxy => proxy.UpdateLoanAfterPaymentAsync(
+                targetLoanId,
+                0m,
+                0,
+                LoanStatus.Passed), Times.Once);
+        }
         [Fact]
         public async Task GetLoansByUserAsync_ValidUserId_ReturnsLoansFromRepoProxy()
         {
