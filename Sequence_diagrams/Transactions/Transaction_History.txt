@@ -1,0 +1,48 @@
+@startuml
+title Transaction History / Transfer History
+
+actor User
+participant TransactionsView
+participant TransactionsController
+participant TransactionHistoryService
+participant "TransactionRepoProxy (API)" as TransactionRepoProxy
+participant "Server TransactionsController" as ApiTransactionsController
+participant TransactionHistoryRepository
+participant TransactionDAO
+database Database
+
+User -> TransactionsView: Open Transfer History
+TransactionsView -> TransactionsController: GET /Transactions
+TransactionsController -> TransactionHistoryService: GetHistoryAsync(request)
+TransactionHistoryService -> TransactionRepoProxy: POST /api/transactions/history
+TransactionRepoProxy -> ApiTransactionsController: HTTP POST (Bearer token)
+ApiTransactionsController -> ApiTransactionsController: GetAuthenticatedUserId()
+
+ApiTransactionsController -> TransactionHistoryRepository: GetTransactionsByUserId(userId)
+TransactionHistoryRepository -> TransactionDAO: FindByUserId(userId)
+TransactionDAO -> Database: SELECT transactions for user's accounts
+Database --> TransactionDAO: Transaction rows
+TransactionDAO --> TransactionHistoryRepository: List<TransactionHistoryItemDto>
+TransactionHistoryRepository --> ApiTransactionsController: Transactions
+
+ApiTransactionsController -> ApiTransactionsController: Apply filters and sorting
+ApiTransactionsController --> TransactionRepoProxy: 200 OK + TransactionHistoryResponse
+TransactionRepoProxy --> TransactionHistoryService: TransactionHistoryResponse
+TransactionHistoryService --> TransactionsController: TransactionHistoryResponse
+TransactionsController -> TransactionsController: Build page view model
+TransactionsController --> TransactionsView: Render transactions list
+TransactionsView --> User: Show transaction history
+
+User -> TransactionsView: Click transaction
+TransactionsView -> TransactionsController: GET /Transactions?selectedTransactionId=id
+
+alt Selected transaction exists
+    TransactionsController -> TransactionsController: Set SelectedTransactionId
+    TransactionsController --> TransactionsView: Render selected transaction details
+    TransactionsView --> User: Show selected transaction details
+else Selected transaction missing
+    TransactionsController -> TransactionsController: Select first transaction
+    TransactionsController --> TransactionsView: Render fallback details
+    TransactionsView --> User: Show first transaction details
+end
+@enduml
