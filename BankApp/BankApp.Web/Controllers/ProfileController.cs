@@ -21,10 +21,6 @@ public class ProfileController : WebControllerBase
         _profileService = profileService;
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  GET  /Profile
-    // ══════════════════════════════════════════════════════════
-
     [HttpGet]
     public async Task<IActionResult> Index(string tab = ProfilePageViewModel.TabPersonal)
     {
@@ -46,10 +42,6 @@ public class ProfileController : WebControllerBase
             });
         }
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  POST  /Profile/UpdatePersonalInfo
-    // ══════════════════════════════════════════════════════════
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -99,10 +91,6 @@ public class ProfileController : WebControllerBase
 
         return RedirectToAction(nameof(Index), new { tab = ProfilePageViewModel.TabPersonal });
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  POST  /Profile/ChangePassword
-    // ══════════════════════════════════════════════════════════
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -155,10 +143,6 @@ public class ProfileController : WebControllerBase
         return RedirectToAction(nameof(Index), new { tab = ProfilePageViewModel.TabSecurity });
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  POST  /Profile/Toggle2FA
-    // ══════════════════════════════════════════════════════════
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Toggle2FA(
@@ -202,10 +186,6 @@ public class ProfileController : WebControllerBase
         return RedirectToAction(nameof(Index), new { tab = ProfilePageViewModel.TabSecurity });
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  POST  /Profile/UpdateNotificationPreferences
-    // ══════════════════════════════════════════════════════════
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateNotificationPreferences(
@@ -245,10 +225,6 @@ public class ProfileController : WebControllerBase
 
         return RedirectToAction(nameof(Index), new { tab = ProfilePageViewModel.TabNotifications });
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  Private helpers
-    // ══════════════════════════════════════════════════════════
 
     private async Task<ProfilePageViewModel> BuildPageModelAsync(string tab)
     {

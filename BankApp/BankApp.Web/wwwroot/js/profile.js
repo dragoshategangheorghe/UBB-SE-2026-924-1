@@ -13,18 +13,13 @@
 
 $(function () {
 
-    // ── Constants ────────────────────────────────────────────
     const TAB_PERSONAL = 'personal';
     const TAB_SECURITY = 'security';
     const TAB_NOTIFICATIONS = 'notifications';
     const MIN_PASSWORD_LEN = 8;
 
-    // ── State ────────────────────────────────────────────────
     let editUnlocked = false;
 
-    // ══════════════════════════════════════════════════════════
-    //  TAB SWITCHING
-    // ══════════════════════════════════════════════════════════
 
     function activateTab(tabName) {
         // Panel visibility
@@ -49,18 +44,10 @@ $(function () {
     activateTab($('#active-tab-input').val() || TAB_PERSONAL);
 
 
-    // ══════════════════════════════════════════════════════════
-    //  AUTO-DISMISS ALERTS
-    // ══════════════════════════════════════════════════════════
-
     setTimeout(function () {
         $('.alert-autodismiss').fadeOut(400, function () { $(this).remove(); });
     }, 5000);
 
-
-    // ══════════════════════════════════════════════════════════
-    //  PERSONAL INFO  —  VERIFY THEN UNLOCK
-    // ══════════════════════════════════════════════════════════
 
     // "Unlock Update" opens the verify-password modal
     $('#unlock-edit-btn').on('click', function () {
@@ -110,10 +97,6 @@ $(function () {
     }
 
 
-    // ══════════════════════════════════════════════════════════
-    //  CHANGE PASSWORD MODAL
-    // ══════════════════════════════════════════════════════════
-
     $('#change-password-btn').on('click', function () {
         resetChangePasswordModal();
         $('#changePasswordModal').modal('show');
@@ -144,10 +127,6 @@ $(function () {
     });
 
 
-    // ══════════════════════════════════════════════════════════
-    //  2FA TOGGLE
-    // ══════════════════════════════════════════════════════════
-
     $('#twofa-toggle').on('change', function () {
         const enable = $(this).is(':checked');
 
@@ -165,10 +144,6 @@ $(function () {
     });
 
 
-    // ══════════════════════════════════════════════════════════
-    //  NOTIFICATION PREFERENCES  —  LIVE TOGGLE → FORM SUBMIT
-    // ══════════════════════════════════════════════════════════
-
     // Each toggle carries data-pref-id, data-channel attributes.
     // On change we update the corresponding hidden inputs and submit.
     $('#notifications-form').on('change', '.notif-toggle', function () {
@@ -182,10 +157,6 @@ $(function () {
         $('#notifications-form').submit();
     });
 
-
-    // ══════════════════════════════════════════════════════════
-    //  HELPERS
-    // ══════════════════════════════════════════════════════════
 
     function showModalError(selector, message) {
         $(selector).text(message).removeClass('d-none');

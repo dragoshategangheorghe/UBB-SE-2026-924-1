@@ -1,0 +1,78 @@
+title Profile Update Info
+
+actor User
+participant ProfilePage
+
+
+participant ProfileService
+
+participant "ProfileRepoProxy (API)" as ProfileRepoProxy
+
+
+
+database Database
+
+User->ProfilePage:Clicks "Unlock Update"
+User<-ProfilePage:Verify password modal opens
+
+User->ProfilePage:Enters password, clicks "Continue"
+
+alt Password field is empty
+    ProfilePage-->User:Error alert:\n"Please enter your password"
+else Password provided
+ProfilePage->ProfileService:Submits verify password form
+
+
+    activate ProfileService
+
+    ProfileService->ProfileRepoProxy:POST /api/profile/verify-password
+    activate ProfileRepoProxy
+
+    ProfileRepoProxy->Database:Lookup user, compare password hash
+    activate Database
+    Database-->ProfileRepoProxy:Match result
+    deactivate Database
+
+    alt Password is incorrect
+        ProfileRepoProxy-->ProfileService:false
+        deactivate ProfileRepoProxy
+        deactivate ProfileService
+ProfilePage<--ProfileService:false
+        ProfilePage-->User:Error alert:\n"Incorrect password.\nChanges were not saved."
+
+    else Password is correct
+        ProfileRepoProxy-->ProfileService:true
+        deactivate ProfileRepoProxy
+        deactivate ProfileService
+
+ProfilePage<--ProfileService:true
+User<--ProfilePage:Phone number and address are now editable
+User->ProfilePage:Edits phone number and address
+ProfilePage->ProfileService:Submits update info form
+        activate ProfileService
+        ProfileService->ProfileRepoProxy:POST /api/profile/update-personal-info
+        activate ProfileRepoProxy
+
+        ProfileRepoProxy->Database:UPDATE user SET phone, address
+        activate Database
+        Database-->ProfileRepoProxy:OK
+        deactivate Database
+
+        alt Update succeeds
+            ProfileRepoProxy-->ProfileService:UpdateProfileResponse { Success: true }
+            deactivate ProfileRepoProxy
+            deactivate ProfileService
+            deactivate ProfileController
+ProfilePage<--ProfileService:UpdateProfileResponse { Success: true }
+            ProfilePage-->User:Success:\n"Profile updated successfully."
+
+        else Update rejected by server
+            ProfileRepoProxy-->ProfileService:UpdateProfileResponse { Success: false, Message }
+            deactivate ProfileRepoProxy
+            deactivate ProfileService
+            deactivate ProfileController
+ProfilePage<--ProfileService:UpdateProfileResponse { Success: false, Message }
+            ProfilePage-->User:Error alert with message from server
+        end
+    end
+end
