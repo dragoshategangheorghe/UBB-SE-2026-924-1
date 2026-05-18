@@ -123,7 +123,14 @@ namespace BankApp.Server.Controllers
         //  this is just a helper function to not have to write out the same long conditional multiple times (DRY)
         private static bool TryParsePositiveAmount(string text, out decimal amount)
         {
-            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out amount) && amount > PositiveAmountThreshold)
+            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out amount) &&
+                amount > PositiveAmountThreshold)
+            {
+                return true;
+            }
+
+            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out amount) &&
+                amount > PositiveAmountThreshold)
             {
                 return true;
             }

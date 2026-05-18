@@ -4,6 +4,7 @@ using System.Linq;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Models.DTOs.Savings;
 using BankApp.Models.Enums;
+using BankApp.Models.Features.Investments;
 using BankApp.Models.Features.Savings;
 using BankApp.Web.Infrastructure;
 using BankApp.Web.Models.Savings;
@@ -56,6 +57,10 @@ public class SavingsController : WebControllerBase
     {
         try
         {
+            var fundingSources = await _savingsService.GetFundingSourcesAsync(CurrentUserId);
+            NormalizeCreateAccountForm(createAccount, fundingSources);
+            ModelState.Clear();
+
             decimal? parsedTargetAmount = null;
             if (IsGoalSavings(createAccount.SelectedSavingsType) && !string.IsNullOrWhiteSpace(createAccount.TargetAmount))
             {
@@ -83,7 +88,7 @@ public class SavingsController : WebControllerBase
 
             AddCreateAccountErrors(validation);
 
-            if (!ModelState.IsValid)
+            if (validation.Count > 0)
             {
                 var invalidModel = await BuildPageModelAsync(null, OverviewTab, createAccount);
                 invalidModel.ErrorMessage = "Please correct the highlighted fields.";
@@ -448,6 +453,35 @@ public class SavingsController : WebControllerBase
             {
                 ModelState.AddModelError(modelStateKey, value);
             }
+        }
+    }
+
+    private static void NormalizeCreateAccountForm(
+        SavingsCreateAccountFormModel createAccount,
+        IReadOnlyList<FundingSourceOption> fundingSources)
+    {
+        createAccount.SelectedSavingsType = createAccount.SelectedSavingsType?.Trim() ?? string.Empty;
+        createAccount.AccountName = createAccount.AccountName?.Trim() ?? string.Empty;
+        createAccount.InitialDeposit = createAccount.InitialDeposit?.Trim() ?? string.Empty;
+        createAccount.TargetAmount = createAccount.TargetAmount?.Trim() ?? string.Empty;
+        createAccount.SelectedFrequency = string.IsNullOrWhiteSpace(createAccount.SelectedFrequency)
+            ? "OneTime"
+            : createAccount.SelectedFrequency.Trim();
+
+        if (!createAccount.FundingSourceId.HasValue && fundingSources.Count > 0)
+        {
+            createAccount.FundingSourceId = fundingSources[0].Id;
+        }
+
+        if (!IsGoalSavings(createAccount.SelectedSavingsType))
+        {
+            createAccount.TargetAmount = string.Empty;
+            createAccount.TargetDate = null;
+        }
+
+        if (!IsFixedDeposit(createAccount.SelectedSavingsType))
+        {
+            createAccount.MaturityDate = null;
         }
     }
 

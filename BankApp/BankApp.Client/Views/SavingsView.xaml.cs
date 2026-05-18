@@ -16,6 +16,7 @@ namespace BankApp.Client.Views
         private const int FirstItemIndex = 0;
         private const int NoSelectionIndex = -1;
         private const int SuccessMessageDelayMilliseconds = 1500;
+        private const string OneTimeFrequencyTag = "OneTime";
 
         public SavingsViewModel? ViewModel => this.DataContext as SavingsViewModel;
 
@@ -68,12 +69,8 @@ namespace BankApp.Client.Views
 
             if (tag == "OpenNew")
             {
-                this.SavingsTypeRadioButtons.SelectedIndex = NoSelectionIndex;
-                this.FrequencyRadioButtons.SelectedIndex = NoSelectionIndex;
+                this.ResetCreateFormControls();
                 this.ViewModel.SelectedSavingsType = string.Empty;
-                this.ViewModel.SelectedFrequency = string.Empty;
-                this.GoalSavingsPanel.Visibility = Visibility.Collapsed;
-                this.ClearCreateErrors();
 
                 await this.ViewModel.LoadFundingSourcesAsync();
                 this.FundingSourceComboBox.ItemsSource = this.ViewModel.FundingSources;
@@ -117,6 +114,19 @@ namespace BankApp.Client.Views
                 this.FixedDepositPanel.Visibility = this.ViewModel.SelectedSavingsType == "FixedDeposit"
                     ? Visibility.Visible
                     : Visibility.Collapsed;
+
+                if (this.ViewModel.SelectedSavingsType != "GoalSavings")
+                {
+                    this.TargetAmountTextBox.Text = string.Empty;
+                    this.TargetDatePicker.Date = null;
+                    this.TargetAmountError.Visibility = Visibility.Collapsed;
+                    this.TargetDateError.Visibility = Visibility.Collapsed;
+                }
+
+                if (this.ViewModel.SelectedSavingsType != "FixedDeposit")
+                {
+                    this.MaturityDatePicker.Date = null;
+                }
             }
         }
 
@@ -124,6 +134,8 @@ namespace BankApp.Client.Views
         {
             this.ClearCreateErrors();
             this.ViewModel.PrepareCreateAccountSubmission(
+                this.GetSelectedRadioButtonTag(this.SavingsTypeRadioButtons),
+                this.GetSelectedRadioButtonTag(this.FrequencyRadioButtons),
                 this.AccountNameTextBox.Text,
                 this.InitialDepositTextBox.Text,
                 this.FundingSourceComboBox.SelectedItem as FundingSourceOption,
@@ -182,9 +194,7 @@ namespace BankApp.Client.Views
                 await Task.Delay(SuccessMessageDelayMilliseconds);
                 this.CreateSuccessBar.IsOpen = false;
                 this.OpenAccountButton.IsEnabled = true;
-                this.AccountNameTextBox.Text = string.Empty;
-                this.InitialDepositTextBox.Text = string.Empty;
-                this.SavingsTypeRadioButtons.SelectedIndex = NoSelectionIndex;
+                this.ResetCreateFormControls();
                 this.MainNavigationView.SelectedItem = this.MyAccountsTab;
             }
         }
@@ -521,8 +531,43 @@ namespace BankApp.Client.Views
             this.AccountNameError.Visibility = Visibility.Collapsed;
             this.InitialDepositError.Visibility = Visibility.Collapsed;
             this.FundingSourceError.Visibility = Visibility.Collapsed;
+            this.FrequencyError.Visibility = Visibility.Collapsed;
             this.TargetAmountError.Visibility = Visibility.Collapsed;
             this.TargetDateError.Visibility = Visibility.Collapsed;
+        }
+
+        private string GetSelectedRadioButtonTag(RadioButtons radioButtons)
+        {
+            return (radioButtons.SelectedItem as RadioButton)?.Tag?.ToString() ?? string.Empty;
+        }
+
+        private void ResetCreateFormControls()
+        {
+            this.AccountNameTextBox.Text = string.Empty;
+            this.InitialDepositTextBox.Text = string.Empty;
+            this.TargetAmountTextBox.Text = string.Empty;
+            this.TargetDatePicker.Date = null;
+            this.MaturityDatePicker.Date = null;
+            this.SavingsTypeRadioButtons.SelectedIndex = NoSelectionIndex;
+            if (this.ViewModel != null)
+            {
+                this.ViewModel.SelectedSavingsType = string.Empty;
+            }
+            this.SetDefaultCreateFrequency();
+            this.GoalSavingsPanel.Visibility = Visibility.Collapsed;
+            this.FixedDepositPanel.Visibility = Visibility.Collapsed;
+            this.ClearCreateErrors();
+        }
+
+        private void SetDefaultCreateFrequency()
+        {
+            if (this.ViewModel == null)
+            {
+                return;
+            }
+
+            this.FrequencyRadioButtons.SelectedIndex = FirstItemIndex;
+            this.ViewModel.SelectedFrequency = OneTimeFrequencyTag;
         }
 
         private static void ShowError(TextBlock tb, string msg)

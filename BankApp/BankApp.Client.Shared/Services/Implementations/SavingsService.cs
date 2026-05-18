@@ -253,8 +253,7 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<decimal> ParsePositiveAmountAsync(string text)
         {
-            if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount) ||
-                amount <= MinPositiveAmount)
+            if (!TryParsePositiveAmount(text, out var amount))
             {
                 throw new InvalidOperationException(InvalidPositiveAmountMessage);
             }
@@ -309,6 +308,24 @@ namespace BankApp.Client.Services.Implementations
 
         public Task<bool> CanMoveToPreviousPageAsync(int currentPage) =>
             _savingsWorkflow.CanMoveToPreviousPage(currentPage);
+
+        private static bool TryParsePositiveAmount(string text, out decimal amount)
+        {
+            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out amount) &&
+                amount > MinPositiveAmount)
+            {
+                return true;
+            }
+
+            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out amount) &&
+                amount > MinPositiveAmount)
+            {
+                return true;
+            }
+
+            amount = MinPositiveAmount;
+            return false;
+        }
     }
 }
 

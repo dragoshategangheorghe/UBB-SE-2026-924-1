@@ -23,6 +23,7 @@ namespace BankApp.Client.ViewModels
         private const int DefaultTransactionPageSize = 10;
         private const int InitialAutoDepositDelayDays = 1;
         private const decimal ZeroAmount = 0m;
+        private const string OneTimeFrequency = "OneTime";
 
         private readonly ISavingsService savingsService;
 
@@ -222,6 +223,11 @@ namespace BankApp.Client.ViewModels
             _ = RefreshWithdrawPenaltyAsync();
         }
 
+        partial void OnErrorMessageChanged(string value)
+        {
+            this.HasError = !string.IsNullOrWhiteSpace(value);
+        }
+
         /// <summary>
         /// Refreshes all observable fields that depend on the currently selected account.
         /// Triggered via OnSelectedAccountChanged.
@@ -382,6 +388,8 @@ namespace BankApp.Client.ViewModels
         }
 
         public void PrepareCreateAccountSubmission(
+            string selectedSavingsType,
+            string selectedFrequency,
             string accountName,
             string initialDepositText,
             FundingSourceOption? fundingSource,
@@ -389,6 +397,10 @@ namespace BankApp.Client.ViewModels
             DateTimeOffset? targetDate,
             DateTimeOffset? maturityDate)
         {
+            this.SelectedSavingsType = selectedSavingsType;
+            this.SelectedFrequency = string.IsNullOrWhiteSpace(selectedFrequency)
+                ? OneTimeFrequency
+                : selectedFrequency;
             this.AccountName = accountName;
             this.InitialDepositText = initialDepositText;
             this.SelectedFundingSource = fundingSource;
@@ -402,6 +414,11 @@ namespace BankApp.Client.ViewModels
 
         private async Task<bool> ValidationCreateAccount()
         {
+            if (string.IsNullOrWhiteSpace(this.SelectedFrequency))
+            {
+                this.SelectedFrequency = OneTimeFrequency;
+            }
+
             if (this.IsGoalSavings && !string.IsNullOrWhiteSpace(this._pendingTargetAmountText))
             {
                 try
@@ -454,7 +471,8 @@ namespace BankApp.Client.ViewModels
                     TargetAmount = this.IsGoalSavings ? this.TargetAmount : null,
                     TargetDate = this.IsGoalSavings ? this.TargetDate?.DateTime : null,
                     MaturityDate = this.MaturityDate?.DateTime,
-                    DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency)
+                    DepositFrequency = string.IsNullOrWhiteSpace(this.SelectedFrequency) ||
+                                       string.Equals(this.SelectedFrequency, OneTimeFrequency, StringComparison.OrdinalIgnoreCase)
                         ? null
                         : await this.savingsService.ParseDepositFrequencyAsync(this.SelectedFrequency),
                 };
@@ -510,8 +528,11 @@ namespace BankApp.Client.ViewModels
             this.AccountName = string.Empty;
             this.InitialDepositText = string.Empty;
             this.SelectedSavingsType = string.Empty;
+            this.SelectedFrequency = OneTimeFrequency;
             this.TargetAmount = null;
             this.TargetDate = null;
+            this.MaturityDate = null;
+            this._pendingTargetAmountText = string.Empty;
             this.FieldErrors.Clear();
         }
 
