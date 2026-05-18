@@ -1,0 +1,125 @@
+title Savings Account Creation and List Loading
+
+actor User
+participant SavingsView
+participant SavingsViewModel
+participant SavingsService
+participant "SavingsRepoProxy (API)" as SavingsRepoProxy
+participant "SavingsController" as SavingsController
+participant SavingsRepository
+database Database
+
+User->SavingsView: Opens Savings page
+SavingsView->SavingsViewModel: LoadAsync()
+activate SavingsViewModel
+SavingsViewModel->SavingsService: GetAccountsAsync(userId, includesClosed: false)
+activate SavingsService
+SavingsService->SavingsRepoProxy: GET /api/savings/user/{userId}?includesClosed=false
+activate SavingsRepoProxy
+SavingsRepoProxy->SavingsController: HTTP GET /api/savings/user/{userId}
+activate SavingsController
+SavingsController->SavingsRepository: GetSavingsAccountsByUserIdAsync(userId, false)
+activate SavingsRepository
+SavingsRepository->Database: SELECT savings accounts WHERE user_id = ? AND status != Closed
+activate Database
+Database-->SavingsRepository: List<SavingsAccount>
+deactivate Database
+SavingsRepository-->SavingsController: accounts
+deactivate SavingsRepository
+SavingsController-->SavingsRepoProxy: 200 OK accounts
+deactivate SavingsController
+SavingsRepoProxy-->SavingsService: List<SavingsAccount>
+deactivate SavingsRepoProxy
+SavingsService-->SavingsViewModel: accounts
+deactivate SavingsService
+SavingsViewModel-->SavingsView: Accounts list updated
+deactivate SavingsViewModel
+SavingsView-->User: Shows savings accounts
+
+User->SavingsView: Clicks "Create Account"
+SavingsView-->User: Create savings account form opens
+User->SavingsView: Enters account data and clicks "Create"
+SavingsView->SavingsViewModel: CreateAccountAsync(formData)
+activate SavingsViewModel
+SavingsViewModel->SavingsService: CreateAccountAsync(CreateSavingsAccountDto)
+activate SavingsService
+
+SavingsService->SavingsRepoProxy: GetSavingsAccountsByUserIdAsync(userId, false)
+activate SavingsRepoProxy
+SavingsRepoProxy->SavingsController: GET /api/savings/user/{userId}?includesClosed=false
+activate SavingsController
+SavingsController->SavingsRepository: GetSavingsAccountsByUserIdAsync(userId, false)
+activate SavingsRepository
+SavingsRepository->Database: SELECT active savings accounts
+activate Database
+Database-->SavingsRepository: active accounts
+deactivate Database
+SavingsRepository-->SavingsController: active accounts
+deactivate SavingsRepository
+SavingsController-->SavingsRepoProxy: 200 OK active accounts
+deactivate SavingsController
+SavingsRepoProxy-->SavingsService: active accounts
+deactivate SavingsRepoProxy
+
+alt User already has 5 active savings accounts
+    SavingsService-->SavingsViewModel: Error: "You cannot have more than 5 active savings accounts."
+    deactivate SavingsService
+    SavingsViewModel-->SavingsView: Show validation error
+    deactivate SavingsViewModel
+    SavingsView-->User: Error alert
+
+else Account type is GoalSavings and goal fields are invalid
+    SavingsService-->SavingsViewModel: Error: target date / target amount validation failed
+    deactivate SavingsService
+    SavingsViewModel-->SavingsView: Show validation error
+    deactivate SavingsViewModel
+    SavingsView-->User: Error alert
+
+else Request is valid
+    SavingsService->SavingsService: Select APY by savings type
+    SavingsService->SavingsRepoProxy: POST /api/savings/create-account?apy={apy}
+    activate SavingsRepoProxy
+    SavingsRepoProxy->SavingsController: HTTP POST CreateSavingsAccountDto
+    activate SavingsController
+    SavingsController->SavingsRepository: CreateSavingsAccountAsync(dto, apy)
+    activate SavingsRepository
+    SavingsRepository->Database: INSERT savings account
+    activate Database
+    Database-->SavingsRepository: Created savings account
+    deactivate Database
+
+    alt Repository rejects create request
+        SavingsRepository-->SavingsController: throws ArgumentException / InvalidOperationException
+        SavingsController-->SavingsRepoProxy: 400 Bad Request message
+        deactivate SavingsRepository
+        deactivate SavingsController
+        SavingsRepoProxy-->SavingsService: Error message
+        deactivate SavingsRepoProxy
+        SavingsService-->SavingsViewModel: Error message
+        deactivate SavingsService
+        SavingsViewModel-->SavingsView: Show server error
+        deactivate SavingsViewModel
+        SavingsView-->User: Error alert
+
+    else Account created successfully
+        SavingsRepository-->SavingsController: SavingsAccount
+        deactivate SavingsRepository
+        SavingsController-->SavingsRepoProxy: 200 OK SavingsAccount
+        deactivate SavingsController
+        SavingsRepoProxy-->SavingsService: SavingsAccount
+        deactivate SavingsRepoProxy
+        SavingsService-->SavingsViewModel: SavingsAccount
+        deactivate SavingsService
+        SavingsViewModel->SavingsService: GetAccountsAsync(userId, false)
+        activate SavingsService
+        SavingsService->SavingsRepoProxy: GET /api/savings/user/{userId}?includesClosed=false
+        activate SavingsRepoProxy
+        SavingsRepoProxy-->SavingsService: Updated List<SavingsAccount>
+        deactivate SavingsRepoProxy
+        SavingsService-->SavingsViewModel: Updated accounts
+        deactivate SavingsService
+        SavingsViewModel-->SavingsView: Accounts list refreshed
+        deactivate SavingsViewModel
+        SavingsView-->User: Success message and new account visible
+    end
+end
