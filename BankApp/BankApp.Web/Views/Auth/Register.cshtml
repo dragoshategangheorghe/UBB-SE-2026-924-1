@@ -1,0 +1,81 @@
+﻿@model BankApp.Web.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - BankApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body style="background-color: #202020; overflow-x: hidden;">
+    <div class="row vh-100 m-0">
+        <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5" style="background-color: #1A1A2E;">
+            <div class="rounded-4 d-flex align-items-center justify-content-center mb-4" style="width: 70px; height: 70px; background-color: #16213E;">
+                <span class="fs-1 fw-bold" style="color: #4ECDC4;">B</span>
+            </div>
+            <h1 class="fw-bold text-white mb-2">BankApp</h1>
+            <p class="fs-5" style="color: #888;">Your finances, simplified.</p>
+            <div class="mt-auto small" style="color: #555;">&copy; 2026 BankingApp</div>
+        </div>
+
+        <div class="col-md-7 d-flex justify-content-center align-items-center p-5 text-white">
+            <div style="max-width: 360px; width: 100%;">
+                <h2 class="fw-semibold mb-4">Create account</h2>
+
+                @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success shadow-sm p-2 small" role="alert">@Model.SuccessMessage</div>
+                }
+                else
+                {
+                    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger shadow-sm p-2 small" role="alert">@Model.ErrorMessage</div>
+                    }
+
+                    <form asp-action="Register" asp-controller="Auth" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label small" style="color: #ccc;"></label>
+                            <input asp-for="FullName" class="form-control text-white" style="background-color: #2b2b2b; border: 1px solid #444;" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label small" style="color: #ccc;"></label>
+                            <input asp-for="Email" class="form-control text-white" style="background-color: #2b2b2b; border: 1px solid #444;" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label small" style="color: #ccc;"></label>
+                            <input asp-for="Password" type="password" class="form-control text-white" style="background-color: #2b2b2b; border: 1px solid #444;" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmPassword" class="form-label small" style="color: #ccc;"></label>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control text-white" style="background-color: #2b2b2b; border: 1px solid #444;" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <input type="submit" value="CREATE ACCOUNT" class="btn w-100 fw-semibold" style="height: 42px; background-color: #4ECDC4; color: white;" />
+                    </form>
+                }
+
+                <div class="text-center mt-4 small" style="color: #888;">
+                    Already have an account? <a asp-action="Index" class="text-decoration-none" style="color: #4ECDC4;">Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

@@ -1,0 +1,55 @@
+﻿@model BankApp.Web.Models.TwoFactorViewModel
+@{
+    ViewData["Title"] = "Two-Factor Authentication";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Two-Factor - BankApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body style="background-color: #202020; overflow-x: hidden;">
+    <div class="row vh-100 m-0">
+        <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5" style="background-color: #1A1A2E;">
+            <div class="rounded-4 d-flex align-items-center justify-content-center mb-4" style="width: 70px; height: 70px; background-color: #16213E;">
+                <span class="fs-1 fw-bold" style="color: #4ECDC4;">B</span>
+            </div>
+            <h1 class="fw-bold text-white mb-2">Security</h1>
+            <p class="fs-5" style="color: #888;">Protecting your account.</p>
+        </div>
+
+        <div class="col-md-7 d-flex justify-content-center align-items-center p-5 text-white">
+            <div style="max-width: 360px; width: 100%;">
+                <h2 class="fw-semibold mb-2">Two-Factor Authentication</h2>
+                <p class="mb-4 small" style="color: #666;">Enter the 6-digit code sent to your device to continue.</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger shadow-sm p-2 small" role="alert">@Model.ErrorMessage</div>
+                }
+
+                <form asp-action="TwoFactor" asp-controller="Auth" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-4">
+                        <input asp-for="Code" class="form-control text-center text-white fs-4" style="background-color: #2b2b2b; border: 1px solid #444; letter-spacing: 4px;" maxlength="6" autofocus />
+                        <span asp-validation-for="Code" class="text-danger small"></span>
+                    </div>
+
+                    <input type="submit" value="VERIFY CODE" class="btn w-100 fw-semibold mb-3" style="height: 42px; background-color: #4ECDC4; color: white;" />
+                </form>
+
+                <div class="text-center mt-4 small">
+                    <a asp-action="Index" class="text-decoration-none" style="color: #888;">Back to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>
