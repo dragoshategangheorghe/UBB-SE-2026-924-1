@@ -1,0 +1,80 @@
+title Crypto Trade Validation & Execution Pipeline
+
+actor User
+participant View as View (Trade.cshtml)
+participant Controller as InvestmentsAndTradingController
+participant Service as InvestmentsService
+participant Proxy as InvestmentsRepoProxy (API)
+participant DB as SQL Server Database
+
+
+User -> View: Selects asset (BTC/ETH/SOL) & inputs Quantity
+View -> View: Live calculation of execution fees & totals (jQuery)
+
+alt BUY Order Total exceeds Available Wallet Balance
+    View -> User: Display "Insufficient Funds" warning alert & lock submission button
+else UI Validation Passes
+    View -> User: Clear warnings & enable "Submit Market Order" button
+end
+
+User -> View: Clicks "Submit Market Order"
+View -> Controller: POST /InvestmentsAndTrading/ExecuteTrade\n(ticker, actionType, quantity)
+
+activate Controller
+Controller -> Controller: Retrieve CurrentUserId from IWebSessionContext
+
+alt Session is Invalid or Expired
+    Controller -> View: RedirectToAction("Index", "Auth")
+else Session is Valid
+    Controller -> Service: ExecuteTradeAsync(userId, ticker, actionType, quantity, price)
+    activate Service
+    
+    Service -> Proxy: PostAsync("/api/investments/trade", request)
+    activate Proxy
+    
+    Proxy -> DB: POST request to API Endpoint pipeline
+    activate DB
+    
+    DB -> DB: Evaluate server-side ledger balance guard rules
+    
+    alt Server-Side Guard Fails (Insufficient Asset Balance / Limit Violations)
+        DB --> Proxy: Return HTTP 400 Bad Request (Error Details)
+        Proxy --> Service: Throw Exception(Failure Message)
+        Service --> Controller: Propagate execution error state
+        Controller -> Controller: Assign error string to TempData["ErrorMessage"]
+        Controller --> View: RedirectToAction(nameof(Trade))
+        View --> User: Render error banner notice
+    else Database Constraints Pass
+        DB -> DB: Save rows to InvestmentTransaction & InvestmentHolding
+        DB --> Proxy: Return HTTP 200 OK (Success)
+        deactivate DB
+        
+        Proxy --> Service: Return true
+        deactivate Proxy
+        
+        Service --> Controller: Return true
+        deactivate Service
+        
+        Controller --> View: RedirectToAction(nameof(Index))
+        deactivate Controller
+    end
+end
+activate View
+View -> Controller: GET /InvestmentsAndTrading/Index
+activate Controller
+Controller -> Service: GetPortfolioForCurrentUserAsync()
+activate Service
+Service -> Proxy: GetAsync("/api/investments/portfolio/{userId}")
+activate Proxy
+Proxy -> DB: Fetch updated account dataset rows
+activate DB
+DB --> Proxy: Return serialized Portfolio entity data
+deactivate DB
+Proxy --> Service: Return Portfolio object model
+deactivate Proxy
+Service --> Controller: Return Portfolio mapping context
+deactivate Service
+Controller --> View: Render Index.cshtml view with refreshed metrics
+deactivate Controller
+View --> User: Displays updated asset balances on Dashboard
+deactivate View
