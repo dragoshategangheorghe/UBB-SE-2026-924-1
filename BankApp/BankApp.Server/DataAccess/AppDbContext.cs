@@ -99,210 +99,210 @@ namespace BankApp.Server.DataAccess
             //--- Relationship Configurations ---
             modelBuilder.Entity<Account>(entity =>
             {
-                entity.HasOne(a => a.User)
-                    .WithMany(u => u.Accounts)
+                entity.HasOne(account => account.User)
+                    .WithMany(user => user.Accounts)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasMany(a => a.Cards)
-                    .WithOne(c => c.Account)
+                entity.HasMany(account => account.Cards)
+                    .WithOne(card => card.Account)
                     .IsRequired();
 
-                entity.HasMany(a => a.Transactions)
-                    .WithOne(t => t.Account)
+                entity.HasMany(account => account.Transactions)
+                    .WithOne(transaction => transaction.Account)
                     .IsRequired();
             });
 
             modelBuilder.Entity<Card>(entity =>
             {
-                entity.HasOne(c => c.User)
-                    .WithMany(u => u.Cards)
+                entity.HasOne(card => card.User)
+                    .WithMany(user => user.Cards)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasMany(c => c.Transactions)
-                    .WithOne(t => t.Card);
+                entity.HasMany(card => card.Transactions)
+                    .WithOne(transaction => transaction.Card);
             });
 
             modelBuilder.Entity<Transaction>(entity =>
             {
-                entity.HasOne(t => t.Account)
-                    .WithMany(a => a.Transactions)
+                entity.HasOne(transaction => transaction.Account)
+                    .WithMany(account => account.Transactions)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(t => t.Card)
-                    .WithMany(c => c.Transactions);
+                entity.HasOne(transaction => transaction.Card)
+                    .WithMany(card => card.Transactions);
 
-                entity.HasOne(t => t.Category)
+                entity.HasOne(transaction => transaction.Category)
                     .WithMany();
             });
 
             modelBuilder.Entity<Session>(entity =>
             {
-                entity.HasOne(s => s.User)
-                    .WithMany(u => u.Sessions)
+                entity.HasOne(session => session.User)
+                    .WithMany(user => user.Sessions)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Notification>(entity =>
             {
-                entity.HasOne(n => n.User)
-                    .WithMany(u => u.Notifications)
+                entity.HasOne(notification => notification.User)
+                    .WithMany(user => user.Notifications)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<OAuthLink>(entity =>
             {
-                entity.HasOne(o => o.User)
-                    .WithMany(u => u.OAuthLinks)
+                entity.HasOne(oauthLink => oauthLink.User)
+                    .WithMany(user => user.OAuthLinks)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<NotificationPreference>(entity =>
             {
-                entity.Property(p => p.Category)
+                entity.Property(notificationPreference => notificationPreference.Category)
                     .HasConversion<string>();
 
-                entity.HasOne(p => p.User)
-                    .WithMany(u => u.NotificationPreferences)
+                entity.HasOne(notificationPreference => notificationPreference.User)
+                    .WithMany(user => user.NotificationPreferences)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<PasswordResetToken>(entity =>
             {
-                entity.HasOne(p => p.User)
-                    .WithMany(u => u.PasswordResetTokens)
+                entity.HasOne(passwordResetToken => passwordResetToken.User)
+                    .WithMany(user => user.PasswordResetTokens)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<UserCardPreference>(entity =>
             {
-                entity.HasKey(ucp => ucp.UserId);
+                entity.HasKey(userCardPreference => userCardPreference.UserId);
 
-                entity.HasOne(p => p.User)
-                    .WithMany(u => u.UserCardPreferences)
+                entity.HasOne(userCardPreference => userCardPreference.User)
+                    .WithMany(user => user.UserCardPreferences)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<TransactionCategoryOverride>(entity =>
             {
-                entity.HasOne(t => t.Transaction)
+                entity.HasOne(transactionCategoryOverride => transactionCategoryOverride.Transaction)
                     .WithMany()
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(t => t.User)
-                    .WithMany(u => u.TransactionCategoryOverrides)
+                entity.HasOne(transactionCategoryOverride => transactionCategoryOverride.User)
+                    .WithMany(user => user.TransactionCategoryOverrides)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(t => t.Category)
+                entity.HasOne(transactionCategoryOverride => transactionCategoryOverride.Category)
                     .WithMany()
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Loan>(entity =>
             {
-                entity.HasOne(l => l.User)
+                entity.HasOne(loan => loan.User)
                     .WithMany()
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasMany(l => l.AmortizationRows)
+                entity.HasMany(loan => loan.AmortizationRows)
                     .WithOne(a => a.Loan)
                     .IsRequired();
             });
 
             modelBuilder.Entity<SavingsAccount>(entity =>
             {
-                entity.HasOne(s => s.User)
+                entity.HasOne(savingsAccount => savingsAccount.User)
                     .WithMany()
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne(s => s.FundingAccount)
+                entity.HasOne(savingsAccount => savingsAccount.FundingAccount)
                     .WithMany().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasMany(s => s.AutoDeposits)
-                    .WithOne(a => a.SavingsAccount)
-                    .HasForeignKey(a => a.SavingsAccountId)
+                entity.HasMany(savingsAccount => savingsAccount.AutoDeposits)
+                    .WithOne(autoDeposit => autoDeposit.SavingsAccount)
+                    .HasForeignKey(autoDeposit => autoDeposit.SavingsAccountId)
                     .IsRequired();
 
-                entity.HasMany(s => s.Transactions)
-                    .WithOne(t => t.SavingsAccount)
-                    .HasForeignKey(t => t.AccountId)
+                entity.HasMany(savingsAccount => savingsAccount.Transactions)
+                    .WithOne(transaction => transaction.SavingsAccount)
+                    .HasForeignKey(transaction => transaction.AccountId)
                     .IsRequired()
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<ChatSession>(entity =>
             {
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.IssueCategory).HasColumnName("issueCategory").HasMaxLength(50);
-                entity.Property(e => e.SessionStatus).HasColumnName("sessionStatus").HasMaxLength(30);
-                entity.Property(e => e.Rating).HasColumnName("rating");
-                entity.Property(e => e.StartedAt).HasColumnName("startedAt");
-                entity.Property(e => e.EndedAt).HasColumnName("endedAt");
-                entity.Property(e => e.Feedback).HasColumnName("feedback").HasMaxLength(255);
+                entity.Property(chatSession => chatSession.Id).HasColumnName("id");
+                entity.Property(chatSession => chatSession.IssueCategory).HasColumnName("issueCategory").HasMaxLength(50);
+                entity.Property(chatSession => chatSession.SessionStatus).HasColumnName("sessionStatus").HasMaxLength(30);
+                entity.Property(chatSession => chatSession.Rating).HasColumnName("rating");
+                entity.Property(chatSession => chatSession.StartedAt).HasColumnName("startedAt");
+                entity.Property(chatSession => chatSession.EndedAt).HasColumnName("endedAt");
+                entity.Property(chatSession => chatSession.Feedback).HasColumnName("feedback").HasMaxLength(255);
                 entity.Property<int>("UserId").HasColumnName("userId");
 
-                entity.HasOne(s => s.User)
+                entity.HasOne(chatSession => chatSession.User)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasMany(s => s.Messages)
+                entity.HasMany(chatSession => chatSession.Messages)
                     .WithOne(m => m.Session)
                     .IsRequired();
             });
 
             modelBuilder.Entity<ChatMessage>(entity =>
             {
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.SessionId).HasColumnName("sessionId");
-                entity.Property(e => e.SenderType).HasColumnName("senderType").HasMaxLength(20);
-                entity.Property(e => e.Content).HasColumnName("content");
-                entity.Property(e => e.SentAt).HasColumnName("sentAt");
+                entity.Property(chatMessage => chatMessage.Id).HasColumnName("id");
+                entity.Property(chatMessage => chatMessage.SessionId).HasColumnName("sessionId");
+                entity.Property(chatMessage => chatMessage.SenderType).HasColumnName("senderType").HasMaxLength(20);
+                entity.Property(chatMessage => chatMessage.Content).HasColumnName("content");
+                entity.Property(chatMessage => chatMessage.SentAt).HasColumnName("sentAt");
             });
 
             modelBuilder.Entity<ChatAttachment>(entity =>
             {
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.MessageId).HasColumnName("messageId");
-                entity.Property(e => e.AttachmentName).HasColumnName("attachmentName").HasMaxLength(255);
-                entity.Property(e => e.FileType).HasColumnName("fileType").HasMaxLength(50);
-                entity.Property(e => e.FileSizeBytes).HasColumnName("fileSizeBytes");
-                entity.Property(e => e.StorageUrl).HasColumnName("storageUrl").HasMaxLength(255);
+                entity.Property(chatAttachment => chatAttachment.Id).HasColumnName("id");
+                entity.Property(chatAttachment => chatAttachment.MessageId).HasColumnName("messageId");
+                entity.Property(chatAttachment => chatAttachment.AttachmentName).HasColumnName("attachmentName").HasMaxLength(255);
+                entity.Property(chatAttachment => chatAttachment.FileType).HasColumnName("fileType").HasMaxLength(50);
+                entity.Property(chatAttachment => chatAttachment.FileSizeBytes).HasColumnName("fileSizeBytes");
+                entity.Property(chatAttachment => chatAttachment.StorageUrl).HasColumnName("storageUrl").HasMaxLength(255);
 
-                entity.HasOne(a => a.Message)
+                entity.HasOne(chatAttachment => chatAttachment.Message)
                     .WithMany()
-                    .HasForeignKey(a => a.MessageId)
+                    .HasForeignKey(chatAttachment => chatAttachment.MessageId)
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
             });
 
             // --- Investment Feature Deep Configuration ---
             modelBuilder.Entity<BankApp.Models.Entities.Portfolio>(entity =>
             {
-                entity.HasKey(p => p.Id); // Ensure PK matches Entity
+                entity.HasKey(portfolio => portfolio.Id); // Ensure PK matches Entity
 
-                entity.HasOne(p => p.User)
+                entity.HasOne(portfolio => portfolio.User)
                     .WithMany()
-                    .HasForeignKey(p => p.UserId) // Explicit FK mapping
+                    .HasForeignKey(portfolio => portfolio.UserId) // Explicit FK mapping
                     .IsRequired().OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasMany(p => p.Holdings)
-                    .WithOne(h => h.Portfolio)
-                    .HasForeignKey(h => h.PortfolioId) // Explicit FK mapping
+                entity.HasMany(portfolio => portfolio.Holdings)
+                    .WithOne(holding => holding.Portfolio)
+                    .HasForeignKey(holding => holding.PortfolioId) // Explicit FK mapping
                     .IsRequired();
             });
 
             modelBuilder.Entity<BankApp.Models.Entities.InvestmentHolding>(entity =>
             {
-                entity.HasKey(h => h.Id);
+                entity.HasKey(holding => holding.Id);
 
-                entity.HasMany(h => h.Transactions)
-                    .WithOne(t => t.Holding)
-                    .HasForeignKey(t => t.HoldingId) // Explicit FK mapping
+                entity.HasMany(holding => holding.Transactions)
+                    .WithOne(transaction => transaction.Holding)
+                    .HasForeignKey(transaction => transaction.HoldingId) // Explicit FK mapping
                     .IsRequired();
             });
 
             modelBuilder.Entity<BankApp.Models.Entities.InvestmentTransaction>(entity =>
             {
-                entity.HasKey(t => t.Id);
+                entity.HasKey(transaction => transaction.Id);
             });
         }
     }
