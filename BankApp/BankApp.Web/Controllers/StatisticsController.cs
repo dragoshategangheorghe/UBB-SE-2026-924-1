@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using BankApp.Client.Services.Interfaces;
 using BankApp.Web.ViewModels.Statistics;
 
 namespace BankApp.Web.Controllers
 {
-    [Authorize]
     public class StatisticsController : Controller
     {
         private readonly IStatisticsService _statisticsService;

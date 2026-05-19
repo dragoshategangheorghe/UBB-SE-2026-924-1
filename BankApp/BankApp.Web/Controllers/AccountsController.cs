@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using BankApp.Client.Services.Interfaces;
 
 namespace BankApp.Web.Controllers
 {
-    [Authorize]
     public class AccountsController : Controller
     {
         private readonly IAccountService _accountService;
