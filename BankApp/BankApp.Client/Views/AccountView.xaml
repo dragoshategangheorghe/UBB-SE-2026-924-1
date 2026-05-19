@@ -10,6 +10,7 @@
     <Page.Resources>
         <utils:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <utils:DecimalToCurrencyConverter x:Key="CurrencyConverter" />
+        <utils:DateToOpenedLabelConverter x:Key="OpenedDateConverter" />
         <utils:AccountStatusToBrushConverter x:Key="StatusToBrush" />
     </Page.Resources>
 
@@ -94,7 +95,7 @@
 
                                             <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="4">
                                                 <TextBlock Text="{Binding Balance, Converter={StaticResource CurrencyConverter}}" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#0F172A" />
-                                                <TextBlock Text="{Binding CreatedAt, StringFormat='Opened {0:dd MMM yyyy}'}" HorizontalAlignment="Right" Foreground="#6B7280" />
+                                                <TextBlock Text="{Binding CreatedAt, Converter={StaticResource OpenedDateConverter}}" HorizontalAlignment="Right" Foreground="#6B7280" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>

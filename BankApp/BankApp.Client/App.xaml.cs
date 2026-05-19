@@ -49,12 +49,12 @@ namespace BankApp.Client
         // FIX: Pass AuthService into InvestmentsService constructor here
         public static IInvestmentsService InvestmentsService { get; private set; } = new InvestmentsService(InvestmentsHttpRepo, AuthService);
 
-        public static IAccountService AccountService { get; private set; } = new AccountService(AccountHttpRepo);
+        public static IAccountService AccountService { get; private set; } = new AccountService(AccountHttpRepo, AuthService);
         public static ILoansService LoansService { get; private set; } = new LoansService(LoansHttpRepo, LoanDialogHttp, LoanApplicationPresentationHttp);
         public static ISavingsService SavingsService { get; private set; } = new SavingsService(SavingsHttpRepo, SavingsUiRulesHttp, SavingsPresentationHttp, SavingsWorkflowHttp);
         public static ICardService CardService { get; private set; } = new CardService(CardHttpRepo);
         public static ITransactionHistoryService TransactionHistoryService { get; private set; } = new TransactionHistoryService(TransactionHttpRepo);
-        public static IStatisticsService StatisticsService { get; private set; } = new StatisticsService(StatisticsHttpRepo);
+        public static IStatisticsService StatisticsService { get; private set; } = new StatisticsService(StatisticsHttpRepo, AuthService);
         public static IChatService ChatService { get; private set; } = new ChatService(ChatHttpRepo);
         public static ITransactionHistorySessionState TransactionHistorySessionState { get; private set; } = new TransactionHistorySessionState();
 

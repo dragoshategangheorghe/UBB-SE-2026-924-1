@@ -1,6 +1,5 @@
 ﻿using System;
 using BankApp.Client.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -15,7 +14,7 @@ namespace BankApp.Client.Views
         public AccountView()
         {
             InitializeComponent();
-            ViewModel = App.Services.GetRequiredService<AccountViewModel>();
+            ViewModel = new AccountViewModel(App.AccountService, App.AuthService);
             DataContext = ViewModel;
             Loaded += AccountView_Loaded;
             Unloaded += AccountView_Unloaded;

@@ -1,6 +1,5 @@
 using System;
 using BankApp.Client.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -11,7 +10,7 @@ namespace BankApp.Client.Views
         public StatisticsView()
         {
             InitializeComponent();
-            ViewModel = App.Services.GetRequiredService<StatisticsViewModel>();
+            ViewModel = new StatisticsViewModel(App.StatisticsService, App.AuthService);
             DataContext = ViewModel;
             Loaded += StatisticsView_Loaded;
             Unloaded += StatisticsView_Unloaded;

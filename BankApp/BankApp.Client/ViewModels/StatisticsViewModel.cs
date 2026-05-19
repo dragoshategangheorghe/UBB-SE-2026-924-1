@@ -100,8 +100,16 @@ namespace BankApp.Client.ViewModels
         public decimal TotalSpending
         {
             get => _totalSpending;
-            private set => SetProperty(ref _totalSpending, value);
+            private set
+            {
+                if (SetProperty(ref _totalSpending, value))
+                {
+                    OnPropertyChanged(nameof(FormattedTotalSpendingLabel));
+                }
+            }
         }
+
+        public string FormattedTotalSpendingLabel => $"Total spending: {TotalSpending:C2}";
 
         public double MaxCategoryAmount
         {
